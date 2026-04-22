@@ -1,23 +1,39 @@
 import {
   analyzeDirectory,
+  analyzeDirectoryCached,
   defaultClaudeLogDir,
   formatDuration,
   formatUsd,
   loadConfig,
+  openCacheDb,
   parseSince,
+  type SessionAggregate,
 } from "@kojihq/core";
 
 export interface SessionsOptions {
   since: string;
   limit: string;
   dir?: string;
+  cache: boolean;
 }
 
 export async function sessionsCommand(opts: SessionsOptions): Promise<void> {
   const cfg = loadConfig();
   const dir = opts.dir ?? cfg.logDir ?? defaultClaudeLogDir();
   const since = parseSince(opts.since);
-  const all = await analyzeDirectory(dir, { since });
+
+  let all: SessionAggregate[];
+  if (opts.cache === false) {
+    all = await analyzeDirectory(dir, { since });
+  } else {
+    const cache = openCacheDb();
+    try {
+      all = await analyzeDirectoryCached(dir, cache.db, { since });
+    } finally {
+      cache.close();
+    }
+  }
+
   const aggs = all.filter((a) => a.assistantTurns > 0 || a.userTurns > 0);
   const limit = Number(opts.limit);
 

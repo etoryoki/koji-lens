@@ -21,6 +21,7 @@ program
   .option("--format <format>", "Output format: text | json", "text")
   .option("--dir <path>", "Claude Code log directory (default: config.logDir or ~/.claude/projects)")
   .option("--usd-jpy <rate>", "USD -> JPY conversion rate (default: config.usdJpy or 155)")
+  .option("--no-cache", "Disable SQLite cache (~/.koji-lens/cache.db)")
   .action(async (opts) => {
     try {
       await summaryCommand(opts);
@@ -36,6 +37,7 @@ program
   .option("--since <expr>", 'Period start: "24h", "7d", "2w", or ISO date', "7d")
   .option("--limit <n>", "Max sessions to display", "20")
   .option("--dir <path>", "Claude Code log directory")
+  .option("--no-cache", "Disable SQLite cache (~/.koji-lens/cache.db)")
   .action(async (opts) => {
     try {
       await sessionsCommand(opts);

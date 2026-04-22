@@ -37,9 +37,25 @@ export {
 export {
   analyzeFile,
   analyzeDirectory,
+  analyzeDirectoryCached,
   parseSince,
   type AnalyzeOptions,
+  type CachedAnalyzeOptions,
 } from "./analyze.js";
+
+export {
+  sessions,
+  CREATE_TABLES_SQL,
+  defaultCacheDbPath,
+  openCacheDb,
+  upsertSessionCache,
+  getSessionCache,
+  listSessionCaches,
+  isCacheFresh,
+  clearSessionCache,
+  type OpenCacheDbResult,
+  type CachedSessionAggregate,
+} from "./db/index.js";
 
 export {
   formatDuration,

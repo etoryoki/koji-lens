@@ -1,10 +1,13 @@
 import {
   analyzeDirectory,
+  analyzeDirectoryCached,
   defaultClaudeLogDir,
   loadConfig,
+  openCacheDb,
   parseSince,
   renderSummary,
   sumAggregates,
+  type SessionAggregate,
 } from "@kojihq/core";
 
 export interface SummaryOptions {
@@ -12,6 +15,7 @@ export interface SummaryOptions {
   format: string;
   dir?: string;
   usdJpy?: string;
+  cache: boolean;
 }
 
 const DEFAULT_USD_JPY = 155;
@@ -20,7 +24,19 @@ export async function summaryCommand(opts: SummaryOptions): Promise<void> {
   const cfg = loadConfig();
   const dir = opts.dir ?? cfg.logDir ?? defaultClaudeLogDir();
   const since = parseSince(opts.since);
-  const all = await analyzeDirectory(dir, { since });
+
+  let all: SessionAggregate[];
+  if (opts.cache === false) {
+    all = await analyzeDirectory(dir, { since });
+  } else {
+    const cache = openCacheDb();
+    try {
+      all = await analyzeDirectoryCached(dir, cache.db, { since });
+    } finally {
+      cache.close();
+    }
+  }
+
   const active = all.filter((a) => a.assistantTurns > 0 || a.userTurns > 0);
   const total = sumAggregates(active);
   const rate = opts.usdJpy !== undefined
