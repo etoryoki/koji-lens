@@ -1,23 +1,53 @@
-import { z } from "zod";
-
 export const VERSION = "0.0.0";
 
-export const ClaudeCodeRecordSchema = z
-  .object({
-    type: z.string(),
-    sessionId: z.string().optional(),
-    uuid: z.string().optional(),
-    timestamp: z.string().optional(),
-  })
-  .passthrough();
+export {
+  ClaudeCodeRecordSchema,
+  MessageSchema,
+  UsageSchema,
+  ContentItemSchema,
+  parseRecord,
+  type ClaudeCodeRecord,
+  type Message,
+  type Usage,
+  type ContentItem,
+} from "./schema.js";
 
-export type ClaudeCodeRecord = z.infer<typeof ClaudeCodeRecordSchema>;
+export {
+  priceFor,
+  listKnownModels,
+  type ModelPrice,
+} from "./pricing.js";
 
-export interface SessionSummary {
-  sessionId: string;
-  startedAt: string;
-  durationMs: number;
-  inputTokens: number;
-  outputTokens: number;
-  estimatedCostUsd: number;
-}
+export {
+  createEmptyAggregate,
+  applyRecord,
+  applyUsage,
+  finalizeAggregate,
+  sumAggregates,
+  type SessionAggregate,
+  type TotalAggregate,
+} from "./aggregate.js";
+
+export {
+  defaultClaudeLogDir,
+  findJsonlFiles,
+  sessionIdFromPath,
+} from "./paths.js";
+
+export {
+  analyzeFile,
+  analyzeDirectory,
+  parseSince,
+  type AnalyzeOptions,
+} from "./analyze.js";
+
+export {
+  formatDuration,
+  formatUsd,
+  formatJpy,
+  formatTokens,
+  renderSessionBlock,
+  renderTotalBlock,
+  renderSummary,
+  type RenderOptions,
+} from "./format.js";
