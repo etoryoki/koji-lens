@@ -1,0 +1,29 @@
+{
+  "name": "@kojihq/lens",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Claude Code local usage analyzer CLI",
+  "license": "MIT",
+  "bin": {
+    "koji-lens": "./dist/index.js"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "dev": "tsc -p tsconfig.json --watch",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "start": "node ./dist/index.js"
+  },
+  "dependencies": {
+    "@kojihq/core": "workspace:*",
+    "commander": "^13.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "^5.6.0"
+  }
+}
