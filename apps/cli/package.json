@@ -4,7 +4,7 @@
   "type": "module",
   "description": "Claude Code local usage analyzer CLI — koji-lens",
   "license": "MIT",
-  "author": "Koji",
+  "author": "株式会社クインクエ (Koji)",
   "homepage": "https://github.com/etoryoki/koji-lens#readme",
   "repository": {
     "type": "git",

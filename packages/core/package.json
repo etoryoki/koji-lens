@@ -4,7 +4,7 @@
   "type": "module",
   "description": "Core types and parsers for koji-lens (Claude Code local usage analyzer)",
   "license": "MIT",
-  "author": "Koji",
+  "author": "株式会社クインクエ (Koji)",
   "homepage": "https://github.com/etoryoki/koji-lens#readme",
   "repository": {
     "type": "git",
