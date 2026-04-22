@@ -1,10 +1,28 @@
 {
   "name": "@kojihq/core",
-  "version": "0.0.0",
-  "private": true,
+  "version": "0.1.0-beta.0",
   "type": "module",
-  "description": "Core types and parsers for koji-lens",
+  "description": "Core types and parsers for koji-lens (Claude Code local usage analyzer)",
   "license": "MIT",
+  "author": "Koji",
+  "homepage": "https://github.com/etoryoki/koji-lens#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/etoryoki/koji-lens.git",
+    "directory": "packages/core"
+  },
+  "bugs": {
+    "url": "https://github.com/etoryoki/koji-lens/issues"
+  },
+  "keywords": [
+    "claude-code",
+    "jsonl",
+    "analytics",
+    "koji-lens"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
@@ -14,7 +32,8 @@
     }
   },
   "files": [
-    "dist"
+    "dist",
+    "README.md"
   ],
   "scripts": {
     "build": "tsc -p tsconfig.json",

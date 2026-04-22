@@ -8,3 +8,5 @@ dist
 .turbo
 coverage
 *.log
+apps/cli/web-standalone
+*.tgz
