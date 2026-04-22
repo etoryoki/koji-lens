@@ -1,4 +1,4 @@
-import { cpSync, existsSync, rmSync } from "node:fs";
+import { cpSync, existsSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -23,6 +23,21 @@ if (existsSync(target)) {
 }
 
 cpSync(webStandaloneRoot, target, { recursive: true });
+
+const serverJsPath = path.join(target, "apps/web/server.js");
+if (existsSync(serverJsPath)) {
+  const original = readFileSync(serverJsPath, "utf8");
+  const sanitized = original
+    .replace(/"outputFileTracingRoot":"[^"]*"/g, '"outputFileTracingRoot":"./"')
+    .replace(/"turbopack":\{"root":"[^"]*"\}/g, '"turbopack":{"root":"./"}');
+  if (sanitized !== original) {
+    writeFileSync(serverJsPath, sanitized);
+    console.log(
+      "[bundle-web-standalone] Sanitized build-machine absolute paths in server.js",
+    );
+  }
+}
+
 console.log(`[bundle-web-standalone] Bundled -> ${target}`);
 console.log(
   `[bundle-web-standalone] Resolved server entry: ${path.join(target, "apps/web/server.js")}`,
