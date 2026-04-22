@@ -1,6 +1,7 @@
 import {
   analyzeDirectory,
   defaultClaudeLogDir,
+  loadConfig,
   parseSince,
   renderSummary,
   sumAggregates,
@@ -10,16 +11,21 @@ export interface SummaryOptions {
   since: string;
   format: string;
   dir?: string;
-  usdJpy: string;
+  usdJpy?: string;
 }
 
+const DEFAULT_USD_JPY = 155;
+
 export async function summaryCommand(opts: SummaryOptions): Promise<void> {
-  const dir = opts.dir ?? defaultClaudeLogDir();
+  const cfg = loadConfig();
+  const dir = opts.dir ?? cfg.logDir ?? defaultClaudeLogDir();
   const since = parseSince(opts.since);
   const all = await analyzeDirectory(dir, { since });
   const active = all.filter((a) => a.assistantTurns > 0 || a.userTurns > 0);
   const total = sumAggregates(active);
-  const rate = Number(opts.usdJpy);
+  const rate = opts.usdJpy !== undefined
+    ? Number(opts.usdJpy)
+    : cfg.usdJpy ?? DEFAULT_USD_JPY;
 
   if (opts.format === "json") {
     const payload = {

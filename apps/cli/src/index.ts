@@ -7,8 +7,6 @@ import { sessionCommand } from "./commands/session.js";
 import { serveCommand } from "./commands/serve.js";
 import { configCommand } from "./commands/config.js";
 
-const DEFAULT_USD_JPY = "155";
-
 const program = new Command();
 
 program
@@ -21,8 +19,8 @@ program
   .description("Show usage summary for the given period")
   .option("--since <expr>", 'Period start: "24h", "7d", "2w", or ISO date', "24h")
   .option("--format <format>", "Output format: text | json", "text")
-  .option("--dir <path>", "Claude Code log directory")
-  .option("--usd-jpy <rate>", "USD -> JPY conversion rate", DEFAULT_USD_JPY)
+  .option("--dir <path>", "Claude Code log directory (default: config.logDir or ~/.claude/projects)")
+  .option("--usd-jpy <rate>", "USD -> JPY conversion rate (default: config.usdJpy or 155)")
   .action(async (opts) => {
     try {
       await summaryCommand(opts);
@@ -51,8 +49,8 @@ program
   .command("session <id>")
   .description("Show detail of a session")
   .option("--format <format>", "Output format: text | json", "text")
-  .option("--dir <path>", "Claude Code log directory")
-  .option("--usd-jpy <rate>", "USD -> JPY conversion rate", DEFAULT_USD_JPY)
+  .option("--dir <path>", "Claude Code log directory (default: config.logDir or ~/.claude/projects)")
+  .option("--usd-jpy <rate>", "USD -> JPY conversion rate (default: config.usdJpy or 155)")
   .action(async (id: string, opts) => {
     try {
       await sessionCommand(id, opts);
@@ -72,10 +70,10 @@ program
 
 program
   .command("config")
-  .description("Get/set configuration values")
-  .argument("<action>", "get | set | list")
-  .argument("[key]", "config key")
-  .argument("[value]", "config value (only for set)")
+  .description("Manage configuration at ~/.koji-lens/config.json")
+  .argument("<action>", "get | set | unset | list | path")
+  .argument("[key]", "config key (logDir | usdJpy)")
+  .argument("[value]", "config value (for set)")
   .action((action: string, key?: string, value?: string) => {
     configCommand(action, key, value);
   });

@@ -51,3 +51,14 @@ export {
   renderSummary,
   type RenderOptions,
 } from "./format.js";
+
+export {
+  configFilePath,
+  loadConfig,
+  saveConfig,
+  getConfigValue,
+  setConfigValue,
+  unsetConfigValue,
+  listKnownConfigKeys,
+  type KojiLensConfig,
+} from "./config.js";

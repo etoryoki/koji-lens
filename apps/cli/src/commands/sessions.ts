@@ -3,6 +3,7 @@ import {
   defaultClaudeLogDir,
   formatDuration,
   formatUsd,
+  loadConfig,
   parseSince,
 } from "@kojihq/core";
 
@@ -13,7 +14,8 @@ export interface SessionsOptions {
 }
 
 export async function sessionsCommand(opts: SessionsOptions): Promise<void> {
-  const dir = opts.dir ?? defaultClaudeLogDir();
+  const cfg = loadConfig();
+  const dir = opts.dir ?? cfg.logDir ?? defaultClaudeLogDir();
   const since = parseSince(opts.since);
   const all = await analyzeDirectory(dir, { since });
   const aggs = all.filter((a) => a.assistantTurns > 0 || a.userTurns > 0);
