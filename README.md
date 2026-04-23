@@ -1,100 +1,155 @@
 # koji-lens
 
-Claude Code のローカルログ（`~/.claude/projects/**/*.jsonl`）を解析し、開発者向けに使用状況を可視化・分析する CLI + ローカル Web UI。
+[![npm beta](https://img.shields.io/npm/v/@kojihq/lens/beta.svg?label=@kojihq/lens)](https://www.npmjs.com/package/@kojihq/lens)
+[![license](https://img.shields.io/npm/l/@kojihq/lens.svg)](./LICENSE)
+[![node](https://img.shields.io/node/v/@kojihq/lens/beta.svg)](https://nodejs.org/)
 
-**ステータス**: Day 15-21 相当の CLI v0 実装完了（Day 60 MVP 出荷へ継続中）
+Your local Claude Code usage analyzer. No servers, no signup — reads your local JSONL logs and shows what you actually spent.
 
-## できること（v0）
+> **Status**: β (public beta). Install with `@beta` tag. See [Known limitations](#known-limitations).
 
-- セッション横断のコスト・トークン・ツール使用集計
-- 直近セッションの一覧（期間指定・件数制限）
-- 特定セッションの詳細
-- ローカル Web UI（チャート 3 種 + セッションテーブル）をワンコマンド起動
-- 設定の永続化（`~/.koji-lens/config.json`）
+---
 
-## 要件
-
-- Node.js 22 LTS
-- pnpm 9
-
-## セットアップ
+## Install
 
 ```bash
-pnpm install
-pnpm --filter @kojihq/core build   # core を先にビルド
-pnpm --filter @kojihq/lens build
-pnpm --filter @kojihq/web build    # Web 起動まで想定するなら
+pnpm add -g @kojihq/lens@beta
+# or: npm i -g @kojihq/lens@beta
 ```
 
-## CLI 使い方（開発中）
+Node.js 22+ required.
+
+## 30-second tour
 
 ```bash
-# 直近 24 時間の使用状況サマリ
-node ./apps/cli/dist/index.js summary --since 24h
+# Total cost / tokens / tool usage for the last 24 hours
+koji-lens summary --since 24h
 
-# 直近 7 日のセッション一覧（20 件まで）
-node ./apps/cli/dist/index.js sessions --since 7d --limit 20
+# Recent sessions (default: last 7 days, top 20)
+koji-lens sessions
 
-# 特定セッションの詳細
-node ./apps/cli/dist/index.js session <session-id>
+# Deep dive into one session
+koji-lens session <session-id>
 
-# ローカル Web UI を起動（http://127.0.0.1:3210）
-node ./apps/cli/dist/index.js serve --port 3210
-
-# 設定
-node ./apps/cli/dist/index.js config list
-node ./apps/cli/dist/index.js config set logDir "/custom/path/to/claude/projects"
-node ./apps/cli/dist/index.js config set usdJpy 160
-node ./apps/cli/dist/index.js config unset usdJpy
-node ./apps/cli/dist/index.js config path  # 設定ファイルの場所
+# Launch the local web dashboard (charts + session table)
+koji-lens serve
+# → http://127.0.0.1:3210
 ```
 
-npm 公開後は `pnpm add -g @kojihq/lens` → `koji-lens <cmd>` で使えるようになります（Day 60 予定）。
+All commands read directly from `~/.claude/projects/**/*.jsonl` — nothing leaves your machine.
 
-## 構成（pnpm monorepo）
+## Commands
+
+### `summary`
+
+Shows aggregated metrics for a period: cost, tokens (input/output/cache), assistant turns, tool usage, top sessions.
+
+```bash
+koji-lens summary --since 24h
+koji-lens summary --since 7d --format json      # machine-readable
+koji-lens summary --since 2w --usd-jpy 160      # override FX rate
+koji-lens summary --since 24h --no-cache        # bypass SQLite cache
+```
+
+Options: `--since <expr>` (e.g. `24h`, `7d`, `2w`, or ISO date), `--format text|json`, `--dir <path>`, `--usd-jpy <rate>`, `--no-cache`.
+
+### `sessions`
+
+Lists sessions in a period (one line per session: id, ended_at, duration, cost, turns, tools).
+
+```bash
+koji-lens sessions                   # last 7 days, 20 sessions
+koji-lens sessions --since 30d --limit 50
+```
+
+### `session <id>`
+
+Full detail of a single session: file path, time range, duration, per-turn counts, models, tools, cost breakdown.
+
+```bash
+koji-lens session 9b1f92a5-8f67-4f2a-91d3-f930adeb0c5f
+koji-lens session <id> --format json
+```
+
+### `serve`
+
+Starts a local web dashboard (Next.js, no external requests).
+
+```bash
+koji-lens serve                      # port 3210
+koji-lens serve --port 3500
+```
+
+Dashboard includes cost/session bar chart, tokens stacked bar, tool usage pie, and a sortable session table.
+
+### `config`
+
+Persisted in `~/.koji-lens/config.json`.
+
+```bash
+koji-lens config list
+koji-lens config set logDir "/custom/path/to/.claude/projects"
+koji-lens config set usdJpy 160
+koji-lens config unset usdJpy
+koji-lens config path                # where the file lives
+```
+
+## How it works
+
+- **Reads local JSONL directly.** No telemetry, no network calls, no account.
+- **SQLite cache** at `~/.koji-lens/cache.db` speeds up repeated runs (~7× faster on the measured case). Pass `--no-cache` to bypass.
+- **Per-session streaming parse** with [zod](https://zod.dev). Unrecognized records are skipped silently so format changes in Claude Code don't break the whole analysis.
+- **Model pricing** is shipped as `pricing.json` inside the package. Override is possible by editing `node_modules/@kojihq/core/dist/pricing.json` until runtime config lands.
+
+## Known limitations
+
+- β. APIs and CLI flags may change before 1.0.
+- Model pricing is kept current at release time. If Anthropic announces a price change, we ship a patch release within a few days.
+- Windows is supported (primary dev environment), macOS and Linux are expected to work. File an issue if you hit OS-specific trouble.
+- Old sessions from before `~/.claude/projects` existed are not analyzed (use `--dir` if your logs live elsewhere).
+
+## FAQ
+
+**Does this send my logs to any server?**
+No. `@kojihq/lens` runs entirely locally. `koji-lens serve` binds to `127.0.0.1` only.
+
+**Can I use it without installing globally?**
+Yes: `pnpm dlx @kojihq/lens@beta summary --since 24h` (or `npx @kojihq/lens@beta ...`).
+
+**Why `@beta` tag?**
+The `latest` tag also points to the current β now, so `pnpm add @kojihq/lens` works too. We keep `@beta` usage in docs to make it obvious that 1.0 has not shipped yet.
+
+**Is there a Pro/cloud plan?**
+Not yet. The roadmap includes optional cloud sync for cross-device aggregation in a later phase. The local-first experience will always be free.
+
+## Development
+
+This is a pnpm monorepo. Contributions welcome — file an issue first for non-trivial changes.
 
 ```
 koji-lens/
 ├── apps/
-│   ├── cli/                       # @kojihq/lens (commander)
-│   └── web/                       # Next.js 16 App Router + Tailwind v4 + Recharts
-│       ├── next.config.ts         # output: 'standalone'
-│       └── scripts/copy-standalone-assets.mjs
-├── packages/
-│   └── core/                      # @kojihq/core
-│       ├── src/schema.ts          # zod による JSONL スキーマ
-│       ├── src/pricing.ts         # モデル価格テーブル
-│       ├── src/aggregate.ts       # 集計ロジック
-│       ├── src/analyze.ts         # ファイル/ディレクトリ解析、parseSince
-│       ├── src/paths.ts           # ログパス探索
-│       ├── src/format.ts          # text 出力フォーマッタ
-│       ├── src/config.ts          # ~/.koji-lens/config.json ストア
-│       └── test/                  # vitest（21 tests）
-├── decisions/                     # 実装寄り決定の置き場
-├── docs/                          # ユーザー向けドキュメント（Day 31+ に公開）
-└── .github/workflows/ci.yml       # install / build core / typecheck / test
+│   ├── cli/          @kojihq/lens   (commander-based CLI)
+│   └── web/          @kojihq/web    (Next.js 16, App Router, Tailwind v4, Recharts)
+└── packages/
+    └── core/         @kojihq/core   (zod schema, aggregator, pricing, SQLite cache)
 ```
-
-## 設計方針
-
-- **ローカル・ファースト**: ログはユーザー側にあるものをそのまま読む。クラウドへ送信しない（Pro プランの同期機能まで）
-- **配布形態**: `next build --output standalone` で成果物を npm package に同梱、`node server.js` を CLI から spawn（CTO 深町レビュー v17 反映）
-- **型安全化**: JSONL はすべて zod でパース、失敗レコードは静かにスキップ
-- **プラットフォームリスク耐性**: Claude Code のスキーマ変更に備えて `packages/core` にパース層を隔離、`logDir` は `config` で上書き可能
-
-## スクリプト
 
 ```bash
-pnpm build        # 全パッケージ build
-pnpm typecheck    # 全パッケージ tsc --noEmit
-pnpm test         # 全パッケージ vitest run（現在は core のみ）
+pnpm install
+pnpm -r build
+pnpm -r typecheck
+pnpm test            # vitest, 25 tests in @kojihq/core
 ```
 
-## ライセンス
+Run locally without installing globally:
 
-MIT
+```bash
+node ./apps/cli/dist/index.js summary --since 24h
+```
 
-## 関連
+Publishing: see [`docs/publish.md`](./docs/publish.md).
 
-- 運営拠点（非公開）: `ai-company` リポジトリ
-- 本リポジトリには OSS 化に耐える技術決定と実装コードのみを置く
+## License
+
+[MIT](./LICENSE) © 2026 株式会社クインクエ (Koji)
