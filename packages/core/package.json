@@ -1,6 +1,6 @@
 {
   "name": "@kojihq/core",
-  "version": "0.1.0-beta.1",
+  "version": "0.1.0-beta.2",
   "type": "module",
   "description": "Core types and parsers for koji-lens (Claude Code local usage analyzer)",
   "license": "MIT",
@@ -29,6 +29,10 @@
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
+    },
+    "./db": {
+      "types": "./dist/db/index.d.ts",
+      "import": "./dist/db/index.js"
     }
   },
   "files": [

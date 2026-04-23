@@ -3,15 +3,17 @@ import {
   analyzeFile,
   defaultClaudeLogDir,
   findJsonlFiles,
-  getSessionCache,
-  isCacheFresh,
   loadConfig,
-  openCacheDb,
   renderSessionBlock,
   sessionIdFromPath,
-  upsertSessionCache,
   type SessionAggregate,
 } from "@kojihq/core";
+import {
+  getSessionCache,
+  isCacheFresh,
+  openCacheDb,
+  upsertSessionCache,
+} from "@kojihq/core/db";
 
 export interface SessionOptions {
   usdJpy?: string;

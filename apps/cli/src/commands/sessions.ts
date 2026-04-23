@@ -5,10 +5,10 @@ import {
   formatDuration,
   formatUsd,
   loadConfig,
-  openCacheDb,
   parseSince,
   type SessionAggregate,
 } from "@kojihq/core";
+import { openCacheDb } from "@kojihq/core/db";
 
 export interface SessionsOptions {
   since: string;

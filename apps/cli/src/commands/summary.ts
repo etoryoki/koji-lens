@@ -3,12 +3,12 @@ import {
   analyzeDirectoryCached,
   defaultClaudeLogDir,
   loadConfig,
-  openCacheDb,
   parseSince,
   renderSummary,
   sumAggregates,
   type SessionAggregate,
 } from "@kojihq/core";
+import { openCacheDb } from "@kojihq/core/db";
 
 export interface SummaryOptions {
   since: string;
