@@ -1,6 +1,6 @@
 {
   "name": "@kojihq/lens",
-  "version": "0.1.0-beta.0",
+  "version": "0.1.0-beta.1",
   "type": "module",
   "description": "Claude Code local usage analyzer CLI — koji-lens",
   "license": "MIT",
@@ -44,7 +44,7 @@
     "pack:dry": "npm pack --dry-run"
   },
   "dependencies": {
-    "@kojihq/core": "workspace:^0.1.0-beta.0",
+    "@kojihq/core": "workspace:^0.1.0-beta.1",
     "commander": "^13.0.0"
   },
   "devDependencies": {

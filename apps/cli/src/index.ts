@@ -1,18 +1,22 @@
 #!/usr/bin/env node
 import { Command } from "commander";
-import { VERSION } from "@kojihq/core";
+import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 import { summaryCommand } from "./commands/summary.js";
 import { sessionsCommand } from "./commands/sessions.js";
 import { sessionCommand } from "./commands/session.js";
 import { serveCommand } from "./commands/serve.js";
 import { configCommand } from "./commands/config.js";
 
+const pkgPath = fileURLToPath(new URL("../package.json", import.meta.url));
+const pkg = JSON.parse(readFileSync(pkgPath, "utf8")) as { version: string };
+
 const program = new Command();
 
 program
   .name("koji-lens")
   .description("Claude Code local usage analyzer")
-  .version(VERSION);
+  .version(pkg.version);
 
 program
   .command("summary")
