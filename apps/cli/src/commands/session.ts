@@ -1,16 +1,23 @@
+import { statSync } from "node:fs";
 import {
   analyzeFile,
   defaultClaudeLogDir,
   findJsonlFiles,
+  getSessionCache,
+  isCacheFresh,
   loadConfig,
+  openCacheDb,
   renderSessionBlock,
   sessionIdFromPath,
+  upsertSessionCache,
+  type SessionAggregate,
 } from "@kojihq/core";
 
 export interface SessionOptions {
   usdJpy?: string;
   format: string;
   dir?: string;
+  cache: boolean;
 }
 
 const DEFAULT_USD_JPY = 155;
@@ -28,7 +35,26 @@ export async function sessionCommand(
     console.error(`Searched under: ${dir}`);
     process.exit(1);
   }
-  const agg = await analyzeFile(target);
+
+  let agg: SessionAggregate | null = null;
+  if (opts.cache === false) {
+    agg = await analyzeFile(target);
+  } else {
+    const cache = openCacheDb();
+    try {
+      const mtimeMs = statSync(target).mtimeMs;
+      if (isCacheFresh(cache.db, id, mtimeMs)) {
+        agg = getSessionCache(cache.db, id);
+      }
+      if (!agg) {
+        agg = await analyzeFile(target);
+        upsertSessionCache(cache.db, agg, mtimeMs);
+      }
+    } finally {
+      cache.close();
+    }
+  }
+
   const rate = opts.usdJpy !== undefined
     ? Number(opts.usdJpy)
     : cfg.usdJpy ?? DEFAULT_USD_JPY;

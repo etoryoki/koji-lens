@@ -53,6 +53,7 @@ program
   .option("--format <format>", "Output format: text | json", "text")
   .option("--dir <path>", "Claude Code log directory (default: config.logDir or ~/.claude/projects)")
   .option("--usd-jpy <rate>", "USD -> JPY conversion rate (default: config.usdJpy or 155)")
+  .option("--no-cache", "Disable SQLite cache (~/.koji-lens/cache.db)")
   .action(async (id: string, opts) => {
     try {
       await sessionCommand(id, opts);

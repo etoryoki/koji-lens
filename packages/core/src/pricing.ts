@@ -1,3 +1,5 @@
+import pricingJson from "./pricing.json" with { type: "json" };
+
 export interface ModelPrice {
   input: number;
   output: number;
@@ -5,13 +7,15 @@ export interface ModelPrice {
   cacheWrite: number;
 }
 
-const PRICES: Record<string, ModelPrice> = {
-  "claude-opus-4-7": { input: 15, output: 75, cacheRead: 1.5, cacheWrite: 18.75 },
-  "claude-sonnet-4-6": { input: 3, output: 15, cacheRead: 0.3, cacheWrite: 3.75 },
-  "claude-haiku-4-5": { input: 0.8, output: 4, cacheRead: 0.08, cacheWrite: 1 },
-};
+interface PricingFile {
+  defaultModel: string;
+  models: Record<string, ModelPrice>;
+}
 
-const DEFAULT_PRICE: ModelPrice = PRICES["claude-opus-4-7"];
+const PRICING = pricingJson as PricingFile;
+const PRICES: Record<string, ModelPrice> = PRICING.models;
+const DEFAULT_PRICE: ModelPrice =
+  PRICES[PRICING.defaultModel] ?? Object.values(PRICES)[0];
 
 export function priceFor(model: string | undefined): ModelPrice {
   if (!model) return DEFAULT_PRICE;
