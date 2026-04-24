@@ -1,0 +1,18 @@
+@import "tailwindcss";
+
+:root {
+  color-scheme: light;
+}
+
+body {
+  font-family:
+    system-ui, -apple-system, "Segoe UI", "Hiragino Sans", "Noto Sans JP",
+    sans-serif;
+}
+
+code,
+pre {
+  font-family:
+    ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono",
+    monospace;
+}
