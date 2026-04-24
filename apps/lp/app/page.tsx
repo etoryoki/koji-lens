@@ -1,9 +1,9 @@
 import {
   BarChart3,
+  Bell,
   DollarSign,
   Github,
   Lock,
-  Package,
   Puzzle,
   Terminal,
 } from "lucide-react";
@@ -322,6 +322,7 @@ const PLANS: Plan[] = [
       "CSV / JSON エクスポート",
       "週次 / 月次レポート",
     ],
+    highlight: true,
   },
   {
     name: "Pro 年額",
@@ -329,18 +330,6 @@ const PLANS: Plan[] = [
     unit: "/年",
     note: "月額比 16% 割引",
     features: ["Pro 月額のすべて", "年額契約で割安"],
-  },
-  {
-    name: "Pro 生涯（β 限定）",
-    price: "$150",
-    unit: "一括",
-    note: "先着 20 名",
-    features: [
-      "永続ライセンス",
-      "サービス提供期間中は追加課金なし",
-      "β 期間中の限定枠",
-    ],
-    highlight: true,
   },
 ];
 
@@ -356,7 +345,7 @@ function Pricing() {
             Pro プランは 2026 年 5 月下旬に提供開始予定。
           </p>
         </div>
-        <div className="grid gap-4 md:grid-cols-4">
+        <div className="grid gap-4 md:grid-cols-3">
           {PLANS.map((p) => (
             <div
               key={p.name}
@@ -368,7 +357,7 @@ function Pricing() {
             >
               {p.highlight ? (
                 <div className="absolute -top-3 left-6 rounded-full bg-blue-600 px-2 py-0.5 text-xs font-medium text-white">
-                  β 限定
+                  おすすめ
                 </div>
               ) : null}
               <div className="mb-4">
@@ -410,15 +399,18 @@ function Waitlist() {
       <div className="mx-auto max-w-3xl px-6 py-20">
         <div className="rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
           <div className="mb-2 inline-flex items-center gap-1.5 rounded-full bg-blue-50 px-2.5 py-1 text-xs font-medium text-blue-700">
-            <Package className="size-3.5" />
-            生涯ライセンス先行通知
+            <Bell className="size-3.5" />
+            Pro リリース先行通知
           </div>
           <h2 className="text-2xl font-semibold tracking-tight text-slate-900">
-            生涯ライセンス（$150）販売開始の通知を受け取る
+            Pro プラン販売開始の通知を受け取る
           </h2>
           <p className="mt-3 text-pretty leading-relaxed text-slate-600">
-            先着 20 名限定の生涯ライセンスは、販売開始と同時に枠が埋まる可能性があります。
-            メールアドレスを登録しておくと、販売開始の瞬間に通知をお送りします。
+            Pro プラン（月額 $8 / 年額 $80）は 2026 年 5 月下旬に提供開始予定です。
+            メールアドレスを登録しておくと、販売開始のタイミングで先行案内をお送りします。
+          </p>
+          <p className="mt-2 text-sm leading-relaxed text-slate-500">
+            β 期間中のフィードバックをくれた方には、Pro リリース時にお得なお知らせが届く可能性があります。
           </p>
           <WaitlistForm enabled={enabled} />
         </div>

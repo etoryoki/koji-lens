@@ -57,7 +57,7 @@ export async function POST(req: Request) {
   const sendRes = await resend.emails.send({
     from: `Koji <${fromAddress}>`,
     to: email,
-    subject: "生涯ライセンス waitlist にご登録いただきありがとうございます",
+    subject: "Pro リリース先行通知リストにご登録いただきありがとうございます",
     html: buildConfirmationHtml(),
     text: buildConfirmationText(),
   });
@@ -79,14 +79,14 @@ function buildConfirmationHtml(): string {
           <table role="presentation" width="560" cellpadding="0" cellspacing="0" style="max-width:560px;background:#ffffff;border:1px solid #e2e8f0;border-radius:12px;padding:32px;">
             <tr>
               <td>
-                <div style="font-size:14px;color:#2563eb;font-weight:600;margin-bottom:8px;">koji-lens · 生涯ライセンス waitlist</div>
+                <div style="font-size:14px;color:#2563eb;font-weight:600;margin-bottom:8px;">koji-lens · Pro リリース先行通知</div>
                 <h1 style="margin:0 0 16px 0;font-size:22px;line-height:1.4;color:#0f172a;">ご登録ありがとうございます</h1>
                 <p style="margin:0 0 12px 0;font-size:15px;line-height:1.7;color:#334155;">
-                  koji-lens の生涯ライセンス（$150、先着 20 名限定）waitlist へのご登録を受け付けました。
+                  koji-lens Pro プラン（月額 $8 / 年額 $80）の販売開始先行通知リストへのご登録を受け付けました。
                 </p>
                 <p style="margin:0 0 12px 0;font-size:15px;line-height:1.7;color:#334155;">
-                  2026 年 5 月下旬の販売開始と同時に、このメールアドレス宛に通知をお送りします。
-                  先着順のため、通知後はお早めにお手続きください。
+                  2026 年 5 月下旬の販売開始に合わせて、このメールアドレス宛に先行案内をお送りします。
+                  β 期間中は CLI の全機能を無料でご利用いただけますので、ぜひご体験ください。
                 </p>
                 <p style="margin:24px 0 0 0;font-size:14px;color:#64748b;">
                   登録解除やご質問は <a href="mailto:support@kojihq.com" style="color:#2563eb;text-decoration:none;">support@kojihq.com</a> までお気軽にご連絡ください。
@@ -108,12 +108,12 @@ function buildConfirmationHtml(): string {
 
 function buildConfirmationText(): string {
   return [
-    "koji-lens / 生涯ライセンス waitlist",
+    "koji-lens / Pro リリース先行通知",
     "",
     "ご登録ありがとうございます。",
     "",
-    "生涯ライセンス（$150、先着 20 名限定）の販売開始と同時に、このメールアドレスへ通知をお送りします。",
-    "先着順のため、通知後はお早めにお手続きください。",
+    "Pro プラン（月額 $8 / 年額 $80）の販売開始（2026 年 5 月下旬予定）に合わせて、このメールアドレスへ先行案内をお送りします。",
+    "β 期間中は CLI の全機能を無料でご利用いただけますので、ぜひご体験ください。",
     "",
     "登録解除やご質問は support@kojihq.com までご連絡ください。",
     "",
