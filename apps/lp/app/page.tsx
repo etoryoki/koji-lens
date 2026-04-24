@@ -8,6 +8,7 @@ import {
   Terminal,
 } from "lucide-react";
 import { CopyButton } from "./components/CopyButton";
+import { WaitlistForm } from "./components/WaitlistForm";
 
 const INSTALL_CMD = "npm install -g @kojihq/lens";
 const GITHUB_URL = "https://github.com/etoryoki/koji-lens";
@@ -401,6 +402,9 @@ function Pricing() {
 }
 
 function Waitlist() {
+  const enabled = Boolean(
+    process.env.RESEND_API_KEY && process.env.RESEND_AUDIENCE_ID_WAITLIST,
+  );
   return (
     <section className="border-b border-slate-200 bg-slate-50">
       <div className="mx-auto max-w-3xl px-6 py-20">
@@ -416,26 +420,7 @@ function Waitlist() {
             先着 20 名限定の生涯ライセンスは、販売開始と同時に枠が埋まる可能性があります。
             メールアドレスを登録しておくと、販売開始の瞬間に通知をお送りします。
           </p>
-          <form className="mt-6 flex flex-col gap-3 sm:flex-row">
-            <input
-              type="email"
-              required
-              placeholder="you@example.com"
-              className="flex-1 rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-600 focus:outline-none"
-              disabled
-              aria-describedby="waitlist-note"
-            />
-            <button
-              type="button"
-              disabled
-              className="inline-flex items-center justify-center rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white opacity-60"
-            >
-              通知を受け取る
-            </button>
-          </form>
-          <p id="waitlist-note" className="mt-3 text-xs text-slate-500">
-            ※ フォーム受付は Day 2 以降に有効化されます（現在は UI プレビュー）。通知メールのみに使用し、登録はいつでも解除可能です。
-          </p>
+          <WaitlistForm enabled={enabled} />
         </div>
       </div>
     </section>
