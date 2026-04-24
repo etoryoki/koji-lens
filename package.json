@@ -13,10 +13,12 @@
     "dev": "pnpm -r --parallel dev",
     "typecheck": "pnpm -r typecheck",
     "test": "pnpm -r --if-present test",
-    "post:bluesky": "tsx --env-file-if-exists=scripts/.env.local scripts/bluesky-post.ts"
+    "post:bluesky": "tsx --env-file-if-exists=scripts/.env.local scripts/bluesky-post.ts",
+    "bluesky:profile": "tsx --env-file-if-exists=scripts/.env.local scripts/bluesky-profile.ts"
   },
   "devDependencies": {
     "@atproto/api": "^0.13.35",
+    "@resvg/resvg-js": "^2.6.2",
     "tsx": "^4.19.2"
   }
 }
