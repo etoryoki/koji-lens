@@ -1,0 +1,6 @@
+β 公開中: koji-lens
+
+Claude Code のセッションログをローカルで解析し、コスト・トークン・ツール呼び出しを可視化する CLI です。OSS (MIT)。
+
+npm install -g @kojihq/lens
+koji-lens summary
