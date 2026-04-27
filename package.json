@@ -14,7 +14,8 @@
     "typecheck": "pnpm -r typecheck",
     "test": "pnpm -r --if-present test",
     "post:bluesky": "tsx --env-file-if-exists=scripts/.env.local scripts/bluesky-post.ts",
-    "bluesky:profile": "tsx --env-file-if-exists=scripts/.env.local scripts/bluesky-profile.ts"
+    "bluesky:profile": "tsx --env-file-if-exists=scripts/.env.local scripts/bluesky-profile.ts",
+    "support:send": "tsx --env-file-if-exists=scripts/.env.local scripts/send-support-test.ts"
   },
   "devDependencies": {
     "@atproto/api": "^0.13.35",
