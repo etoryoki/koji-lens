@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
+  <rect width="1200" height="630" fill="#0f172a"/>
+
+  <g font-family="Inter, -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, 'Hiragino Sans', 'Yu Gothic', 'Noto Sans JP', sans-serif">
+    <text x="60" y="92"
+          font-size="40"
+          font-weight="800"
+          fill="#ffffff"
+          letter-spacing="-1">K</text>
+    <text x="100" y="92"
+          font-size="24"
+          font-weight="700"
+          fill="#ffffff"
+          letter-spacing="-0.4">koji-lens</text>
+
+    <text x="60" y="280"
+          font-size="54"
+          font-weight="800"
+          fill="#ffffff"
+          letter-spacing="-1.5">AI コーディングの使い方を、</text>
+    <text x="60" y="350"
+          font-size="54"
+          font-weight="800"
+          fill="#ffffff"
+          letter-spacing="-1.5">見える化する。</text>
+
+    <text x="60" y="500"
+          font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace"
+          font-size="22"
+          font-weight="500"
+          fill="#60a5fa"
+          letter-spacing="0">$ npm install -g @kojihq/lens</text>
+
+    <text x="60" y="540"
+          font-size="16"
+          font-weight="400"
+          fill="#94a3b8"
+          letter-spacing="0.4">β · OSS (MIT) · lens.kojihq.com</text>
+  </g>
+</svg>

@@ -18,6 +18,21 @@ export const metadata: Metadata = {
     siteName: "koji-lens",
     locale: "ja_JP",
     type: "website",
+    images: [
+      {
+        url: "/og.png",
+        width: 1200,
+        height: 630,
+        alt: "koji-lens — AI コーディングの使い方を、見える化する。",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "koji-lens",
+    description:
+      "Claude Code のセッションログをローカルで解析し、コスト・トークン・ツール使用を 1 コマンドで可視化。",
+    images: ["/og.png"],
   },
   robots: {
     index: true,
