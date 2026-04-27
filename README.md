@@ -6,7 +6,9 @@
 
 > **AI コーディングの使い方を、見える化する。** — [lens.kojihq.com](https://lens.kojihq.com)
 
-Your local Claude Code usage analyzer. No servers, no signup — reads your local JSONL logs and shows what you actually spent.
+Your local Claude Code usage analyzer. No servers, no signup — reads your local JSONL logs and shows your token usage with API-equivalent cost.
+
+> **Note**: Cost figures are calculated as `tokens × Anthropic API price`. If you use Claude Code via API key, this matches your actual spend. If you use Claude Code via Claude Pro / Max subscription, this is a reference figure — your actual billing is the flat subscription fee. See [FAQ](#faq).
 
 > **Status**: β (public beta). Install with `@beta` tag. See [Known limitations](#known-limitations).
 
@@ -120,6 +122,13 @@ Yes: `pnpm dlx @kojihq/lens@beta summary --since 24h` (or `npx @kojihq/lens@beta
 
 **Why `@beta` tag?**
 The `latest` tag also points to the current β now, so `pnpm add @kojihq/lens` works too. We keep `@beta` usage in docs to make it obvious that 1.0 has not shipped yet.
+
+**Does the cost figure match my Claude Code bill?**
+It depends on how you use Claude Code:
+- **API key (pay-as-you-go)**: Yes, the cost figure matches your actual spend.
+- **Claude Pro / Max subscription**: No. Subscribers pay a flat monthly fee regardless of token usage. The cost figure shown here is "what it would have cost on the API" — useful as a reference for comparing usage patterns or evaluating whether the subscription is worth it, but it is not your actual bill.
+
+We're working on subscription-aware features (rate-limit forecasting, usage-balance insights) that are more directly useful to subscribers — see the roadmap.
 
 **Is there a Pro/cloud plan?**
 Not yet. The roadmap includes optional cloud sync for cross-device aggregation in a later phase. The local-first experience will always be free.

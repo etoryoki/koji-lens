@@ -93,6 +93,16 @@ export function renderTotalBlock(
   );
   lines.push(`  tools:          ${topEntries(total.tools, topN)}`);
   lines.push(`  models:         ${topEntries(total.models, topN)}`);
+  lines.push("");
+  lines.push(
+    "  note: Cost is API-rate equivalent (token × Anthropic API price).",
+  );
+  lines.push(
+    "        Actual billing depends on your plan — Claude Pro / Max",
+  );
+  lines.push(
+    "        subscribers pay a flat fee regardless of this number.",
+  );
   return lines.join("\n");
 }
 
