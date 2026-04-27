@@ -4,8 +4,8 @@
   "type": "module",
   "description": "Claude Code local usage analyzer CLI — koji-lens",
   "license": "MIT",
-  "author": "株式会社クインクエ (Koji)",
-  "homepage": "https://github.com/etoryoki/koji-lens#readme",
+  "author": "株式会社クインクエ (Koji) <support@kojihq.com>",
+  "homepage": "https://lens.kojihq.com",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/etoryoki/koji-lens.git",
@@ -16,10 +16,12 @@
   },
   "keywords": [
     "claude-code",
+    "ai",
+    "observability",
     "cli",
-    "usage",
-    "analytics",
-    "koji-lens"
+    "analyzer",
+    "cost-tracking",
+    "token-usage"
   ],
   "publishConfig": {
     "access": "public"

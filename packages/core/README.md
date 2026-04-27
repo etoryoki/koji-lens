@@ -1,8 +1,19 @@
 # @kojihq/core
 
-Core types and parsers for [koji-lens](https://github.com/etoryoki/koji-lens) — a Claude Code local usage analyzer.
+[![npm version](https://img.shields.io/npm/v/@kojihq/core.svg)](https://www.npmjs.com/package/@kojihq/core)
+[![npm downloads](https://img.shields.io/npm/dw/@kojihq/core.svg)](https://www.npmjs.com/package/@kojihq/core)
+[![license](https://img.shields.io/npm/l/@kojihq/core.svg)](https://github.com/etoryoki/koji-lens/blob/main/LICENSE)
+
+Core types and parsers for [koji-lens](https://lens.kojihq.com) — a Claude Code local usage analyzer.
 
 This package is re-exported by the [`@kojihq/lens`](https://www.npmjs.com/package/@kojihq/lens) CLI. You can depend on it directly if you want programmatic access to the parser, aggregation, and pricing logic.
+
+## Documentation
+
+- **LP**: <https://lens.kojihq.com>
+- **GitHub**: <https://github.com/etoryoki/koji-lens>
+- **npm**: <https://www.npmjs.com/package/@kojihq/core>
+- **Issue tracker**: <https://github.com/etoryoki/koji-lens/issues>
 
 ## Install
 
@@ -25,6 +36,13 @@ Requires Node.js >= 22.
 ## Status
 
 Beta. APIs may change before 1.0. See the [roadmap](https://github.com/etoryoki/koji-lens).
+
+## Changelog
+
+リリース履歴は [GitHub Releases](https://github.com/etoryoki/koji-lens/releases) を参照してください。
+
+主要なリリース:
+- `v0.1.0-beta.2` — 最初の安定 β（cache、`--no-cache`、pricing.json 外部化）
 
 ## License
 

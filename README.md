@@ -4,6 +4,8 @@
 [![license](https://img.shields.io/npm/l/@kojihq/lens.svg)](./LICENSE)
 [![node](https://img.shields.io/node/v/@kojihq/lens/beta.svg)](https://nodejs.org/)
 
+> **AI コーディングの使い方を、見える化する。** — [lens.kojihq.com](https://lens.kojihq.com)
+
 Your local Claude Code usage analyzer. No servers, no signup — reads your local JSONL logs and shows what you actually spent.
 
 > **Status**: β (public beta). Install with `@beta` tag. See [Known limitations](#known-limitations).

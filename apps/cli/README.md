@@ -1,10 +1,23 @@
 # @kojihq/lens
 
+[![npm version](https://img.shields.io/npm/v/@kojihq/lens.svg)](https://www.npmjs.com/package/@kojihq/lens)
+[![npm downloads](https://img.shields.io/npm/dw/@kojihq/lens.svg)](https://www.npmjs.com/package/@kojihq/lens)
+[![license](https://img.shields.io/npm/l/@kojihq/lens.svg)](https://github.com/etoryoki/koji-lens/blob/main/LICENSE)
+
+> **AI コーディングの使い方を、見える化する。** — [lens.kojihq.com](https://lens.kojihq.com)
+
 `koji-lens` — the CLI for Claude Code local usage analysis.
 
 Reads `~/.claude/projects/**/*.jsonl` directly on your machine, aggregates tokens / cost / tool usage, and ships with a local Web UI.
 
 **Status**: beta (0.1.0-beta). Features may change before 1.0.
+
+## Documentation
+
+- **LP**: <https://lens.kojihq.com>
+- **GitHub**: <https://github.com/etoryoki/koji-lens>
+- **npm**: <https://www.npmjs.com/package/@kojihq/lens>
+- **Issue tracker**: <https://github.com/etoryoki/koji-lens/issues>
 
 ## Install
 
@@ -85,6 +98,13 @@ Start the local Web UI (read-only dashboard).
 - No data is uploaded anywhere.
 - The SQLite cache lives at `~/.koji-lens/cache.db`.
 - The Web UI binds to `127.0.0.1` only.
+
+## Changelog
+
+リリース履歴は [GitHub Releases](https://github.com/etoryoki/koji-lens/releases) を参照してください。
+
+主要なリリース:
+- `v0.1.0-beta.2` — 最初の安定 β（cache、`--no-cache`、pricing.json 外部化）
 
 ## License
 
