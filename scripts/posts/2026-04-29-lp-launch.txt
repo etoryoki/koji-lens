@@ -1,0 +1,9 @@
+@kojihq/lens の LP を公開しました。
+
+「AI コーディングの使い方を、見える化する。」
+
+Claude Code のコスト・トークン・セッションをローカル完結で集計する CLI です。npm 1 コマンドで導入、β 公開中。
+
+Pro リリース通知の waitlist も受付中。
+
+https://lens.kojihq.com
