@@ -437,9 +437,9 @@ function Links() {
       desc: "README で使い方を確認",
     },
     {
-      label: "サポート",
-      href: `mailto:${SUPPORT_EMAIL}`,
-      desc: SUPPORT_EMAIL,
+      label: "お問い合わせ",
+      href: "/contact",
+      desc: "サポート窓口・料金や契約のご質問",
     },
   ];
   return (
@@ -482,15 +482,15 @@ function Footer() {
             <div className="mt-1">運営: 株式会社クインクエ</div>
             <div className="mt-1">
               お問い合わせ:{" "}
-              <a
-                href={`mailto:${SUPPORT_EMAIL}`}
-                className="text-blue-600 hover:underline"
-              >
+              <a href="/contact" className="text-blue-600 hover:underline">
                 {SUPPORT_EMAIL}
               </a>
             </div>
           </div>
           <div className="flex flex-wrap gap-x-5 gap-y-2 text-sm text-slate-500">
+            <a href="/contact" className="hover:text-slate-900">
+              お問い合わせ
+            </a>
             <a href="/legal/tos" className="hover:text-slate-900">
               利用規約（準備中）
             </a>

@@ -1,9 +1,8 @@
 import { NextResponse } from "next/server";
 import { Resend } from "resend";
+import { isValidEmail } from "../../../lib/validation";
 
 export const runtime = "nodejs";
-
-const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 type Body = {
   email?: unknown;
@@ -30,7 +29,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "invalid_body" }, { status: 400 });
   }
 
-  if (!email || email.length > 254 || !EMAIL_REGEX.test(email)) {
+  if (!isValidEmail(email)) {
     return NextResponse.json({ error: "invalid_email" }, { status: 400 });
   }
 
