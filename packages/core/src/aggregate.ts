@@ -16,6 +16,7 @@ export interface SessionAggregate {
   cacheReadTokens: number;
   cacheCreateTokens: number;
   costUsd: number;
+  costsByModel: Record<string, number>;
   tools: Record<string, number>;
 }
 
@@ -38,6 +39,7 @@ export function createEmptyAggregate(
     cacheReadTokens: 0,
     cacheCreateTokens: 0,
     costUsd: 0,
+    costsByModel: {},
     tools: {},
   };
 }
@@ -57,12 +59,16 @@ export function applyUsage(
   agg.outputTokens += outT;
   agg.cacheReadTokens += cr;
   agg.cacheCreateTokens += cc;
-  agg.costUsd +=
+  const cost =
     (inT * price.input +
       outT * price.output +
       cr * price.cacheRead +
       cc * price.cacheWrite) /
     1_000_000;
+  agg.costUsd += cost;
+  if (model) {
+    agg.costsByModel[model] = (agg.costsByModel[model] ?? 0) + cost;
+  }
 }
 
 function updateTimeRange(agg: SessionAggregate, ts: string | undefined) {
@@ -119,6 +125,7 @@ export interface TotalAggregate {
   cacheReadTokens: number;
   cacheCreateTokens: number;
   costUsd: number;
+  costsByModel: Record<string, number>;
   tools: Record<string, number>;
 }
 
@@ -135,6 +142,7 @@ export function sumAggregates(aggs: SessionAggregate[]): TotalAggregate {
     cacheReadTokens: 0,
     cacheCreateTokens: 0,
     costUsd: 0,
+    costsByModel: {},
     tools: {},
   };
   for (const a of aggs) {
@@ -149,6 +157,9 @@ export function sumAggregates(aggs: SessionAggregate[]): TotalAggregate {
     total.costUsd += a.costUsd;
     for (const [k, v] of Object.entries(a.models)) {
       total.models[k] = (total.models[k] ?? 0) + v;
+    }
+    for (const [k, v] of Object.entries(a.costsByModel)) {
+      total.costsByModel[k] = (total.costsByModel[k] ?? 0) + v;
     }
     for (const [k, v] of Object.entries(a.tools)) {
       total.tools[k] = (total.tools[k] ?? 0) + v;

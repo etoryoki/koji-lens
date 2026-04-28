@@ -31,6 +31,7 @@ export function upsertSessionCache(
     costUsd: agg.costUsd,
     modelsJson: JSON.stringify(agg.models),
     toolsJson: JSON.stringify(agg.tools),
+    costsByModelJson: JSON.stringify(agg.costsByModel),
   };
   db.insert(sessions)
     .values(row)
@@ -94,6 +95,7 @@ function rowToCachedAggregate(row: SessionRow): CachedSessionAggregate {
     costUsd: row.costUsd,
     models: JSON.parse(row.modelsJson),
     tools: JSON.parse(row.toolsJson),
+    costsByModel: JSON.parse(row.costsByModelJson),
     mtimeMs: row.mtimeMs,
     cachedAt: row.cachedAt,
   };

@@ -6,7 +6,7 @@ import {
 import { existsSync, mkdirSync } from "node:fs";
 import { homedir } from "node:os";
 import path from "node:path";
-import { CREATE_TABLES_SQL } from "./schema.js";
+import { CREATE_TABLES_SQL, CURRENT_SCHEMA_VERSION } from "./schema.js";
 
 export function defaultCacheDbPath(): string {
   return path.join(homedir(), ".koji-lens", "cache.db");
@@ -18,6 +18,34 @@ export interface OpenCacheDbResult {
   close: () => void;
 }
 
+function migrateIfNeeded(sqlite: Database.Database): void {
+  const currentVersion = sqlite.pragma("user_version", {
+    simple: true,
+  }) as number;
+
+  if (currentVersion >= CURRENT_SCHEMA_VERSION) return;
+
+  if (currentVersion === 0) {
+    const tableCount = sqlite
+      .prepare(
+        "SELECT COUNT(*) AS n FROM sqlite_master WHERE type='table' AND name='sessions'",
+      )
+      .get() as { n: number };
+    if (tableCount.n === 0) {
+      sqlite.exec(CREATE_TABLES_SQL);
+      sqlite.pragma(`user_version = ${CURRENT_SCHEMA_VERSION}`);
+      return;
+    }
+  }
+
+  if (currentVersion < 2) {
+    sqlite.exec("DROP TABLE IF EXISTS sessions");
+    sqlite.exec(CREATE_TABLES_SQL);
+  }
+
+  sqlite.pragma(`user_version = ${CURRENT_SCHEMA_VERSION}`);
+}
+
 export function openCacheDb(filePath?: string): OpenCacheDbResult {
   const resolved = filePath ?? defaultCacheDbPath();
   if (resolved !== ":memory:") {
@@ -26,7 +54,7 @@ export function openCacheDb(filePath?: string): OpenCacheDbResult {
   }
   const sqlite = new Database(resolved);
   sqlite.pragma("journal_mode = WAL");
-  sqlite.exec(CREATE_TABLES_SQL);
+  migrateIfNeeded(sqlite);
   const db = drizzle(sqlite);
   return {
     sqlite,

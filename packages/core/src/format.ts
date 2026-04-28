@@ -51,6 +51,17 @@ function topEntries(obj: Record<string, number>, n: number): string {
   );
 }
 
+function topCostEntries(obj: Record<string, number>, n: number): string {
+  return (
+    Object.entries(obj)
+      .filter(([, v]) => v > 0)
+      .sort((x, y) => y[1] - x[1])
+      .slice(0, n)
+      .map(([k, v]) => `${k}=${formatUsd(v)}`)
+      .join(", ") || "-"
+  );
+}
+
 export interface RenderOptions {
   usdJpy: number;
   topN?: number;
@@ -114,6 +125,9 @@ export function renderTotalBlock(
   );
   lines.push(
     `  cost:           ${formatUsd(total.costUsd)} (${formatJpy(total.costUsd, opts.usdJpy)})`,
+  );
+  lines.push(
+    `  cost by model:  ${topCostEntries(total.costsByModel, topN)}`,
   );
   lines.push(`  tools:          ${topEntries(total.tools, topN)}`);
   lines.push(`  models:         ${topEntries(total.models, topN)}`);

@@ -195,6 +195,12 @@ function Screenshots() {
               {" (¥135,488)"}
             </Line>
             <Line className="text-slate-300">
+              {"  cost by model: opus="}
+              <Cost>$865.4523</Cost>
+              {", sonnet="}
+              <Cost>$8.6639</Cost>
+            </Line>
+            <Line className="text-slate-300">
               {"  models:    opus×1562, sonnet×60"}
             </Line>
             <Line>{" "}</Line>

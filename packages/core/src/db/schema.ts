@@ -1,5 +1,7 @@
 import { sqliteTable, text, integer, real } from "drizzle-orm/sqlite-core";
 
+export const CURRENT_SCHEMA_VERSION = 2;
+
 export const sessions = sqliteTable("sessions", {
   sessionId: text("session_id").primaryKey(),
   filePath: text("file_path").notNull(),
@@ -18,6 +20,7 @@ export const sessions = sqliteTable("sessions", {
   costUsd: real("cost_usd").notNull().default(0),
   modelsJson: text("models_json").notNull().default("{}"),
   toolsJson: text("tools_json").notNull().default("{}"),
+  costsByModelJson: text("costs_by_model_json").notNull().default("{}"),
 });
 
 export const CREATE_TABLES_SQL = `
@@ -38,7 +41,8 @@ CREATE TABLE IF NOT EXISTS sessions (
   cache_create_tokens INTEGER NOT NULL DEFAULT 0,
   cost_usd REAL NOT NULL DEFAULT 0,
   models_json TEXT NOT NULL DEFAULT '{}',
-  tools_json TEXT NOT NULL DEFAULT '{}'
+  tools_json TEXT NOT NULL DEFAULT '{}',
+  costs_by_model_json TEXT NOT NULL DEFAULT '{}'
 );
 CREATE INDEX IF NOT EXISTS idx_sessions_ended_at ON sessions(ended_at);
 `;
