@@ -47,6 +47,24 @@ export default function DocsPage() {
         </div>
       </section>
 
+      <nav
+        aria-label="ドキュメント目次"
+        className="sticky top-0 z-10 border-b border-slate-200 bg-white/90 px-6 py-3 backdrop-blur md:hidden"
+      >
+        <ul className="-mx-2 flex gap-1 overflow-x-auto px-2 text-sm">
+          {SECTIONS.map((s) => (
+            <li key={s.id} className="shrink-0">
+              <a
+                href={`#${s.id}`}
+                className="inline-block rounded-md px-3 py-1.5 text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+              >
+                {s.label}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </nav>
+
       <div className="mx-auto flex w-full max-w-6xl gap-10 px-6 py-12">
         <aside className="hidden w-56 shrink-0 md:block">
           <nav className="sticky top-8 space-y-1 text-sm">

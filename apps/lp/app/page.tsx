@@ -555,7 +555,7 @@ const PLANS: Plan[] = [
   },
   {
     name: "Pro 月額",
-    price: "$8",
+    price: "$7",
     unit: "/月",
     features: [
       "クラウド同期（履歴無制限）",
@@ -567,9 +567,9 @@ const PLANS: Plan[] = [
   },
   {
     name: "Pro 年額",
-    price: "$80",
+    price: "$70",
     unit: "/年",
-    note: "月額比 16% 割引",
+    note: "月額比 約 17% 割引",
     features: ["Pro 月額のすべて", "年額契約で割安"],
   },
 ];
@@ -620,6 +620,13 @@ function Pricing() {
               （2026 年 5 月下旬リリース予定）
             </span>
           </p>
+          <a
+            href="#waitlist"
+            className="mt-5 inline-flex items-center gap-1.5 rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-500"
+          >
+            メール通知に登録する
+            <span aria-hidden>→</span>
+          </a>
         </div>
 
         <div className="grid gap-4 md:grid-cols-3">
@@ -672,7 +679,7 @@ function Waitlist() {
     process.env.RESEND_API_KEY && process.env.RESEND_AUDIENCE_ID_WAITLIST,
   );
   return (
-    <section className="border-b border-slate-200 bg-slate-50">
+    <section id="waitlist" className="border-b border-slate-200 bg-slate-50">
       <div className="mx-auto max-w-3xl px-6 py-20">
         <div className="rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
           <div className="mb-2 inline-flex items-center gap-1.5 rounded-full bg-blue-50 px-2.5 py-1 text-xs font-medium text-blue-700">
@@ -683,7 +690,7 @@ function Waitlist() {
             Pro プラン販売開始の通知を受け取る
           </h2>
           <p className="mt-3 text-pretty leading-relaxed text-slate-600">
-            Pro プラン（月額 $8 / 年額 $80）は 2026 年 5 月下旬に提供開始予定です。
+            Pro プラン（月額 $7 / 年額 $70）は 2026 年 5 月下旬に提供開始予定です。
             メールアドレスを登録しておくと、販売開始のタイミングで先行案内をお送りします。
           </p>
           <p className="mt-2 text-sm leading-relaxed text-slate-500">

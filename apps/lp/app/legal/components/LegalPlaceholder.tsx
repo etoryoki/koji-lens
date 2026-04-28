@@ -12,13 +12,15 @@ export function LegalPlaceholder({ title, dueBy }: Props) {
       <SiteHeader />
 
       <div className="mx-auto w-full max-w-3xl flex-1 px-6 py-16">
-        <div className="rounded-lg border border-amber-200 bg-amber-50 p-4">
+        <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
           <div className="flex items-start gap-3">
-            <span className="mt-0.5 inline-flex size-5 shrink-0 items-center justify-center rounded-full bg-amber-500 text-xs font-bold text-white">
-              !
+            <span className="mt-0.5 inline-flex size-5 shrink-0 items-center justify-center rounded-full bg-slate-400 text-xs font-bold text-white">
+              i
             </span>
-            <div className="text-sm leading-relaxed text-amber-900">
-              <span className="font-semibold">本ページはドラフト版です。</span>{" "}
+            <div className="text-sm leading-relaxed text-slate-700">
+              <span className="font-semibold text-slate-900">
+                本ページはドラフト版です。
+              </span>{" "}
               法務レビュー完了前の暫定掲載となります。正式版は {dueBy}{" "}
               までに公開予定です。
             </div>

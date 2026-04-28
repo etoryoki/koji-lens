@@ -68,6 +68,17 @@ export default async function Page() {
           </p>
         </header>
 
+        <aside
+          role="note"
+          aria-label="コスト表示に関するお知らせ"
+          className="rounded-md border border-amber-700/40 bg-amber-950/40 px-4 py-3 text-xs leading-relaxed text-amber-100"
+        >
+          <span className="font-semibold text-amber-200">参考値の表示について:</span>{" "}
+          本ダッシュボードのコスト数値は、トークン量 × Anthropic
+          API レートで算出した換算値です。Claude Pro / Max
+          ご利用の場合、実際のご請求はサブスクリプション料金のみ。表示金額は使用量の目安・モデル使い分けの判断材料としてご活用ください。
+        </aside>
+
         <section className="rounded-xl border border-slate-800 bg-slate-900/40 p-6 md:p-8">
           <p className="mb-1 text-xs uppercase tracking-widest text-slate-500">
             合計コスト
@@ -77,10 +88,6 @@ export default async function Page() {
           </p>
           <p className="mt-1 text-sm text-slate-400 tabular-nums">
             {formatJpy(totalCost, USD_JPY)}
-          </p>
-          <p className="mt-3 max-w-2xl text-xs leading-relaxed text-slate-500">
-            サブスクリプション（Claude Pro / Max）ご利用の場合、この金額は API
-            換算の参考値です。実際のご請求はサブスクリプション料金のみ。
           </p>
           <div className="mt-5 flex flex-wrap gap-x-6 gap-y-1 text-sm text-slate-400 tabular-nums">
             <span>{totalAssistant.toLocaleString()} ターン</span>
