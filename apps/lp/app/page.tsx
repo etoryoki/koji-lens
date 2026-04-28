@@ -16,6 +16,7 @@ export default function Page() {
       <Hero />
       <Problem />
       <Features />
+      <Comparison />
       <Screenshots />
       <InstallSteps />
       <Pricing />
@@ -51,6 +52,12 @@ function Hero() {
               </span>
               <code className="flex-1 overflow-x-auto whitespace-nowrap text-left font-mono text-sm text-slate-100">
                 {INSTALL_CMD}
+                <span
+                  aria-hidden="true"
+                  className="terminal-cursor ml-1 inline-block text-blue-400"
+                >
+                  ▍
+                </span>
               </code>
               <CopyButton value={INSTALL_CMD} />
             </div>
@@ -79,16 +86,26 @@ function Hero() {
 }
 
 function Problem() {
+  const questions: { num: string; text: string }[] = [
+    { num: "01", text: "Claude Code、月いくら使ってますか？" },
+    { num: "02", text: "何にトークンを使った日が高くついてましたか？" },
+    { num: "03", text: "どのツール呼び出しが時間を食っていますか？" },
+  ];
   return (
-    <section className="border-b border-slate-200">
+    <section className="border-b border-slate-800 bg-slate-950">
       <div className="mx-auto max-w-3xl px-6 py-20">
-        <ul className="space-y-3 text-lg text-slate-700 md:text-xl">
-          <li>Claude Code、月いくら使ってますか？</li>
-          <li>何にトークンを使った日が高くついてましたか？</li>
-          <li>どのツール呼び出しが時間を食っていますか？</li>
+        <ul className="divide-y divide-slate-800">
+          {questions.map(({ num, text }) => (
+            <li key={num} className="flex items-baseline gap-6 py-6">
+              <span className="font-mono text-sm tabular-nums text-slate-600">
+                {num}
+              </span>
+              <span className="text-lg text-slate-200 md:text-xl">{text}</span>
+            </li>
+          ))}
         </ul>
-        <p className="mt-8 text-pretty leading-relaxed text-slate-600">
-          <span className="font-semibold text-slate-900">koji-lens</span>{" "}
+        <p className="mt-8 text-pretty leading-relaxed text-slate-400">
+          <span className="font-semibold text-white">koji-lens</span>{" "}
           は、ローカルに保存された Claude Code のセッションログを解析し、
           あなたの AI コーディングの使い方を 1 コマンドで可視化します。
         </p>
@@ -142,7 +159,7 @@ function Features() {
           {FEATURES.map((f) => (
             <div
               key={f.title}
-              className="rounded-xl border border-slate-200 bg-white p-6"
+              className="rounded-xl border border-slate-200 bg-white p-6 transition hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-md"
             >
               <div className="mb-4 inline-flex size-10 items-center justify-center rounded-lg bg-slate-900 text-blue-400">
                 <f.icon className="size-5" />
@@ -161,6 +178,108 @@ function Features() {
   );
 }
 
+function Comparison() {
+  const rows: Array<{
+    label: string;
+    official: string;
+    kojilens: string;
+  }> = [
+    {
+      label: "期間集計",
+      official: "24h / 週単位（固定）",
+      kojilens: "--since で 24h / 7d / 30d / 任意 ISO 日付",
+    },
+    {
+      label: "プロジェクト / モデル / ツール / subagent 横断",
+      official: "✗",
+      kojilens: "✓（パス・モデル・ツール名・親子構造で集計）",
+    },
+    {
+      label: "サブスク利用者のコスト見え方",
+      official: "利用状況のみ、コスト数値なし",
+      kojilens: "API 換算値で参考表示（注記付き）",
+    },
+    {
+      label: "ローカル完結（社外送信なし）",
+      official: "Console / dashboard はクラウド経由",
+      kojilens: "✓（JSONL ローカル解析、Free 永続）",
+    },
+    {
+      label: "JSON エクスポート / シェル連携",
+      official: "✗",
+      kojilens: "--format json / --summary-only",
+    },
+  ];
+  return (
+    <section className="border-b border-slate-200 bg-slate-50">
+      <div className="mx-auto max-w-5xl px-6 py-20">
+        <div className="mx-auto mb-12 max-w-2xl text-center">
+          <h2 className="text-3xl font-semibold tracking-tight text-slate-900">
+            公式の usage と、何が違うか。
+          </h2>
+          <p className="mt-3 text-slate-600">
+            Claude Code の{" "}
+            <code className="rounded bg-slate-200 px-1.5 py-0.5 font-mono text-xs">
+              /usage
+            </code>{" "}
+            コマンドと Anthropic Console との比較。
+          </p>
+        </div>
+
+        <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm">
+          <table className="w-full text-sm">
+            <thead className="bg-slate-50 text-slate-600">
+              <tr>
+                <th
+                  scope="col"
+                  className="px-5 py-3 text-left font-medium"
+                >
+                  項目
+                </th>
+                <th
+                  scope="col"
+                  className="px-5 py-3 text-left font-medium"
+                >
+                  公式（<code className="font-mono text-xs">/usage</code> /
+                  Anthropic Console）
+                </th>
+                <th
+                  scope="col"
+                  className="px-5 py-3 text-left font-medium text-blue-700"
+                >
+                  koji-lens
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map((row) => (
+                <tr key={row.label} className="border-t border-slate-100">
+                  <td className="px-5 py-3 align-top font-medium text-slate-900">
+                    {row.label}
+                  </td>
+                  <td className="px-5 py-3 align-top text-slate-600">
+                    {row.official}
+                  </td>
+                  <td className="px-5 py-3 align-top text-slate-900">
+                    {row.kojilens}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        <p className="mt-6 text-center text-xs text-slate-500">
+          公式の{" "}
+          <code className="font-mono text-[11px]">/usage</code>{" "}
+          は v2.1.105 以降搭載。Anthropic Console は API
+          ユーザー向け請求確定値を月次で表示。
+        </p>
+      </div>
+    </section>
+  );
+}
+
 function Screenshots() {
   return (
     <section className="border-b border-slate-200">
@@ -170,7 +289,7 @@ function Screenshots() {
             実際に動かすと、こう見える。
           </h2>
           <p className="mt-3 text-slate-600">
-            インストールしてすぐ、こんな出力が得られます。
+            インストールしてすぐ、こんな出力が得られます。コスト表示は API 換算で、サブスクリプション利用者は使い方の可視化として活用できます。
           </p>
         </div>
 
@@ -247,40 +366,37 @@ function Screenshots() {
             <Line>{"$ koji-lens sessions --since 24h --limit 5"}</Line>
             <Line>{" "}</Line>
             <Line className="text-slate-400">
-              {"055a662d-...  duration=8m 58s     "}
-              <Cost>cost=$9.6253</Cost>
+              {"055a662d-...   8m 58s      "}
+              <Cost>$9.6253</Cost>
             </Line>
             <Line className="text-slate-400">
-              {"44c29745-...  duration=1h 7m 33s  "}
-              <Cost>cost=$32.7546</Cost>
+              {"44c29745-...   1h 7m 33s   "}
+              <Cost>$32.7546</Cost>
             </Line>
             <Line className="text-slate-300">
-              {"28cf16fa-...  duration=7h 38m 22s "}
-              <Cost>cost=$420.6613</Cost>
-              <span className="text-amber-300">{"  ← 突出セッション"}</span>
+              {"28cf16fa-...   7h 38m 22s  "}
+              <Cost>$420.6613</Cost>
+              <span className="text-amber-300">{"  ← 突出"}</span>
             </Line>
             <Line className="text-slate-400">
-              {"agent-a94b...  duration=1m 9s     "}
-              <Cost>cost=$0.2880</Cost>
+              {"agent-a94b...  1m 9s       "}
+              <Cost>$0.2880</Cost>
               <span className="text-slate-500">
-                {"  ↳ subagent of 9b630739"}
+                {"  ↳ subagent 9b630739"}
               </span>
             </Line>
             <Line className="text-slate-400">
-              {"22a919c7-...  duration=12m 4s     "}
-              <Cost>cost=$20.7381</Cost>
+              {"22a919c7-...   12m 4s      "}
+              <Cost>$20.7381</Cost>
             </Line>
-            <Line className="text-slate-500">
-              {"... (10 more; use --limit to show more)"}
-            </Line>
-            <Line>{" "}</Line>
+            <Line className="text-slate-500">{"... (10 more)"}</Line>
             <Line>{" "}</Line>
             <Line className="text-slate-500">
-              {"# 同じデータをチャートで見るなら:"}
+              {"# チャートで見るなら:"}
             </Line>
             <Line>{"$ koji-lens serve"}</Line>
             <Line className="text-slate-400">
-              {"  Server running at http://localhost:3210"}
+              {"  → http://localhost:3210"}
             </Line>
           </TerminalPane>
         </div>
@@ -294,7 +410,7 @@ function Screenshots() {
               <code className="rounded bg-slate-100 px-1.5 py-0.5 font-mono text-xs">
                 koji-lens serve
               </code>{" "}
-              でローカルに Web ダッシュボードを起動。チャートと一覧で全体像を一画面に。
+              でローカルに Web ダッシュボードを起動。チャートと集計数値で全体像を一画面に。
             </p>
           </div>
 
@@ -345,7 +461,7 @@ function TerminalPane({
           {title}
         </span>
       </div>
-      <pre className="overflow-x-auto p-5 font-mono text-xs leading-relaxed text-slate-200 md:text-sm">
+      <pre className="overflow-x-auto whitespace-pre-wrap p-5 font-mono text-xs leading-relaxed text-slate-200 md:text-sm">
         <code>{children}</code>
       </pre>
     </div>
