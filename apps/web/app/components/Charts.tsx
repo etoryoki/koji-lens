@@ -15,14 +15,11 @@ import {
 } from "recharts";
 
 const COLORS = [
-  "#60a5fa",
-  "#34d399",
-  "#fbbf24",
-  "#f87171",
-  "#a78bfa",
-  "#f472b6",
-  "#22d3ee",
-  "#fb923c",
+  "#60a5fa", // blue-400  — メイン
+  "#93c5fd", // blue-300  — サブ
+  "#818cf8", // indigo-400
+  "#a78bfa", // violet-400
+  "#38bdf8", // sky-400
 ];
 
 const TOOLTIP_STYLE = {
@@ -116,11 +113,11 @@ export function TokensStackedBar({
         <Bar
           dataKey="cacheCreate"
           stackId="a"
-          fill="#a78bfa"
+          fill="#818cf8"
           name="cache create"
         />
-        <Bar dataKey="output" stackId="a" fill="#34d399" name="output" />
-        <Bar dataKey="input" stackId="a" fill="#fbbf24" name="input" />
+        <Bar dataKey="output" stackId="a" fill="#38bdf8" name="output" />
+        <Bar dataKey="input" stackId="a" fill="#94a3b8" name="input" />
       </BarChart>
     </ResponsiveContainer>
   );

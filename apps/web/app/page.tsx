@@ -53,28 +53,49 @@ export default async function Page() {
 
   return (
     <main className="min-h-screen px-6 py-10">
-      <div className="max-w-6xl mx-auto space-y-10">
-        <header className="space-y-2">
-          <div className="text-xs uppercase tracking-widest text-sky-400">
-            koji-lens
+      <div className="mx-auto max-w-6xl space-y-10">
+        <header className="flex items-center justify-between" role="banner">
+          <div className="flex items-center gap-2">
+            <span className="inline-flex size-7 items-center justify-center rounded-md bg-slate-800 text-sm font-bold tracking-tight text-white">
+              K
+            </span>
+            <span className="font-semibold tracking-tight text-white">
+              koji-lens
+            </span>
           </div>
-          <h1 className="text-3xl font-semibold">
-            Claude Code Session Dashboard
-          </h1>
-          <p className="text-sm text-slate-400">
-            {aggs.length} session(s) (latest 30) · total duration{" "}
-            {formatDuration(totalDurationMs)} · cost {formatUsd(totalCost)} (
-            {formatJpy(totalCost, USD_JPY)})
+          <p className="text-xs text-slate-500">
+            直近 {aggs.length} セッション
           </p>
         </header>
 
-        <section className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <section className="rounded-xl border border-slate-800 bg-slate-900/40 p-6 md:p-8">
+          <p className="mb-1 text-xs uppercase tracking-widest text-slate-500">
+            合計コスト
+          </p>
+          <p className="text-4xl font-semibold tracking-tight text-white tabular-nums md:text-5xl">
+            {formatUsd(totalCost)}
+          </p>
+          <p className="mt-1 text-sm text-slate-400 tabular-nums">
+            {formatJpy(totalCost, USD_JPY)}
+          </p>
+          <p className="mt-3 max-w-2xl text-xs leading-relaxed text-slate-500">
+            サブスクリプション（Claude Pro / Max）ご利用の場合、この金額は API
+            換算の参考値です。実際のご請求はサブスクリプション料金のみ。
+          </p>
+          <div className="mt-5 flex flex-wrap gap-x-6 gap-y-1 text-sm text-slate-400 tabular-nums">
+            <span>{totalAssistant.toLocaleString()} ターン</span>
+            <span>{formatDuration(totalDurationMs)}</span>
+            <span>
+              {((totalInput + totalOutput) / 1_000_000).toFixed(1)}M トークン
+            </span>
+          </div>
+        </section>
+
+        <section className="grid grid-cols-2 gap-4 md:grid-cols-3">
           <Card
-            label="Total cost"
-            value={formatUsd(totalCost)}
-            sub={formatJpy(totalCost, USD_JPY)}
+            label="Assistant turns"
+            value={totalAssistant.toLocaleString()}
           />
-          <Card label="Assistant turns" value={String(totalAssistant)} />
           <Card
             label="Input + output"
             value={(totalInput + totalOutput).toLocaleString()}
@@ -87,27 +108,37 @@ export default async function Page() {
           />
         </section>
 
-        <section className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <Panel title="Cost per session">
+        <section className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+          <Panel title="セッション別コスト" className="lg:col-span-2">
             <CostBarChart data={costChart} />
           </Panel>
-          <Panel title="Tool usage (top 10)">
+          <Panel title="ツール使用（上位 10）">
             <ToolPie data={toolPie} />
           </Panel>
-          <Panel title="Tokens per session (stacked)" className="lg:col-span-2">
+        </section>
+
+        <section>
+          <Panel title="セッション別トークン内訳">
             <TokensStackedBar data={tokensChart} />
           </Panel>
         </section>
 
         <section>
-          <h2 className="text-xl font-semibold mb-3">Sessions</h2>
+          <h2 className="mb-3 text-sm font-medium uppercase tracking-widest text-slate-400">
+            セッション一覧
+          </h2>
           <SessionTable sessions={aggs} />
         </section>
 
-        <footer className="text-xs text-slate-500 pt-8 border-t border-slate-800">
-          koji-lens · reads{" "}
-          <code className="text-slate-300">~/.claude/projects/**/*.jsonl</code>{" "}
-          directly · prices are provisional
+        <footer className="flex flex-col gap-1 border-t border-slate-800 pt-6 text-xs text-slate-500 md:flex-row md:items-center md:justify-between">
+          <span>
+            koji-lens ·{" "}
+            <code className="text-slate-400">
+              ~/.claude/projects/**/*.jsonl
+            </code>{" "}
+            をローカルで解析
+          </span>
+          <span>コストは Anthropic 公式レートの計算値</span>
         </footer>
       </div>
     </main>
@@ -124,12 +155,16 @@ function Card({
   sub?: string;
 }) {
   return (
-    <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-4">
-      <div className="text-[11px] uppercase tracking-widest text-slate-500">
+    <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
+      <div className="text-[11px] uppercase tracking-widest text-slate-400">
         {label}
       </div>
-      <div className="text-2xl font-semibold mt-1">{value}</div>
-      {sub ? <div className="text-xs text-slate-400 mt-0.5">{sub}</div> : null}
+      <div className="mt-1 text-2xl font-semibold tabular-nums text-white">
+        {value}
+      </div>
+      {sub ? (
+        <div className="mt-0.5 text-xs text-slate-400">{sub}</div>
+      ) : null}
     </div>
   );
 }
@@ -145,9 +180,9 @@ function Panel({
 }) {
   return (
     <div
-      className={`bg-slate-900/60 border border-slate-800 rounded-xl p-4 ${className ?? ""}`}
+      className={`rounded-xl border border-slate-800 bg-slate-900/60 p-4 ${className ?? ""}`}
     >
-      <div className="text-sm font-medium text-slate-200 mb-3">{title}</div>
+      <div className="mb-3 text-sm font-medium text-slate-200">{title}</div>
       {children}
     </div>
   );
@@ -159,12 +194,24 @@ function SessionTable({ sessions }: { sessions: SessionAggregate[] }) {
       <table className="w-full text-sm">
         <thead className="bg-slate-900 text-slate-300">
           <tr>
-            <th className="text-left px-4 py-2 font-medium">Session</th>
-            <th className="text-left px-4 py-2 font-medium">Started</th>
-            <th className="text-right px-4 py-2 font-medium">Duration</th>
-            <th className="text-right px-4 py-2 font-medium">Turns</th>
-            <th className="text-right px-4 py-2 font-medium">Cost</th>
-            <th className="text-left px-4 py-2 font-medium">Top tools</th>
+            <th scope="col" className="px-4 py-2 text-left font-medium">
+              Session
+            </th>
+            <th scope="col" className="px-4 py-2 text-left font-medium">
+              Started
+            </th>
+            <th scope="col" className="px-4 py-2 text-right font-medium">
+              Duration
+            </th>
+            <th scope="col" className="px-4 py-2 text-right font-medium">
+              Turns
+            </th>
+            <th scope="col" className="px-4 py-2 text-right font-medium">
+              Cost
+            </th>
+            <th scope="col" className="px-4 py-2 text-left font-medium">
+              Top tools
+            </th>
           </tr>
         </thead>
         <tbody>
@@ -176,20 +223,22 @@ function SessionTable({ sessions }: { sessions: SessionAggregate[] }) {
               .join(", ");
             return (
               <tr key={a.sessionId} className="border-t border-slate-800">
-                <td className="px-4 py-2 font-mono text-xs text-sky-300">
+                <td className="px-4 py-2 font-mono text-xs text-blue-400">
                   {a.sessionId.slice(0, 8)}
                 </td>
-                <td className="px-4 py-2 text-slate-400">
+                <td className="px-4 py-2 text-slate-400 tabular-nums">
                   {a.startedAt ?? "-"}
                 </td>
-                <td className="px-4 py-2 text-right">
+                <td className="px-4 py-2 text-right tabular-nums">
                   {formatDuration(a.durationMs)}
                 </td>
-                <td className="px-4 py-2 text-right">{a.assistantTurns}</td>
-                <td className="px-4 py-2 text-right font-mono">
+                <td className="px-4 py-2 text-right tabular-nums">
+                  {a.assistantTurns}
+                </td>
+                <td className="px-4 py-2 text-right font-mono tabular-nums">
                   {formatUsd(a.costUsd)}
                 </td>
-                <td className="px-4 py-2 text-slate-300 text-xs">
+                <td className="px-4 py-2 text-xs text-slate-300">
                   {topTools || "-"}
                 </td>
               </tr>
