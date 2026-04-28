@@ -205,6 +205,11 @@ function Comparison() {
       kojilens: "✓（JSONL ローカル解析、Free 永続）",
     },
     {
+      label: "ccusage との関係",
+      official: "—",
+      kojilens: "同じ JSONL を読む設計。ccusage ユーザーはインポート不要、入れた日から全履歴が見えます",
+    },
+    {
       label: "JSON エクスポート / シェル連携",
       official: "✗",
       kojilens: "--format json / --summary-only",
@@ -273,7 +278,16 @@ function Comparison() {
           公式の{" "}
           <code className="font-mono text-[11px]">/usage</code>{" "}
           は v2.1.105 以降搭載。Anthropic Console は API
-          ユーザー向け請求確定値を月次で表示。
+          ユーザー向け請求確定値を月次で表示。{" "}
+          <a
+            href="https://github.com/ryoppippi/ccusage"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline underline-offset-2 hover:text-slate-700"
+          >
+            ccusage
+          </a>{" "}
+          はトークン・コスト集計に特化した OSS（13k+ スター）。koji-lens は ccusage と同じ JSONL を読むため、データ移行なしで併用できます。
         </p>
       </div>
     </section>
