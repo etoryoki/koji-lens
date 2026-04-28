@@ -183,6 +183,27 @@ function Screenshots() {
             <Line className="text-slate-600">
               ============================================================
             </Line>
+            <Line className="font-semibold text-slate-100">TOTAL</Line>
+            <Line className="text-slate-300">{"  sessions:  15"}</Line>
+            <Line className="text-slate-300">{"  duration:  16h 24m 10s"}</Line>
+            <Line className="text-slate-300">
+              {"  cost:      "}
+              <Cost>$874.1162</Cost>
+              {" (¥135,488)"}
+            </Line>
+            <Line className="text-slate-300">
+              {"  models:    opus×1562, sonnet×60"}
+            </Line>
+            <Line>{" "}</Line>
+            <Line className="text-slate-500">
+              {"  note: Cost is API-rate equivalent."}
+            </Line>
+            <Line className="text-slate-500">
+              {"        Subscribers pay a flat fee regardless."}
+            </Line>
+            <Line className="text-slate-600">
+              ============================================================
+            </Line>
             <Line>{" "}</Line>
             <Line className="text-slate-300">
               Session 055a662d-f09c-4541-...
@@ -211,28 +232,6 @@ function Screenshots() {
             </Line>
             <Line>{" "}</Line>
             <Line className="text-slate-500">{"(以下 13 セッション省略)"}</Line>
-            <Line>{" "}</Line>
-            <Line className="text-slate-600">
-              ============================================================
-            </Line>
-            <Line className="font-semibold text-slate-100">TOTAL</Line>
-            <Line className="text-slate-300">{"  sessions:  15"}</Line>
-            <Line className="text-slate-300">{"  duration:  16h 24m 10s"}</Line>
-            <Line className="text-slate-300">
-              {"  cost:      "}
-              <Cost>$874.1162</Cost>
-              {" (¥135,488)"}
-            </Line>
-            <Line className="text-slate-300">
-              {"  models:    opus×1562, sonnet×60"}
-            </Line>
-            <Line>{" "}</Line>
-            <Line className="text-slate-500">
-              {"  note: Cost is API-rate equivalent."}
-            </Line>
-            <Line className="text-slate-500">
-              {"        Subscribers pay a flat fee regardless."}
-            </Line>
           </TerminalPane>
 
           <TerminalPane title="koji-lens sessions --since 24h --limit 5">

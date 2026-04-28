@@ -16,6 +16,7 @@ export interface SummaryOptions {
   dir?: string;
   usdJpy?: string;
   cache: boolean;
+  summaryOnly?: boolean;
 }
 
 const DEFAULT_USD_JPY = 155;
@@ -44,13 +45,20 @@ export async function summaryCommand(opts: SummaryOptions): Promise<void> {
     : cfg.usdJpy ?? DEFAULT_USD_JPY;
 
   if (opts.format === "json") {
-    const payload = {
-      generatedAt: new Date().toISOString(),
-      since: since.toISOString(),
-      dir,
-      total,
-      sessions: active,
-    };
+    const payload = opts.summaryOnly
+      ? {
+          generatedAt: new Date().toISOString(),
+          since: since.toISOString(),
+          dir,
+          total,
+        }
+      : {
+          generatedAt: new Date().toISOString(),
+          since: since.toISOString(),
+          dir,
+          total,
+          sessions: active,
+        };
     process.stdout.write(JSON.stringify(payload, null, 2) + "\n");
     return;
   }
@@ -61,5 +69,10 @@ export async function summaryCommand(opts: SummaryOptions): Promise<void> {
   }
 
   active.sort((a, b) => (b.endedAt ?? "").localeCompare(a.endedAt ?? ""));
-  process.stdout.write(renderSummary(active, total, { usdJpy: rate }) + "\n");
+  process.stdout.write(
+    renderSummary(active, total, {
+      usdJpy: rate,
+      summaryOnly: opts.summaryOnly,
+    }) + "\n",
+  );
 }

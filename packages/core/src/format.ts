@@ -106,21 +106,27 @@ export function renderTotalBlock(
   return lines.join("\n");
 }
 
+export interface RenderSummaryOptions extends RenderOptions {
+  summaryOnly?: boolean;
+}
+
 export function renderSummary(
   aggs: SessionAggregate[],
   total: TotalAggregate,
-  opts: RenderOptions,
+  opts: RenderSummaryOptions,
 ): string {
   const border = "=".repeat(60);
   const parts: string[] = [];
   parts.push(`koji-lens — analyzed ${aggs.length} session(s)`);
   parts.push(border);
+  parts.push(renderTotalBlock(total, opts));
+  parts.push(border);
+  if (opts.summaryOnly) {
+    return parts.join("\n");
+  }
   for (const a of aggs) {
     parts.push("");
     parts.push(renderSessionBlock(a, opts));
   }
-  parts.push("");
-  parts.push(border);
-  parts.push(renderTotalBlock(total, opts));
   return parts.join("\n");
 }

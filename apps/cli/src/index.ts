@@ -26,6 +26,7 @@ program
   .option("--dir <path>", "Claude Code log directory (default: config.logDir or ~/.claude/projects)")
   .option("--usd-jpy <rate>", "USD -> JPY conversion rate (default: config.usdJpy or 155)")
   .option("--no-cache", "Disable SQLite cache (~/.koji-lens/cache.db)")
+  .option("--summary-only", "Show TOTAL only (skip per-session details)")
   .action(async (opts) => {
     try {
       await summaryCommand(opts);
