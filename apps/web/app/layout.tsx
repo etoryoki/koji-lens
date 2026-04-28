@@ -11,7 +11,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "koji-lens — Local dashboard",
+  title: "koji-lens — ローカルダッシュボード",
   description:
     "Claude Code のセッションログをローカルで集計するダッシュボード。",
 };

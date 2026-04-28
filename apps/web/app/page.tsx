@@ -93,18 +93,18 @@ export default async function Page() {
 
         <section className="grid grid-cols-2 gap-4 md:grid-cols-3">
           <Card
-            label="Assistant turns"
+            label="アシスタントターン"
             value={totalAssistant.toLocaleString()}
           />
           <Card
-            label="Input + output"
+            label="入出力トークン"
             value={(totalInput + totalOutput).toLocaleString()}
-            sub="tokens"
+            sub="トークン"
           />
           <Card
-            label="Cache read / create"
+            label="キャッシュ 読み / 作成"
             value={`${(totalCacheRead / 1_000_000).toFixed(2)}M / ${(totalCacheCreate / 1_000_000).toFixed(2)}M`}
-            sub="tokens"
+            sub="トークン"
           />
         </section>
 
@@ -195,22 +195,22 @@ function SessionTable({ sessions }: { sessions: SessionAggregate[] }) {
         <thead className="bg-slate-900 text-slate-300">
           <tr>
             <th scope="col" className="px-4 py-2 text-left font-medium">
-              Session
+              セッション ID
             </th>
             <th scope="col" className="px-4 py-2 text-left font-medium">
-              Started
+              開始
             </th>
             <th scope="col" className="px-4 py-2 text-right font-medium">
-              Duration
+              経過時間
             </th>
             <th scope="col" className="px-4 py-2 text-right font-medium">
-              Turns
+              ターン
             </th>
             <th scope="col" className="px-4 py-2 text-right font-medium">
-              Cost
+              コスト
             </th>
             <th scope="col" className="px-4 py-2 text-left font-medium">
-              Top tools
+              ツール上位
             </th>
           </tr>
         </thead>

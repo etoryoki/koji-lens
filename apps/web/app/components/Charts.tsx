@@ -45,7 +45,7 @@ export function CostBarChart({
         />
         <Tooltip
           contentStyle={TOOLTIP_STYLE}
-          formatter={(v) => [`$${Number(v).toFixed(4)}`, "cost"]}
+          formatter={(v) => [`$${Number(v).toFixed(4)}`, "コスト"]}
         />
         <Bar dataKey="cost" fill="#60a5fa" radius={[6, 6, 0, 0]} />
       </BarChart>
@@ -75,7 +75,7 @@ export function ToolPie({
         </Pie>
         <Tooltip
           contentStyle={TOOLTIP_STYLE}
-          formatter={(v) => [String(v), "calls"]}
+          formatter={(v) => [String(v), "使用回数"]}
         />
         <Legend wrapperStyle={{ color: "#e5e7eb", fontSize: 12 }} />
       </PieChart>
@@ -109,15 +109,20 @@ export function TokensStackedBar({
           formatter={(v) => Number(v).toLocaleString()}
         />
         <Legend wrapperStyle={{ color: "#e5e7eb", fontSize: 12 }} />
-        <Bar dataKey="cacheRead" stackId="a" fill="#60a5fa" name="cache read" />
+        <Bar
+          dataKey="cacheRead"
+          stackId="a"
+          fill="#60a5fa"
+          name="キャッシュ読み"
+        />
         <Bar
           dataKey="cacheCreate"
           stackId="a"
           fill="#818cf8"
-          name="cache create"
+          name="キャッシュ作成"
         />
-        <Bar dataKey="output" stackId="a" fill="#38bdf8" name="output" />
-        <Bar dataKey="input" stackId="a" fill="#94a3b8" name="input" />
+        <Bar dataKey="output" stackId="a" fill="#38bdf8" name="出力" />
+        <Bar dataKey="input" stackId="a" fill="#94a3b8" name="入力" />
       </BarChart>
     </ResponsiveContainer>
   );
