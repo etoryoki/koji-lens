@@ -21,7 +21,11 @@ program
 program
   .command("summary")
   .description("Show usage summary for the given period")
-  .option("--since <expr>", 'Period start: "24h", "7d", "2w", or ISO date', "24h")
+  .option(
+    "--since <expr>",
+    'Period start: "Nh" / "Nd" / "Nw" or ISO date (months/years not supported — use ISO date for longer ranges)',
+    "24h",
+  )
   .option("--format <format>", "Output format: text | json", "text")
   .option("--dir <path>", "Claude Code log directory (default: config.logDir or ~/.claude/projects)")
   .option("--usd-jpy <rate>", "USD -> JPY conversion rate (default: config.usdJpy or 155)")
@@ -39,8 +43,12 @@ program
 program
   .command("sessions")
   .description("List recent sessions")
-  .option("--since <expr>", 'Period start: "24h", "7d", "2w", or ISO date', "7d")
-  .option("--limit <n>", "Max sessions to display", "20")
+  .option(
+    "--since <expr>",
+    'Period start: "Nh" / "Nd" / "Nw" or ISO date (months/years not supported — use ISO date for longer ranges)',
+    "7d",
+  )
+  .option("--limit <n>", "Max sessions to display", "10")
   .option("--dir <path>", "Claude Code log directory")
   .option("--no-cache", "Disable SQLite cache (~/.koji-lens/cache.db)")
   .action(async (opts) => {

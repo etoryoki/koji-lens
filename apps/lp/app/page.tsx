@@ -180,6 +180,9 @@ function Screenshots() {
             <Line className="text-slate-400">
               koji-lens — analyzed 15 session(s)
             </Line>
+            <Line className="text-slate-400">
+              period: 2026-04-27 15:00 → 2026-04-28 15:00 local (last 24h)
+            </Line>
             <Line className="text-slate-600">
               ============================================================
             </Line>
@@ -253,7 +256,9 @@ function Screenshots() {
             <Line className="text-slate-400">
               {"agent-a94b...  duration=1m 9s     "}
               <Cost>cost=$0.2880</Cost>
-              <span className="text-slate-500">{"  (subagent)"}</span>
+              <span className="text-slate-500">
+                {"  ↳ subagent of 9b630739"}
+              </span>
             </Line>
             <Line className="text-slate-400">
               {"22a919c7-...  duration=12m 4s     "}

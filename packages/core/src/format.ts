@@ -13,6 +13,22 @@ export function formatDuration(ms: number): string {
   return parts.join(" ");
 }
 
+export function formatLocalDateTime(iso: string): string {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return iso;
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const dd = String(d.getDate()).padStart(2, "0");
+  const hh = String(d.getHours()).padStart(2, "0");
+  const min = String(d.getMinutes()).padStart(2, "0");
+  return `${yyyy}-${mm}-${dd} ${hh}:${min}`;
+}
+
+export function extractParentFromPath(filePath: string): string | null {
+  const m = filePath.match(/[\\/]([^\\/]+)[\\/]subagents[\\/][^\\/]+\.jsonl$/);
+  return m ? m[1] : null;
+}
+
 export function formatUsd(v: number): string {
   return `$${v.toFixed(4)}`;
 }
@@ -47,9 +63,17 @@ export function renderSessionBlock(
   const topN = opts.topN ?? 10;
   const lines: string[] = [];
   lines.push(`Session ${a.sessionId}`);
+  const parent = extractParentFromPath(a.filePath);
+  if (parent) lines.push(`  parent:   ${parent} (this is a subagent session)`);
   lines.push(`  file:     ${a.filePath}`);
-  lines.push(`  started:  ${a.startedAt ?? "-"}`);
-  lines.push(`  ended:    ${a.endedAt ?? "-"}`);
+  const startedLocal = a.startedAt
+    ? ` (${formatLocalDateTime(a.startedAt)} local)`
+    : "";
+  const endedLocal = a.endedAt
+    ? ` (${formatLocalDateTime(a.endedAt)} local)`
+    : "";
+  lines.push(`  started:  ${a.startedAt ?? "-"}${startedLocal}`);
+  lines.push(`  ended:    ${a.endedAt ?? "-"}${endedLocal}`);
   lines.push(`  duration: ${formatDuration(a.durationMs)}`);
   lines.push(
     `  turns:    assistant=${a.assistantTurns}, user=${a.userTurns}, sidechain=${a.sidechainCount}`,
@@ -108,6 +132,19 @@ export function renderTotalBlock(
 
 export interface RenderSummaryOptions extends RenderOptions {
   summaryOnly?: boolean;
+  since?: Date;
+  until?: Date;
+  sinceLabel?: string;
+}
+
+function buildPeriodHeader(opts: RenderSummaryOptions): string | null {
+  if (!opts.since || !opts.until) return null;
+  const fromLocal = formatLocalDateTime(opts.since.toISOString());
+  const toLocal = formatLocalDateTime(opts.until.toISOString());
+  const isShorthand =
+    opts.sinceLabel && /^\d+[hdw]$/.test(opts.sinceLabel.trim());
+  const tail = isShorthand ? ` (last ${opts.sinceLabel})` : "";
+  return `period: ${fromLocal} → ${toLocal} local${tail}`;
 }
 
 export function renderSummary(
@@ -118,6 +155,8 @@ export function renderSummary(
   const border = "=".repeat(60);
   const parts: string[] = [];
   parts.push(`koji-lens — analyzed ${aggs.length} session(s)`);
+  const periodHeader = buildPeriodHeader(opts);
+  if (periodHeader) parts.push(periodHeader);
   parts.push(border);
   parts.push(renderTotalBlock(total, opts));
   parts.push(border);

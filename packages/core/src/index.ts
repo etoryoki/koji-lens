@@ -45,13 +45,16 @@ export {
 
 export {
   formatDuration,
+  formatLocalDateTime,
   formatUsd,
   formatJpy,
   formatTokens,
+  extractParentFromPath,
   renderSessionBlock,
   renderTotalBlock,
   renderSummary,
   type RenderOptions,
+  type RenderSummaryOptions,
 } from "./format.js";
 
 export {

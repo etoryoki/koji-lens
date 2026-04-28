@@ -2,6 +2,7 @@ import {
   analyzeDirectory,
   analyzeDirectoryCached,
   defaultClaudeLogDir,
+  extractParentFromPath,
   formatDuration,
   formatUsd,
   loadConfig,
@@ -50,8 +51,10 @@ export async function sessionsCommand(opts: SessionsOptions): Promise<void> {
     const dur = formatDuration(a.durationMs);
     const cost = formatUsd(a.costUsd);
     const tools = Object.keys(a.tools).length;
+    const parent = extractParentFromPath(a.filePath);
+    const subagentTag = parent ? `  ↳ subagent of ${parent.slice(0, 8)}` : "";
     console.log(
-      `${a.sessionId}  ${ended}  duration=${dur}  cost=${cost}  turns=${a.assistantTurns}a/${a.userTurns}u  tools=${tools}`,
+      `${a.sessionId}  ${ended}  duration=${dur}  cost=${cost}  turns=${a.assistantTurns}a/${a.userTurns}u  tools=${tools}${subagentTag}`,
     );
   }
   if (aggs.length > limit) {
