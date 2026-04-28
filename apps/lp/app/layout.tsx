@@ -1,4 +1,5 @@
 import "./globals.css";
+import { Analytics } from "@vercel/analytics/next";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import type { ReactNode } from "react";
@@ -115,6 +116,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
     <html lang="ja" className={`${inter.variable} h-full antialiased`}>
       <body className="min-h-full bg-white font-sans text-slate-900">
         {children}
+        <Analytics />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
