@@ -46,8 +46,8 @@ function Header() {
           <a href="#features" className="transition hover:text-white">
             機能
           </a>
-          <a href="#install" className="transition hover:text-white">
-            インストール
+          <a href="/docs" className="transition hover:text-white">
+            ドキュメント
           </a>
           <a href="#pricing" className="transition hover:text-white">
             料金
@@ -434,8 +434,8 @@ function Links() {
     },
     {
       label: "ドキュメント",
-      href: `${GITHUB_URL}#readme`,
-      desc: "README で使い方を確認",
+      href: "/docs",
+      desc: "クイックスタート・コマンドリファレンス・FAQ",
     },
     {
       label: "お問い合わせ",
@@ -491,6 +491,9 @@ function Footer() {
           <div className="flex flex-wrap gap-x-5 gap-y-2 text-sm text-slate-500">
             <a href="/contact" className="hover:text-slate-900">
               お問い合わせ
+            </a>
+            <a href="/docs" className="hover:text-slate-900">
+              ドキュメント
             </a>
             <a href="/legal/tos" className="hover:text-slate-900">
               利用規約
