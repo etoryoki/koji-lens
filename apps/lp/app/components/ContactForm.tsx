@@ -226,12 +226,6 @@ export function ContactForm({ enabled }: Props) {
           {errorMsg}
         </p>
       ) : null}
-
-      {!enabled ? (
-        <p className="text-xs text-slate-500">
-          ※ フォーム受付は Resend 設定完了後に有効化されます（現在は UI プレビュー）。
-        </p>
-      ) : null}
     </form>
   );
 }

@@ -112,9 +112,7 @@ export function WaitlistForm({ enabled }: Props) {
         </p>
       ) : null}
       <p id="waitlist-note" className="mt-3 text-xs text-slate-500">
-        {enabled
-          ? "※ 通知メールのみに使用し、登録はいつでも解除可能です。"
-          : "※ フォーム受付は Resend 設定完了後に有効化されます（現在は UI プレビュー）。"}
+        ※ 通知メールのみに使用し、登録はいつでも解除可能です。
       </p>
     </>
   );
