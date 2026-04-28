@@ -1,11 +1,11 @@
 import {
   BarChart3,
   Bell,
-  DollarSign,
   Github,
   Lock,
   Puzzle,
   Terminal,
+  Wallet,
 } from "lucide-react";
 import { CopyButton } from "./components/CopyButton";
 import { WaitlistForm } from "./components/WaitlistForm";
@@ -34,27 +34,29 @@ export default function Page() {
 
 function Header() {
   return (
-    <header className="border-b border-slate-200">
+    <header className="border-b border-slate-800 bg-[#0f172a]">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-        <div className="flex items-center gap-2 text-slate-900">
-          <Terminal className="size-5 text-blue-600" />
+        <div className="flex items-center gap-2 text-white">
+          <span className="inline-flex size-7 items-center justify-center rounded-md bg-slate-800 font-bold tracking-tight">
+            K
+          </span>
           <span className="font-semibold tracking-tight">koji-lens</span>
         </div>
-        <nav className="flex items-center gap-5 text-sm text-slate-600">
-          <a href="#features" className="hover:text-slate-900">
+        <nav className="flex items-center gap-5 text-sm text-slate-300">
+          <a href="#features" className="transition hover:text-white">
             機能
           </a>
-          <a href="#install" className="hover:text-slate-900">
+          <a href="#install" className="transition hover:text-white">
             インストール
           </a>
-          <a href="#pricing" className="hover:text-slate-900">
+          <a href="#pricing" className="transition hover:text-white">
             料金
           </a>
           <a
             href={GITHUB_URL}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1 hover:text-slate-900"
+            className="inline-flex items-center gap-1 transition hover:text-white"
           >
             <Github className="size-4" />
             GitHub
@@ -67,29 +69,28 @@ function Header() {
 
 function Hero() {
   return (
-    <section className="border-b border-slate-200 bg-gradient-to-b from-slate-50 to-white">
+    <section className="border-b border-slate-800 bg-[#0f172a]">
       <div className="mx-auto max-w-6xl px-6 py-20 md:py-28">
         <div className="mx-auto max-w-3xl text-center">
-          <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1 text-xs text-slate-600">
-            <span className="size-1.5 rounded-full bg-emerald-500" />
+          <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-slate-700 bg-slate-800/60 px-3 py-1 text-xs text-slate-300">
+            <span className="size-1.5 rounded-full bg-emerald-400" />
             β 公開中 · OSS（MIT）
           </div>
-          <h1 className="text-balance text-4xl font-semibold leading-tight tracking-tight text-slate-900 md:text-5xl">
-            AI コーディングの使い方を、
-            <br className="hidden md:block" />
-            見える化する。
+          <h1 className="text-balance text-4xl font-semibold leading-tight tracking-tight text-white md:text-6xl">
+            月末に驚く前に、今日知る。
           </h1>
-          <p className="mx-auto mt-6 max-w-2xl text-pretty text-base leading-relaxed text-slate-600 md:text-lg">
-            セッションごとのコスト・トークン・ツール使用を、ローカルで完結するダッシュボードで把握する。
-            Claude Code ユーザー向け、オープンソースの観測ツール。
+          <p className="mx-auto mt-6 max-w-2xl text-pretty text-base leading-relaxed text-slate-400 md:text-lg">
+            Claude Code のセッションログをローカルで解析し、
+            <br className="hidden md:block" />
+            コスト・トークン・ツール使用を 1 コマンドで可視化する。
           </p>
 
           <div className="mt-10 flex flex-col items-center gap-3">
-            <div className="flex w-full max-w-xl items-center gap-2 rounded-lg border border-slate-300 bg-white p-2 shadow-sm">
-              <span className="select-none pl-2 font-mono text-sm text-slate-400">
+            <div className="flex w-full max-w-xl items-center gap-2 rounded-lg border border-slate-700 bg-slate-800 p-2 shadow-lg">
+              <span className="select-none pl-2 font-mono text-sm text-blue-400">
                 $
               </span>
-              <code className="flex-1 overflow-x-auto whitespace-nowrap text-left font-mono text-sm text-slate-900">
+              <code className="flex-1 overflow-x-auto whitespace-nowrap text-left font-mono text-sm text-slate-100">
                 {INSTALL_CMD}
               </code>
               <CopyButton value={INSTALL_CMD} />
@@ -97,7 +98,7 @@ function Hero() {
             <div className="flex flex-wrap items-center justify-center gap-3">
               <a
                 href="#install"
-                className="inline-flex items-center gap-1.5 rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700"
+                className="inline-flex items-center gap-1.5 rounded-md bg-blue-500 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-400"
               >
                 3 ステップで始める
               </a>
@@ -105,7 +106,7 @@ function Hero() {
                 href={GITHUB_URL}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:bg-slate-50"
+                className="inline-flex items-center gap-1.5 rounded-md border border-slate-600 bg-transparent px-4 py-2 text-sm font-medium text-slate-200 transition hover:border-slate-400 hover:text-white"
               >
                 <Github className="size-4" />
                 GitHub で見る
@@ -145,24 +146,24 @@ type Feature = {
 
 const FEATURES: Feature[] = [
   {
-    icon: DollarSign,
-    title: "コスト可視化",
-    body: "セッション単位の入出力トークン・キャッシュ読み書き・推定コスト（USD / JPY）を即座に算出。",
+    icon: Wallet,
+    title: "今月いくら使ったか",
+    body: "セッションごとの USD / JPY 換算コストと TOTAL 集計を即表示。月末の Anthropic 請求と照合できます。",
   },
   {
     icon: BarChart3,
-    title: "セッション分析",
-    body: "直近 7 日 / 30 日のコスト推移、ツール呼び出し分布、コストが突出したセッションの内訳。",
+    title: "どの作業が高くついたか",
+    body: "過去 7 / 30 日のコスト推移とツール呼び出し分布。突出したセッションをワンクリックで掘れます。",
   },
   {
     icon: Lock,
-    title: "ローカル完結",
-    body: "既定でデータはあなたの PC に閉じる。プロンプト本文は SQLite に保存しない設計。",
+    title: "データはあなたの PC だけに留まる",
+    body: "クラウドへの送信なし。プロンプト本文は SQLite に保存しない設計。安心して全ログを解析できます。",
   },
   {
     icon: Puzzle,
-    title: "拡張性",
-    body: "アダプタ式で将来 Cursor / Cline / Aider 等に対応予定。OSS（MIT）で透明。",
+    title: "Claude Code に今日使えて、明日も使える",
+    body: "Claude Code のログ形式に完全対応。Cursor / Cline 対応も OSS で開発中（MIT ライセンス）。",
   },
 ];
 
@@ -172,7 +173,7 @@ function Features() {
       <div className="mx-auto max-w-6xl px-6 py-20">
         <div className="mx-auto mb-12 max-w-2xl text-center">
           <h2 className="text-3xl font-semibold tracking-tight text-slate-900">
-            できること
+            インストールして 1 分で分かること
           </h2>
           <p className="mt-3 text-slate-600">
             ターミナル 1 コマンドで、AI コーディングの実態を掴む。
@@ -184,7 +185,7 @@ function Features() {
               key={f.title}
               className="rounded-xl border border-slate-200 bg-white p-6"
             >
-              <div className="mb-4 inline-flex size-10 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
+              <div className="mb-4 inline-flex size-10 items-center justify-center rounded-lg bg-slate-900 text-blue-400">
                 <f.icon className="size-5" />
               </div>
               <h3 className="text-lg font-semibold text-slate-900">
@@ -207,20 +208,20 @@ function Screenshots() {
       <div className="mx-auto max-w-6xl px-6 py-20">
         <div className="mx-auto mb-12 max-w-2xl text-center">
           <h2 className="text-3xl font-semibold tracking-tight text-slate-900">
-            実際の画面
+            実際に動かすと、こう見える。
           </h2>
           <p className="mt-3 text-slate-600">
-            CLI のサマリ出力と、ローカル Web ダッシュボード。
+            インストールしてすぐ、こんな出力が得られます。
           </p>
         </div>
         <div className="grid gap-6 md:grid-cols-2">
           <ScreenshotPlaceholder
             label="CLI: koji-lens summary"
-            hint="スクリーンショット Day 2 差し替え予定"
+            hint="サンプル出力をターミナル風に表示予定"
           />
           <ScreenshotPlaceholder
             label="Web: koji-lens serve"
-            hint="スクリーンショット Day 2 差し替え予定"
+            hint="ローカルダッシュボードのスクリーンショット予定"
           />
         </div>
       </div>
@@ -276,11 +277,11 @@ function InstallSteps() {
                 </span>
                 <span className="font-medium text-slate-900">{s.title}</span>
               </div>
-              <div className="flex flex-1 items-center gap-2 rounded-md border border-slate-200 bg-slate-50 p-2">
-                <span className="select-none pl-1 font-mono text-sm text-slate-400">
+              <div className="flex flex-1 items-center gap-2 rounded-md border border-slate-700 bg-slate-800 p-2">
+                <span className="select-none pl-1 font-mono text-sm text-blue-400">
                   $
                 </span>
-                <code className="flex-1 overflow-x-auto whitespace-nowrap font-mono text-sm text-slate-900">
+                <code className="flex-1 overflow-x-auto whitespace-nowrap font-mono text-sm text-slate-100">
                   {s.cmd}
                 </code>
                 <CopyButton value={s.cmd} />
@@ -492,13 +493,13 @@ function Footer() {
               お問い合わせ
             </a>
             <a href="/legal/tos" className="hover:text-slate-900">
-              利用規約（準備中）
+              利用規約
             </a>
             <a href="/legal/privacy" className="hover:text-slate-900">
-              プライバシーポリシー（準備中）
+              プライバシーポリシー
             </a>
             <a href="/legal/tokushoho" className="hover:text-slate-900">
-              特定商取引法に基づく表記（準備中）
+              特定商取引法に基づく表記
             </a>
           </div>
         </div>

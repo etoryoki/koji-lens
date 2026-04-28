@@ -6,8 +6,8 @@
 
 body {
   font-family:
-    system-ui, -apple-system, "Segoe UI", "Hiragino Sans", "Noto Sans JP",
-    sans-serif;
+    var(--font-inter), system-ui, -apple-system, "Segoe UI", "Hiragino Sans",
+    "Noto Sans JP", sans-serif;
 }
 
 code,
