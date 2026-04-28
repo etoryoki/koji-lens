@@ -1,5 +1,7 @@
 import { Mail } from "lucide-react";
 import { ContactForm } from "../components/ContactForm";
+import { SiteFooter } from "../components/SiteFooter";
+import { SiteHeader } from "../components/SiteHeader";
 
 export const metadata = {
   title: "お問い合わせ | koji-lens",
@@ -14,16 +16,7 @@ export default function ContactPage() {
 
   return (
     <main className="flex min-h-screen flex-col">
-      <header className="border-b border-slate-200">
-        <div className="mx-auto flex max-w-3xl items-center px-6 py-4">
-          <a
-            href="/"
-            className="text-sm text-slate-600 transition hover:text-slate-900"
-          >
-            ← トップへ戻る
-          </a>
-        </div>
-      </header>
+      <SiteHeader />
 
       <section className="border-b border-slate-200 bg-gradient-to-b from-slate-50 to-white">
         <div className="mx-auto max-w-3xl px-6 py-16">
@@ -85,11 +78,7 @@ export default function ContactPage() {
         </div>
       </section>
 
-      <footer className="bg-slate-50">
-        <div className="mx-auto max-w-3xl px-6 py-8 text-xs text-slate-500">
-          © 2026 Quinque, Inc.
-        </div>
-      </footer>
+      <SiteFooter />
     </main>
   );
 }

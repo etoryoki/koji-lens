@@ -1,16 +1,17 @@
 import { BarChart3, Bell, Github, Lock, Puzzle, Wallet } from "lucide-react";
 import { CopyButton } from "./components/CopyButton";
+import { SiteFooter } from "./components/SiteFooter";
+import { SiteHeader } from "./components/SiteHeader";
 import { WaitlistForm } from "./components/WaitlistForm";
 
 const INSTALL_CMD = "npm install -g @kojihq/lens";
 const GITHUB_URL = "https://github.com/etoryoki/koji-lens";
 const NPM_URL = "https://www.npmjs.com/package/@kojihq/lens";
-const SUPPORT_EMAIL = "support@kojihq.com";
 
 export default function Page() {
   return (
     <main className="flex min-h-screen flex-col">
-      <Header />
+      <SiteHeader />
       <Hero />
       <Problem />
       <Features />
@@ -19,43 +20,8 @@ export default function Page() {
       <Pricing />
       <Waitlist />
       <Links />
-      <Footer />
+      <SiteFooter />
     </main>
-  );
-}
-
-function Header() {
-  return (
-    <header className="border-b border-slate-800 bg-[#0f172a]">
-      <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-        <div className="flex items-center gap-2 text-white">
-          <span className="inline-flex size-7 items-center justify-center rounded-md bg-slate-800 font-bold tracking-tight">
-            K
-          </span>
-          <span className="font-semibold tracking-tight">koji-lens</span>
-        </div>
-        <nav className="flex items-center gap-5 text-sm text-slate-300">
-          <a href="#features" className="transition hover:text-white">
-            機能
-          </a>
-          <a href="/docs" className="transition hover:text-white">
-            ドキュメント
-          </a>
-          <a href="#pricing" className="transition hover:text-white">
-            料金
-          </a>
-          <a
-            href={GITHUB_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1 transition hover:text-white"
-          >
-            <Github className="size-4" />
-            GitHub
-          </a>
-        </nav>
-      </div>
-    </header>
   );
 }
 
@@ -619,46 +585,3 @@ function Links() {
   );
 }
 
-function Footer() {
-  return (
-    <footer className="mt-auto bg-slate-50">
-      <div className="mx-auto max-w-6xl px-6 py-10">
-        <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
-          <div className="text-sm leading-relaxed text-slate-600">
-            <div className="font-semibold text-slate-900">koji-lens</div>
-            <div className="mt-1">
-              Koji が開発・提供する OSS プロジェクトです。
-            </div>
-            <div className="mt-1">運営: 株式会社クインクエ</div>
-            <div className="mt-1">
-              お問い合わせ:{" "}
-              <a href="/contact" className="text-blue-600 hover:underline">
-                {SUPPORT_EMAIL}
-              </a>
-            </div>
-          </div>
-          <div className="flex flex-wrap gap-x-5 gap-y-2 text-sm text-slate-500">
-            <a href="/contact" className="hover:text-slate-900">
-              お問い合わせ
-            </a>
-            <a href="/docs" className="hover:text-slate-900">
-              ドキュメント
-            </a>
-            <a href="/legal/tos" className="hover:text-slate-900">
-              利用規約
-            </a>
-            <a href="/legal/privacy" className="hover:text-slate-900">
-              プライバシーポリシー
-            </a>
-            <a href="/legal/tokushoho" className="hover:text-slate-900">
-              特定商取引法に基づく表記
-            </a>
-          </div>
-        </div>
-        <div className="mt-8 border-t border-slate-200 pt-6 text-xs text-slate-500">
-          © 2026 Quinque, Inc.
-        </div>
-      </div>
-    </footer>
-  );
-}

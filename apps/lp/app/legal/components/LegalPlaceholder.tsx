@@ -1,4 +1,5 @@
-import Link from "next/link";
+import { SiteFooter } from "../../components/SiteFooter";
+import { SiteHeader } from "../../components/SiteHeader";
 
 type Props = {
   title: string;
@@ -7,13 +8,11 @@ type Props = {
 
 export function LegalPlaceholder({ title, dueBy }: Props) {
   return (
-    <main className="min-h-screen bg-white">
-      <div className="mx-auto max-w-3xl px-6 py-20">
-        <Link href="/" className="text-sm text-blue-600 hover:underline">
-          ← koji-lens トップへ
-        </Link>
+    <main className="flex min-h-screen flex-col bg-white">
+      <SiteHeader />
 
-        <div className="mt-6 rounded-lg border border-amber-200 bg-amber-50 p-4">
+      <div className="mx-auto w-full max-w-3xl flex-1 px-6 py-16">
+        <div className="rounded-lg border border-amber-200 bg-amber-50 p-4">
           <div className="flex items-start gap-3">
             <span className="mt-0.5 inline-flex size-5 shrink-0 items-center justify-center rounded-full bg-amber-500 text-xs font-bold text-white">
               !
@@ -47,6 +46,8 @@ export function LegalPlaceholder({ title, dueBy }: Props) {
           </p>
         </div>
       </div>
+
+      <SiteFooter />
     </main>
   );
 }
