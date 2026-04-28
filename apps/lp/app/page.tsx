@@ -1,4 +1,5 @@
 import { BarChart3, Bell, Github, Lock, Puzzle, Wallet } from "lucide-react";
+import Image from "next/image";
 import { CopyButton } from "./components/CopyButton";
 import { SiteFooter } from "./components/SiteFooter";
 import { SiteHeader } from "./components/SiteHeader";
@@ -274,10 +275,44 @@ function Screenshots() {
           </TerminalPane>
         </div>
 
-        <p className="mx-auto mt-8 max-w-2xl text-center text-sm text-slate-500">
-          ※ Web ダッシュボード（<code className="rounded bg-slate-100 px-1.5 py-0.5 font-mono text-xs">koji-lens serve</code>）の
-          スクリーンショットは近日追加予定。
-        </p>
+        <div className="mt-16">
+          <div className="mx-auto mb-8 max-w-2xl text-center">
+            <h3 className="text-2xl font-semibold tracking-tight text-slate-900">
+              ブラウザでも、同じデータを。
+            </h3>
+            <p className="mt-3 text-slate-600">
+              <code className="rounded bg-slate-100 px-1.5 py-0.5 font-mono text-xs">
+                koji-lens serve
+              </code>{" "}
+              でローカルに Web ダッシュボードを起動。チャートと一覧で全体像を一画面に。
+            </p>
+          </div>
+
+          <figure className="mx-auto max-w-4xl">
+            <div className="overflow-hidden rounded-xl border border-slate-200 bg-[#0f172a] shadow-2xl">
+              <div className="flex items-center gap-1.5 border-b border-slate-800 bg-slate-900 px-4 py-2.5">
+                <span className="size-2.5 rounded-full bg-slate-700" />
+                <span className="size-2.5 rounded-full bg-slate-700" />
+                <span className="size-2.5 rounded-full bg-slate-700" />
+                <span className="ml-3 select-none font-mono text-[11px] text-slate-500">
+                  http://localhost:3210
+                </span>
+              </div>
+              <div className="relative aspect-[16/10] w-full overflow-hidden">
+                <Image
+                  src="/screenshots/screenshots.png"
+                  alt="koji-lens Web ダッシュボード — 合計コスト・KPI カード・セッション別コストとツール使用のチャートを 1 画面で可視化"
+                  fill
+                  className="object-cover object-top"
+                  sizes="(min-width: 1024px) 56rem, 100vw"
+                />
+              </div>
+            </div>
+            <figcaption className="mt-3 text-center text-xs text-slate-500">
+              実データのスクリーンショット（直近 30 セッション集計）
+            </figcaption>
+          </figure>
+        </div>
       </div>
     </section>
   );
