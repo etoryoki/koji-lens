@@ -73,6 +73,9 @@ export async function summaryCommand(opts: SummaryOptions): Promise<void> {
     renderSummary(active, total, {
       usdJpy: rate,
       summaryOnly: opts.summaryOnly,
+      since,
+      until: new Date(),
+      sinceLabel: opts.since,
     }) + "\n",
   );
 }
