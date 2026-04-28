@@ -1,12 +1,4 @@
-import {
-  BarChart3,
-  Bell,
-  Github,
-  Lock,
-  Puzzle,
-  Terminal,
-  Wallet,
-} from "lucide-react";
+import { BarChart3, Bell, Github, Lock, Puzzle, Wallet } from "lucide-react";
 import { CopyButton } from "./components/CopyButton";
 import { WaitlistForm } from "./components/WaitlistForm";
 
@@ -214,37 +206,158 @@ function Screenshots() {
             インストールしてすぐ、こんな出力が得られます。
           </p>
         </div>
-        <div className="grid gap-6 md:grid-cols-2">
-          <ScreenshotPlaceholder
-            label="CLI: koji-lens summary"
-            hint="サンプル出力をターミナル風に表示予定"
-          />
-          <ScreenshotPlaceholder
-            label="Web: koji-lens serve"
-            hint="ローカルダッシュボードのスクリーンショット予定"
-          />
+
+        <div className="grid gap-6 lg:grid-cols-2">
+          <TerminalPane title="koji-lens summary --since 24h">
+            <Line>{"$ koji-lens summary --since 24h"}</Line>
+            <Line className="text-slate-400">
+              koji-lens — analyzed 15 session(s)
+            </Line>
+            <Line className="text-slate-600">
+              ============================================================
+            </Line>
+            <Line>{" "}</Line>
+            <Line className="text-slate-300">
+              Session 055a662d-f09c-4541-...
+            </Line>
+            <Line className="text-slate-400">{"  duration: 5m 51s"}</Line>
+            <Line className="text-slate-400">
+              {"  cost:     "}
+              <Cost>$6.5186</Cost>
+              {" (¥1,010)"}
+            </Line>
+            <Line className="text-slate-400">
+              {"  tools:    Bash×6, Read×4"}
+            </Line>
+            <Line>{" "}</Line>
+            <Line className="text-slate-300">
+              Session 28cf16fa-26f8-4182-...
+            </Line>
+            <Line className="text-slate-400">{"  duration: 7h 38m 22s"}</Line>
+            <Line className="text-slate-400">
+              {"  cost:     "}
+              <Cost>$420.6613</Cost>
+              {" (¥65,202)"}
+            </Line>
+            <Line className="text-slate-400">
+              {"  tools:    Bash×102, Edit×89, Read×59..."}
+            </Line>
+            <Line>{" "}</Line>
+            <Line className="text-slate-500">{"(以下 13 セッション省略)"}</Line>
+            <Line>{" "}</Line>
+            <Line className="text-slate-600">
+              ============================================================
+            </Line>
+            <Line className="font-semibold text-slate-100">TOTAL</Line>
+            <Line className="text-slate-300">{"  sessions:  15"}</Line>
+            <Line className="text-slate-300">{"  duration:  16h 24m 10s"}</Line>
+            <Line className="text-slate-300">
+              {"  cost:      "}
+              <Cost>$874.1162</Cost>
+              {" (¥135,488)"}
+            </Line>
+            <Line className="text-slate-300">
+              {"  models:    opus×1562, sonnet×60"}
+            </Line>
+            <Line>{" "}</Line>
+            <Line className="text-slate-500">
+              {"  note: Cost is API-rate equivalent."}
+            </Line>
+            <Line className="text-slate-500">
+              {"        Subscribers pay a flat fee regardless."}
+            </Line>
+          </TerminalPane>
+
+          <TerminalPane title="koji-lens sessions --since 24h --limit 5">
+            <Line>{"$ koji-lens sessions --since 24h --limit 5"}</Line>
+            <Line>{" "}</Line>
+            <Line className="text-slate-400">
+              {"055a662d-...  duration=8m 58s     "}
+              <Cost>cost=$9.6253</Cost>
+            </Line>
+            <Line className="text-slate-400">
+              {"44c29745-...  duration=1h 7m 33s  "}
+              <Cost>cost=$32.7546</Cost>
+            </Line>
+            <Line className="text-slate-300">
+              {"28cf16fa-...  duration=7h 38m 22s "}
+              <Cost>cost=$420.6613</Cost>
+              <span className="text-amber-300">{"  ← 突出セッション"}</span>
+            </Line>
+            <Line className="text-slate-400">
+              {"agent-a94b...  duration=1m 9s     "}
+              <Cost>cost=$0.2880</Cost>
+              <span className="text-slate-500">{"  (subagent)"}</span>
+            </Line>
+            <Line className="text-slate-400">
+              {"22a919c7-...  duration=12m 4s     "}
+              <Cost>cost=$20.7381</Cost>
+            </Line>
+            <Line className="text-slate-500">
+              {"... (10 more; use --limit to show more)"}
+            </Line>
+            <Line>{" "}</Line>
+            <Line>{" "}</Line>
+            <Line className="text-slate-500">
+              {"# 同じデータをチャートで見るなら:"}
+            </Line>
+            <Line>{"$ koji-lens serve"}</Line>
+            <Line className="text-slate-400">
+              {"  Server running at http://localhost:3210"}
+            </Line>
+          </TerminalPane>
         </div>
+
+        <p className="mx-auto mt-8 max-w-2xl text-center text-sm text-slate-500">
+          ※ Web ダッシュボード（<code className="rounded bg-slate-100 px-1.5 py-0.5 font-mono text-xs">koji-lens serve</code>）の
+          スクリーンショットは近日追加予定。
+        </p>
       </div>
     </section>
   );
 }
 
-function ScreenshotPlaceholder({
-  label,
-  hint,
+function TerminalPane({
+  title,
+  children,
 }: {
-  label: string;
-  hint: string;
+  title: string;
+  children: React.ReactNode;
 }) {
   return (
-    <div className="aspect-video overflow-hidden rounded-xl border border-dashed border-slate-300 bg-slate-50">
-      <div className="flex h-full w-full flex-col items-center justify-center gap-2 text-slate-400">
-        <Terminal className="size-8" />
-        <div className="font-mono text-sm text-slate-500">{label}</div>
-        <div className="text-xs">{hint}</div>
+    <div className="overflow-hidden rounded-xl border border-slate-700 bg-slate-900 shadow-lg">
+      <div className="flex items-center gap-2 border-b border-slate-700 bg-slate-800 px-4 py-2.5">
+        <span className="size-2.5 rounded-full bg-red-400" />
+        <span className="size-2.5 rounded-full bg-yellow-400" />
+        <span className="size-2.5 rounded-full bg-emerald-400" />
+        <span className="ml-3 truncate font-mono text-xs text-slate-400">
+          {title}
+        </span>
       </div>
+      <pre className="overflow-x-auto p-5 font-mono text-xs leading-relaxed text-slate-200 md:text-sm">
+        <code>{children}</code>
+      </pre>
     </div>
   );
+}
+
+function Line({
+  children,
+  className,
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <div className={className ?? "text-slate-200"}>
+      {children}
+      {"\n"}
+    </div>
+  );
+}
+
+function Cost({ children }: { children: React.ReactNode }) {
+  return <span className="font-semibold text-emerald-400">{children}</span>;
 }
 
 function InstallSteps() {
@@ -346,6 +459,42 @@ function Pricing() {
             Pro プランは 2026 年 5 月下旬に提供開始予定。
           </p>
         </div>
+
+        <div className="mx-auto mb-12 max-w-3xl rounded-2xl border border-blue-100 bg-blue-50/60 p-6 md:p-8">
+          <h3 className="text-lg font-medium text-slate-800 md:text-xl">
+            こんな状況に心当たりがあれば、Pro をどうぞ
+          </h3>
+          <ul className="mt-4 space-y-2.5 text-slate-700">
+            <li className="flex gap-3">
+              <span
+                aria-hidden
+                className="mt-1 inline-flex size-4 shrink-0 items-center justify-center rounded border border-slate-400 text-xs"
+              />
+              <span>月末の Anthropic 請求を見るまでコストが分からない</span>
+            </li>
+            <li className="flex gap-3">
+              <span
+                aria-hidden
+                className="mt-1 inline-flex size-4 shrink-0 items-center justify-center rounded border border-slate-400 text-xs"
+              />
+              <span>どのプロジェクトで使いすぎているか把握できない</span>
+            </li>
+            <li className="flex gap-3">
+              <span
+                aria-hidden
+                className="mt-1 inline-flex size-4 shrink-0 items-center justify-center rounded border border-slate-400 text-xs"
+              />
+              <span>複数の PC で使っているのにログが分散している</span>
+            </li>
+          </ul>
+          <p className="mt-5 text-sm leading-relaxed text-slate-600">
+            → Pro では予算残量の追跡、複数デバイス間の同期、月次レポートのメール配信が使えるようになります。
+            <span className="ml-1 text-slate-500">
+              （2026 年 5 月下旬リリース予定）
+            </span>
+          </p>
+        </div>
+
         <div className="grid gap-4 md:grid-cols-3">
           {PLANS.map((p) => (
             <div
