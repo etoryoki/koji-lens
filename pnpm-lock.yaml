@@ -129,8 +129,8 @@ importers:
         specifier: ^0.36.0
         version: 0.36.4(@types/better-sqlite3@7.6.13)(@types/react@19.2.14)(better-sqlite3@11.10.0)(react@19.2.5)
       zod:
-        specifier: ^3.23.0
-        version: 3.25.76
+        specifier: ^4.4.1
+        version: 4.4.1
     devDependencies:
       '@types/better-sqlite3':
         specifier: ^7.6.0
@@ -1884,6 +1884,9 @@ packages:
   zod@3.25.76:
     resolution: {integrity: sha512-gzUt/qt81nXsFGKIFcC3YnfEAx5NkunCfnDlvuBSSFS02bcXu4Lmea0AFIUwbLWxWPx3d9p8S5QoaujKcNQxcQ==}
 
+  zod@4.4.1:
+    resolution: {integrity: sha512-a6ENMBBGZBsnlSebQ/eKCguSBeGKSf4O7BPnqVPmYGtpBYI7VSqoVqw+QcB7kPRjbqPwhYTpFbVj/RqNz/CT0Q==}
+
 snapshots:
 
   '@alloc/quick-lru@5.2.0': {}
@@ -3289,3 +3292,5 @@ snapshots:
   wrappy@1.0.2: {}
 
   zod@3.25.76: {}
+
+  zod@4.4.1: {}
