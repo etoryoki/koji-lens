@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { SiteFooter } from "../components/SiteFooter";
-import { SiteHeader } from "../components/SiteHeader";
+import { SiteFooter } from "../../components/SiteFooter";
+import { SiteHeader } from "../../components/SiteHeader";
 
 const GITHUB_URL = "https://github.com/etoryoki/koji-lens";
 const NPM_URL = "https://www.npmjs.com/package/@kojihq/lens";

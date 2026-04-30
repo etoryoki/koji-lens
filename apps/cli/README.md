@@ -4,7 +4,7 @@
 [![npm downloads](https://img.shields.io/npm/dw/@kojihq/lens.svg)](https://www.npmjs.com/package/@kojihq/lens)
 [![license](https://img.shields.io/npm/l/@kojihq/lens.svg)](https://github.com/etoryoki/koji-lens/blob/main/LICENSE)
 
-> **AI コーディングの使い方を、見える化する。** — [lens.kojihq.com](https://lens.kojihq.com)
+> **Visualize your AI coding usage.** — [lens.kojihq.com](https://lens.kojihq.com)
 
 `koji-lens` — the CLI for Claude Code local usage analysis.
 

@@ -1,9 +1,9 @@
 import { BarChart3, Bell, Github, Lock, Puzzle, Wallet } from "lucide-react";
 import Image from "next/image";
-import { CopyButton } from "./components/CopyButton";
-import { SiteFooter } from "./components/SiteFooter";
-import { SiteHeader } from "./components/SiteHeader";
-import { WaitlistForm } from "./components/WaitlistForm";
+import { CopyButton } from "../../components/CopyButton";
+import { SiteFooter } from "../../components/SiteFooter";
+import { SiteHeader } from "../../components/SiteHeader";
+import { WaitlistForm } from "../../components/WaitlistForm";
 
 const INSTALL_CMD = "npm install -g @kojihq/lens";
 const GITHUB_URL = "https://github.com/etoryoki/koji-lens";

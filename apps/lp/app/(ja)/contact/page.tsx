@@ -1,7 +1,7 @@
 import { Mail } from "lucide-react";
-import { ContactForm } from "../components/ContactForm";
-import { SiteFooter } from "../components/SiteFooter";
-import { SiteHeader } from "../components/SiteHeader";
+import { ContactForm } from "../../components/ContactForm";
+import { SiteFooter } from "../../components/SiteFooter";
+import { SiteHeader } from "../../components/SiteHeader";
 
 export const metadata = {
   title: "お問い合わせ | koji-lens",

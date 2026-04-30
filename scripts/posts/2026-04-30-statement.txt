@@ -1,0 +1,11 @@
+@kojihq/lens の β、npm 公開しました。
+
+「AI コーディングの使い方を、見える化する。」
+
+Claude Code のコスト・トークンをローカル完結で集計する CLI。subagent や tool の偏りも見えるので、使い方の癖が見つかります。npm 1 コマンドで導入。
+
+実装解説（standalone 同梱、SQLite cache 6.7 倍、zod）は Zenn に:
+https://zenn.dev/kojihq/articles/66ca3fca6df2a0
+
+LP / waitlist:
+https://lens.kojihq.com
