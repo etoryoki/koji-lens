@@ -21,14 +21,13 @@ import { AtpAgent } from "@atproto/api";
 
 const TARGET_DISPLAY_NAME = "Koji";
 
-const TARGET_DESCRIPTION = `小さなソフトウェアで、AI コーディングの成果を増幅する。
+const TARGET_DESCRIPTION = `AI コーディングの使い方を、見える化する。
+Visualize your AI coding usage.
 
-第一弾: koji-lens（Claude Code のローカル使用状況可視化 CLI、β 公開中、OSS / MIT）
-
+koji-lens — local CLI for Claude Code (β · OSS / MIT)
 npm install -g @kojihq/lens
 
-https://github.com/etoryoki/koji-lens
-運営: 株式会社クインクエ`;
+🇯🇵 lens.kojihq.com  🇬🇧 lens.kojihq.com/en`;
 
 function requireEnv(name: string): string {
   const v = process.env[name];
