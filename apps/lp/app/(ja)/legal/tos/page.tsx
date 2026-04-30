@@ -3,6 +3,13 @@ import { LegalPlaceholder } from "../components/LegalPlaceholder";
 
 export const metadata: Metadata = {
   title: "利用規約",
+  alternates: {
+    canonical: "https://lens.kojihq.com/legal/tos",
+    languages: {
+      ja: "https://lens.kojihq.com/legal/tos",
+      en: "https://lens.kojihq.com/en/legal/tos",
+    },
+  },
 };
 
 export default function Page() {

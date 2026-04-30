@@ -7,6 +7,13 @@ export const metadata = {
   title: "お問い合わせ | koji-lens",
   description:
     "koji-lens（株式会社クインクエ）への問い合わせ窓口。料金・契約 / 技術サポート / その他のご質問を受け付けています。",
+  alternates: {
+    canonical: "https://lens.kojihq.com/contact",
+    languages: {
+      ja: "https://lens.kojihq.com/contact",
+      en: "https://lens.kojihq.com/en/contact",
+    },
+  },
 };
 
 const SUPPORT_EMAIL = "support@kojihq.com";

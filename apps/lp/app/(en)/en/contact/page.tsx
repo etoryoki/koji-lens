@@ -7,6 +7,13 @@ export const metadata = {
   title: "Contact | koji-lens",
   description:
     "Contact koji-lens (Quinque, Inc.). For pricing / contract questions, technical support, or general inquiries.",
+  alternates: {
+    canonical: "https://lens.kojihq.com/en/contact",
+    languages: {
+      ja: "https://lens.kojihq.com/contact",
+      en: "https://lens.kojihq.com/en/contact",
+    },
+  },
 };
 
 const SUPPORT_EMAIL = "support@kojihq.com";
