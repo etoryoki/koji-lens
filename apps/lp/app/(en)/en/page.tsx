@@ -22,6 +22,7 @@ export default function Page() {
       <Pricing />
       <Waitlist />
       <Links />
+      <LangSwitcher />
       <SiteFooter />
     </main>
   );
@@ -34,15 +35,15 @@ function Hero() {
         <div className="mx-auto max-w-3xl text-center">
           <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-slate-700 bg-slate-800/60 px-3 py-1 text-xs text-slate-300">
             <span className="size-1.5 rounded-full bg-emerald-400" />
-            β 公開中 · OSS（MIT）
+            β release · OSS (MIT)
           </div>
           <h1 className="text-balance text-4xl font-semibold leading-tight tracking-tight text-white md:text-6xl">
-            月末に驚く前に、今日知る。
+            Know your AI coding spend before month-end.
           </h1>
           <p className="mx-auto mt-6 max-w-2xl text-pretty text-base leading-relaxed text-slate-400 md:text-lg">
-            Claude Code のセッションログをローカルで解析し、
+            A local-only CLI that parses your Claude Code session logs
             <br className="hidden md:block" />
-            コスト・トークン・ツール使用を 1 コマンドで可視化する。
+            and visualizes cost, tokens, and tool usage in one command.
           </p>
 
           <div className="mt-10 flex flex-col items-center gap-3">
@@ -66,7 +67,7 @@ function Hero() {
                 href="#install"
                 className="inline-flex items-center gap-1.5 rounded-md bg-blue-500 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-400"
               >
-                3 ステップで始める
+                Get started in 3 steps
               </a>
               <a
                 href={GITHUB_URL}
@@ -75,7 +76,7 @@ function Hero() {
                 className="inline-flex items-center gap-1.5 rounded-md border border-slate-600 bg-transparent px-4 py-2 text-sm font-medium text-slate-200 transition hover:border-slate-400 hover:text-white"
               >
                 <Github className="size-4" />
-                GitHub で見る
+                View on GitHub
               </a>
             </div>
           </div>
@@ -87,9 +88,9 @@ function Hero() {
 
 function Problem() {
   const questions: { num: string; text: string }[] = [
-    { num: "01", text: "Claude Code、月いくら使ってますか？" },
-    { num: "02", text: "何にトークンを使った日が高くついてましたか？" },
-    { num: "03", text: "どのツール呼び出しが時間を食っていますか？" },
+    { num: "01", text: "How much did Claude Code cost you this month?" },
+    { num: "02", text: "Which day burned the most tokens, and on what?" },
+    { num: "03", text: "Which tool calls are eating your time?" },
   ];
   return (
     <section className="border-b border-slate-800 bg-slate-950">
@@ -106,8 +107,8 @@ function Problem() {
         </ul>
         <p className="mt-8 text-pretty leading-relaxed text-slate-400">
           <span className="font-semibold text-white">koji-lens</span>{" "}
-          は、ローカルに保存された Claude Code のセッションログを解析し、
-          あなたの AI コーディングの使い方を 1 コマンドで可視化します。
+          parses the Claude Code session logs stored locally on your machine
+          and visualizes how you actually use AI coding — in a single command.
         </p>
       </div>
     </section>
@@ -123,23 +124,23 @@ type Feature = {
 const FEATURES: Feature[] = [
   {
     icon: Wallet,
-    title: "今月いくら使ったか",
-    body: "セッションごとの USD / JPY 換算コストと TOTAL 集計を即表示。月末の Anthropic 請求と照合できます。",
+    title: "How much you spent this month",
+    body: "Per-session cost in USD with a TOTAL aggregate. Reconciles cleanly against your end-of-month Anthropic bill.",
   },
   {
     icon: BarChart3,
-    title: "どの作業が高くついたか",
-    body: "過去 7 / 30 日のコスト推移とツール呼び出し分布。突出したセッションをワンクリックで掘れます。",
+    title: "Which work cost you the most",
+    body: "Cost trends over the last 7 / 30 days plus tool call distribution. Drill into outlier sessions in one click.",
   },
   {
     icon: Lock,
-    title: "データはあなたの PC だけに留まる",
-    body: "クラウドへの送信なし。プロンプト本文は SQLite に保存しない設計。安心して全ログを解析できます。",
+    title: "Your data stays on your machine",
+    body: "No cloud uploads. Prompt bodies are never written to SQLite. Safe to analyze your full log history.",
   },
   {
     icon: Puzzle,
-    title: "Claude Code に今日使えて、明日も使える",
-    body: "Claude Code のログ形式に完全対応。Cursor / Cline 対応も OSS で開発中（MIT ライセンス）。",
+    title: "Works with Claude Code today, and tomorrow",
+    body: "Full support for the Claude Code log format. Cursor / Cline support is in development as OSS (MIT-licensed).",
   },
 ];
 
@@ -149,10 +150,10 @@ function Features() {
       <div className="mx-auto max-w-6xl px-6 py-20">
         <div className="mx-auto mb-12 max-w-2xl text-center">
           <h2 className="text-3xl font-semibold tracking-tight text-slate-900">
-            インストールして 1 分で分かること
+            What you'll see in the first minute
           </h2>
           <p className="mt-3 text-slate-600">
-            ターミナル 1 コマンドで、AI コーディングの実態を掴む。
+            One terminal command to grasp how your AI coding actually plays out.
           </p>
         </div>
         <div className="grid gap-6 md:grid-cols-2">
@@ -185,32 +186,32 @@ function Comparison() {
     kojilens: string;
   }> = [
     {
-      label: "期間集計",
-      official: "24h / 週単位（固定）",
-      kojilens: "--since で 24h / 7d / 30d / 任意 ISO 日付",
+      label: "Time range aggregation",
+      official: "24h / week (fixed)",
+      kojilens: "--since with 24h / 7d / 30d / arbitrary ISO date",
     },
     {
-      label: "プロジェクト / モデル / ツール / subagent 横断",
+      label: "Cross-cut by project / model / tool / subagent",
       official: "✗",
-      kojilens: "✓（パス・モデル・ツール名・親子構造で集計）",
+      kojilens: "✓ (aggregates by path, model, tool name, parent-child structure)",
     },
     {
-      label: "サブスク利用者のコスト見え方",
-      official: "利用状況のみ、コスト数値なし",
-      kojilens: "API 換算値で参考表示（注記付き）",
+      label: "Cost visibility for subscribers",
+      official: "Usage only, no cost numbers",
+      kojilens: "Shows API-equivalent cost as reference (with note)",
     },
     {
-      label: "ローカル完結（社外送信なし）",
-      official: "Console / dashboard はクラウド経由",
-      kojilens: "✓（JSONL ローカル解析、Free 永続）",
+      label: "Local-only (no data leaves your machine)",
+      official: "Console / dashboard goes through the cloud",
+      kojilens: "✓ (parses JSONL locally, Free tier permanent)",
     },
     {
-      label: "ccusage との関係",
+      label: "Relationship with ccusage",
       official: "—",
-      kojilens: "同じ JSONL を読む設計。ccusage ユーザーはインポート不要、入れた日から全履歴が見えます",
+      kojilens: "Reads the same JSONL files. ccusage users don't need to import — full history is visible from day one",
     },
     {
-      label: "JSON エクスポート / シェル連携",
+      label: "JSON export / shell pipelining",
       official: "✗",
       kojilens: "--format json / --summary-only",
     },
@@ -220,14 +221,14 @@ function Comparison() {
       <div className="mx-auto max-w-5xl px-6 py-20">
         <div className="mx-auto mb-12 max-w-2xl text-center">
           <h2 className="text-3xl font-semibold tracking-tight text-slate-900">
-            公式の usage と、何が違うか。
+            How is this different from official usage?
           </h2>
           <p className="mt-3 text-slate-600">
-            Claude Code の{" "}
+            Comparison against the Claude Code{" "}
             <code className="rounded bg-slate-200 px-1.5 py-0.5 font-mono text-xs">
               /usage
             </code>{" "}
-            コマンドと Anthropic Console との比較。
+            command and Anthropic Console.
           </p>
         </div>
 
@@ -239,14 +240,14 @@ function Comparison() {
                   scope="col"
                   className="px-5 py-3 text-left font-medium"
                 >
-                  項目
+                  Item
                 </th>
                 <th
                   scope="col"
                   className="px-5 py-3 text-left font-medium"
                 >
-                  公式（<code className="font-mono text-xs">/usage</code> /
-                  Anthropic Console）
+                  Official (<code className="font-mono text-xs">/usage</code> /
+                  Anthropic Console)
                 </th>
                 <th
                   scope="col"
@@ -275,10 +276,10 @@ function Comparison() {
         </div>
 
         <p className="mt-6 text-center text-xs text-slate-500">
-          公式の{" "}
+          The official{" "}
           <code className="font-mono text-[11px]">/usage</code>{" "}
-          は v2.1.105 以降搭載。Anthropic Console は API
-          ユーザー向け請求確定値を月次で表示。{" "}
+          ships in v2.1.105+. Anthropic Console shows monthly billed totals
+          for API users.{" "}
           <a
             href="https://github.com/ryoppippi/ccusage"
             target="_blank"
@@ -287,7 +288,9 @@ function Comparison() {
           >
             ccusage
           </a>{" "}
-          はトークン・コスト集計に特化した OSS（13k+ スター）。koji-lens は ccusage と同じ JSONL を読むため、データ移行なしで併用できます。
+          is a popular OSS tool for token / cost aggregation (13k+ stars).
+          koji-lens reads the same JSONL files, so you can run both side by side
+          without any data migration.
         </p>
       </div>
     </section>
@@ -300,10 +303,11 @@ function Screenshots() {
       <div className="mx-auto max-w-6xl px-6 py-20">
         <div className="mx-auto mb-12 max-w-2xl text-center">
           <h2 className="text-3xl font-semibold tracking-tight text-slate-900">
-            実際に動かすと、こう見える。
+            What you actually see when you run it
           </h2>
           <p className="mt-3 text-slate-600">
-            インストールしてすぐ、こんな出力が得られます。コスト表示は API 換算で、サブスクリプション利用者は使い方の可視化として活用できます。
+            Right after install, here's what you get. Cost is shown in API-equivalent
+            terms — subscribers can use it as a usage visualization tool.
           </p>
         </div>
 
@@ -373,7 +377,7 @@ function Screenshots() {
               {"  tools:    Bash×102, Edit×89, Read×59..."}
             </Line>
             <Line>{" "}</Line>
-            <Line className="text-slate-500">{"(以下 13 セッション省略)"}</Line>
+            <Line className="text-slate-500">{"(13 more sessions omitted)"}</Line>
           </TerminalPane>
 
           <TerminalPane title="koji-lens sessions --since 24h --limit 5">
@@ -390,13 +394,13 @@ function Screenshots() {
             <Line className="text-slate-300">
               {"28cf16fa-...   7h 38m 22s  "}
               <Cost>$420.6613</Cost>
-              <span className="text-amber-300">{"  ← 突出"}</span>
+              <span className="text-amber-300">{"  ← outlier"}</span>
             </Line>
             <Line className="text-slate-400">
               {"agent-a94b...  1m 9s       "}
               <Cost>$0.2880</Cost>
               <span className="text-slate-500">
-                {"  ↳ subagent 9b630739"}
+                {"  ↳ subagent of 9b630739"}
               </span>
             </Line>
             <Line className="text-slate-400">
@@ -406,7 +410,7 @@ function Screenshots() {
             <Line className="text-slate-500">{"... (10 more)"}</Line>
             <Line>{" "}</Line>
             <Line className="text-slate-500">
-              {"# チャートで見るなら:"}
+              {"# To see charts:"}
             </Line>
             <Line>{"$ koji-lens serve"}</Line>
             <Line className="text-slate-400">
@@ -418,13 +422,15 @@ function Screenshots() {
         <div className="mt-16">
           <div className="mx-auto mb-8 max-w-2xl text-center">
             <h3 className="text-2xl font-semibold tracking-tight text-slate-900">
-              ブラウザでも、同じデータを。
+              The same data, in a browser.
             </h3>
             <p className="mt-3 text-slate-600">
+              Run{" "}
               <code className="rounded bg-slate-100 px-1.5 py-0.5 font-mono text-xs">
                 koji-lens serve
               </code>{" "}
-              でローカルに Web ダッシュボードを起動。チャートと集計数値で全体像を一画面に。
+              to launch a local web dashboard. The full picture in one screen,
+              with charts and aggregate numbers.
             </p>
           </div>
 
@@ -441,7 +447,7 @@ function Screenshots() {
               <div className="relative aspect-[16/10] w-full overflow-hidden">
                 <Image
                   src="/screenshots/screenshots.png"
-                  alt="koji-lens Web ダッシュボード — 合計コスト・KPI カード・セッション別コストとツール使用のチャートを 1 画面で可視化"
+                  alt="koji-lens web dashboard — total cost, KPI cards, per-session cost and tool usage charts in a single view"
                   fill
                   className="object-cover object-top"
                   sizes="(min-width: 1024px) 56rem, 100vw"
@@ -449,7 +455,7 @@ function Screenshots() {
               </div>
             </div>
             <figcaption className="mt-3 text-center text-xs text-slate-500">
-              実データのスクリーンショット（直近 30 セッション集計）
+              Screenshot from real data (last 30 sessions aggregated)
             </figcaption>
           </figure>
         </div>
@@ -503,9 +509,9 @@ function Cost({ children }: { children: React.ReactNode }) {
 
 function InstallSteps() {
   const steps: { n: number; title: string; cmd: string }[] = [
-    { n: 1, title: "インストール", cmd: "npm install -g @kojihq/lens" },
-    { n: 2, title: "セッションサマリを見る", cmd: "koji-lens summary" },
-    { n: 3, title: "ダッシュボードを起動", cmd: "koji-lens serve" },
+    { n: 1, title: "Install", cmd: "npm install -g @kojihq/lens" },
+    { n: 2, title: "See your session summary", cmd: "koji-lens summary" },
+    { n: 3, title: "Launch the dashboard", cmd: "koji-lens serve" },
   ];
 
   return (
@@ -513,10 +519,10 @@ function InstallSteps() {
       <div className="mx-auto max-w-4xl px-6 py-20">
         <div className="mx-auto mb-12 max-w-2xl text-center">
           <h2 className="text-3xl font-semibold tracking-tight text-slate-900">
-            3 ステップで始める
+            Get started in 3 steps
           </h2>
           <p className="mt-3 text-slate-600">
-            Claude Code を使っていれば、追加設定なしですぐ動きます。
+            If you're already using Claude Code, it works out of the box — no extra setup.
           </p>
         </div>
         <ol className="space-y-4">
@@ -560,31 +566,31 @@ type Plan = {
 const PLANS: Plan[] = [
   {
     name: "Free",
-    price: "¥0",
+    price: "$0",
     features: [
-      "ローカル CLI 全機能",
-      "ローカル Web ダッシュボード",
-      "Claude Code ログの完全対応",
+      "All local CLI features",
+      "Local web dashboard",
+      "Full Claude Code log support",
     ],
   },
   {
-    name: "Pro 月額",
+    name: "Pro Monthly",
     price: "$7",
-    unit: "/月",
+    unit: "/month",
     features: [
-      "クラウド同期（履歴無制限）",
-      "複数デバイス同期",
-      "CSV / JSON エクスポート",
-      "週次 / 月次レポート",
+      "Cloud sync (unlimited history)",
+      "Multi-device sync",
+      "CSV / JSON export",
+      "Weekly / monthly reports",
     ],
     highlight: true,
   },
   {
-    name: "Pro 年額",
+    name: "Pro Annual",
     price: "$70",
-    unit: "/年",
-    note: "月額比 約 17% 割引",
-    features: ["Pro 月額のすべて", "年額契約で割安"],
+    unit: "/year",
+    note: "~17% off vs monthly",
+    features: ["Everything in Pro Monthly", "Annual billing discount"],
   },
 ];
 
@@ -594,16 +600,16 @@ function Pricing() {
       <div className="mx-auto max-w-6xl px-6 py-20">
         <div className="mx-auto mb-4 max-w-2xl text-center">
           <h2 className="text-3xl font-semibold tracking-tight text-slate-900">
-            料金
+            Pricing
           </h2>
           <p className="mt-3 text-slate-600">
-            Pro プランは 2026 年 5 月下旬に提供開始予定。
+            Pro plan launches in late May 2026.
           </p>
         </div>
 
         <div className="mx-auto mb-12 max-w-3xl rounded-2xl border border-blue-100 bg-blue-50/60 p-6 md:p-8">
           <h3 className="text-lg font-medium text-slate-800 md:text-xl">
-            こんな状況に心当たりがあれば、Pro をどうぞ
+            If any of these sound familiar, Pro is for you
           </h3>
           <ul className="mt-4 space-y-2.5 text-slate-700">
             <li className="flex gap-3">
@@ -611,34 +617,34 @@ function Pricing() {
                 aria-hidden
                 className="mt-1 inline-flex size-4 shrink-0 items-center justify-center rounded border border-slate-400 text-xs"
               />
-              <span>月末の Anthropic 請求を見るまでコストが分からない</span>
+              <span>You don't know your cost until the Anthropic bill arrives</span>
             </li>
             <li className="flex gap-3">
               <span
                 aria-hidden
                 className="mt-1 inline-flex size-4 shrink-0 items-center justify-center rounded border border-slate-400 text-xs"
               />
-              <span>どのプロジェクトで使いすぎているか把握できない</span>
+              <span>You can't tell which project is over-spending</span>
             </li>
             <li className="flex gap-3">
               <span
                 aria-hidden
                 className="mt-1 inline-flex size-4 shrink-0 items-center justify-center rounded border border-slate-400 text-xs"
               />
-              <span>複数の PC で使っているのにログが分散している</span>
+              <span>Logs are scattered across multiple machines you use</span>
             </li>
           </ul>
           <p className="mt-5 text-sm leading-relaxed text-slate-600">
-            → Pro では予算残量の追跡、複数デバイス間の同期、月次レポートのメール配信が使えるようになります。
+            → Pro adds budget tracking, multi-device sync, and monthly report emails.
             <span className="ml-1 text-slate-500">
-              （2026 年 5 月下旬リリース予定）
+              (Launching late May 2026)
             </span>
           </p>
           <a
             href="#waitlist"
             className="mt-5 inline-flex items-center gap-1.5 rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-500"
           >
-            メール通知に登録する
+            Sign up for launch notification
             <span aria-hidden>→</span>
           </a>
         </div>
@@ -655,7 +661,7 @@ function Pricing() {
             >
               {p.highlight ? (
                 <div className="absolute -top-3 left-6 rounded-full bg-blue-600 px-2 py-0.5 text-xs font-medium text-white">
-                  おすすめ
+                  Recommended
                 </div>
               ) : null}
               <div className="mb-4">
@@ -698,17 +704,18 @@ function Waitlist() {
         <div className="rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
           <div className="mb-2 inline-flex items-center gap-1.5 rounded-full bg-blue-50 px-2.5 py-1 text-xs font-medium text-blue-700">
             <Bell className="size-3.5" />
-            Pro リリース先行通知
+            Early access notification
           </div>
           <h2 className="text-2xl font-semibold tracking-tight text-slate-900">
-            Pro プラン販売開始の通知を受け取る
+            Get notified when Pro launches
           </h2>
           <p className="mt-3 text-pretty leading-relaxed text-slate-600">
-            Pro プラン（月額 $7 / 年額 $70）は 2026 年 5 月下旬に提供開始予定です。
-            メールアドレスを登録しておくと、販売開始のタイミングで先行案内をお送りします。
+            The Pro plan ($7/month, $70/year) launches in late May 2026.
+            Drop your email below and we'll send you an early-access notice
+            at launch.
           </p>
           <p className="mt-2 text-sm leading-relaxed text-slate-500">
-            β 期間中のフィードバックをくれた方には、Pro リリース時にお得なお知らせが届く可能性があります。
+            β testers who share feedback may receive special offers at the Pro launch.
           </p>
           <WaitlistForm enabled={enabled} />
         </div>
@@ -722,29 +729,29 @@ function Links() {
     {
       label: "GitHub",
       href: GITHUB_URL,
-      desc: "ソースコード・Issue・Discussions",
+      desc: "Source code · Issues · Discussions",
     },
     {
       label: "npm",
       href: NPM_URL,
-      desc: "@kojihq/lens · 最新 β 版",
+      desc: "@kojihq/lens · latest β release",
     },
     {
-      label: "ドキュメント",
+      label: "Documentation",
       href: "/docs",
-      desc: "クイックスタート・コマンドリファレンス・FAQ",
+      desc: "Quickstart · Command reference · FAQ",
     },
     {
-      label: "お問い合わせ",
+      label: "Contact",
       href: "/contact",
-      desc: "サポート窓口・料金や契約のご質問",
+      desc: "Support · Pricing & contract questions",
     },
   ];
   return (
     <section className="border-b border-slate-200">
       <div className="mx-auto max-w-6xl px-6 py-16">
         <h2 className="mb-8 text-center text-2xl font-semibold tracking-tight text-slate-900">
-          リンク
+          Links
         </h2>
         <div className="grid gap-3 md:grid-cols-4">
           {items.map((it) => (
@@ -767,3 +774,17 @@ function Links() {
   );
 }
 
+function LangSwitcher() {
+  return (
+    <section className="border-b border-slate-200 bg-slate-50">
+      <div className="mx-auto max-w-3xl px-6 py-6 text-center text-sm">
+        <a
+          href="/"
+          className="inline-flex items-center gap-1.5 text-slate-500 transition hover:text-slate-700"
+        >
+          日本語 →
+        </a>
+      </div>
+    </section>
+  );
+}
