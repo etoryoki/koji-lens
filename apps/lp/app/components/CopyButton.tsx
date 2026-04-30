@@ -6,9 +6,14 @@ import { useState } from "react";
 type Props = {
   value: string;
   label?: string;
+  copiedLabel?: string;
 };
 
-export function CopyButton({ value, label = "コピー" }: Props) {
+export function CopyButton({
+  value,
+  label = "コピー",
+  copiedLabel = "コピーしました",
+}: Props) {
   const [copied, setCopied] = useState(false);
 
   const onCopy = async () => {
@@ -31,7 +36,7 @@ export function CopyButton({ value, label = "コピー" }: Props) {
       {copied ? (
         <>
           <Check className="size-3.5 text-emerald-600" />
-          <span>コピーしました</span>
+          <span>{copiedLabel}</span>
         </>
       ) : (
         <>

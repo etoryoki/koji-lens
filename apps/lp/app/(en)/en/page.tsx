@@ -3,7 +3,7 @@ import Image from "next/image";
 import { CopyButton } from "../../components/CopyButton";
 import { SiteFooterEn } from "../../components/SiteFooterEn";
 import { SiteHeaderEn } from "../../components/SiteHeaderEn";
-import { WaitlistForm } from "../../components/WaitlistForm";
+import { WaitlistFormEn } from "../../components/WaitlistFormEn";
 
 const INSTALL_CMD = "npm install -g @kojihq/lens";
 const GITHUB_URL = "https://github.com/etoryoki/koji-lens";
@@ -59,7 +59,7 @@ function Hero() {
                   ▍
                 </span>
               </code>
-              <CopyButton value={INSTALL_CMD} />
+              <CopyButton value={INSTALL_CMD} label="Copy" copiedLabel="Copied" />
             </div>
             <div className="flex flex-wrap items-center justify-center gap-3">
               <a
@@ -543,7 +543,7 @@ function InstallSteps() {
                 <code className="flex-1 overflow-x-auto whitespace-nowrap font-mono text-sm text-slate-100">
                   {s.cmd}
                 </code>
-                <CopyButton value={s.cmd} />
+                <CopyButton value={s.cmd} label="Copy" copiedLabel="Copied" />
               </div>
             </li>
           ))}
@@ -713,7 +713,7 @@ function Waitlist() {
             Drop your email below and we'll send you an early-access notice
             at launch.
           </p>
-          <WaitlistForm enabled={enabled} />
+          <WaitlistFormEn enabled={enabled} />
         </div>
       </div>
     </section>
