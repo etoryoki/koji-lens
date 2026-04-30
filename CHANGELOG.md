@@ -4,6 +4,30 @@ All notable changes to this project are documented in this file.
 
 For detailed release notes, see [GitHub Releases](https://github.com/etoryoki/koji-lens/releases).
 
+## [Unreleased] — Targeted for v0.1.0-beta.4 (next republish)
+
+### Added
+- LP English version at <https://lens.kojihq.com/en> (Multiple Root Layouts via `app/(ja)/` + `app/(en)/`)
+- Bilingual confirmation emails for waitlist + contact (EN body when `locale=en` in form submission)
+- English OG image (`/og-en.png`) with English Hero copy
+- `CHANGELOG.md`, `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`
+- `.github/ISSUE_TEMPLATE/` (bug report + feature request, form-based)
+- `.github/PULL_REQUEST_TEMPLATE.md`
+- `.github/dependabot.yml` (monthly npm + GitHub Actions updates)
+- CI: explicit `build` job with workspace ordering (`core` → `web` → `lens` → `lp`) + CLI smoke check
+- `packages/ccsg-poc/` (Claude Code Security Gateway PoC for Day 45 product evaluation)
+
+### Changed
+- Pricing finalized: Pro Monthly **$7/month** (was $8), Pro Annual **$70/year** (was $80)
+- Bluesky profile: bilingual JA + EN description, Koji-brand-first structure
+- `metadata.alternates.languages` (hreflang) added to all paginated routes (root, contact, legal/{privacy,tos})
+- sitemap.ts: alternates.languages on every JA/EN paired route
+
+### Fixed
+- EN page components were inheriting JP versions; now fully English (`SiteHeaderEn`, `SiteFooterEn`, `ContactFormEn`, `WaitlistFormEn`, `CopyButton` accepts `copiedLabel` prop)
+- Waitlist confirmation email previously had stale $8/$80 pricing; now $7/$70 in both JA and EN templates
+- `apps/lp/app/layout.tsx` was emitting `<html lang="ja">` for `/en` routes; resolved via Multiple Root Layouts
+
 ## [0.1.0-beta.3] — 2026-04-30
 
 ### Added

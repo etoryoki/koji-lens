@@ -1,0 +1,52 @@
+version: 2
+
+updates:
+  # npm (root + workspaces)
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+      day: "monday"
+      time: "10:00"
+      timezone: "Asia/Tokyo"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "needs-triage"
+    groups:
+      # Group dev / type / lint updates to reduce PR noise
+      dev-dependencies:
+        dependency-type: "development"
+        update-types:
+          - "minor"
+          - "patch"
+    ignore:
+      # Stay on Next.js 16.x major; review majors manually
+      - dependency-name: "next"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "react"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "react-dom"
+        update-types: ["version-update:semver-major"]
+      # Tailwind v4 majors are intentional choices
+      - dependency-name: "tailwindcss"
+        update-types: ["version-update:semver-major"]
+    commit-message:
+      prefix: "chore"
+      include: "scope"
+
+  # GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+      day: "monday"
+      time: "10:00"
+      timezone: "Asia/Tokyo"
+    open-pull-requests-limit: 3
+    labels:
+      - "dependencies"
+      - "ci"
+    commit-message:
+      prefix: "chore"
+      include: "scope"
