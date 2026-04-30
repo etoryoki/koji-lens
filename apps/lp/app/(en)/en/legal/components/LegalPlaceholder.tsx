@@ -1,5 +1,5 @@
-import { SiteFooter } from "../../../../components/SiteFooter";
-import { SiteHeader } from "../../../../components/SiteHeader";
+import { SiteFooterEn } from "../../../../components/SiteFooterEn";
+import { SiteHeaderEn } from "../../../../components/SiteHeaderEn";
 
 type Props = {
   title: string;
@@ -9,7 +9,7 @@ type Props = {
 export function LegalPlaceholder({ title, dueBy }: Props) {
   return (
     <main className="flex min-h-screen flex-col bg-white">
-      <SiteHeader />
+      <SiteHeaderEn />
 
       <div className="mx-auto w-full max-w-3xl flex-1 px-6 py-16">
         <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
@@ -50,7 +50,7 @@ export function LegalPlaceholder({ title, dueBy }: Props) {
         </div>
       </div>
 
-      <SiteFooter />
+      <SiteFooterEn />
     </main>
   );
 }

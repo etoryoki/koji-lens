@@ -1,8 +1,8 @@
 import { BarChart3, Bell, Github, Lock, Puzzle, Wallet } from "lucide-react";
 import Image from "next/image";
 import { CopyButton } from "../../components/CopyButton";
-import { SiteFooter } from "../../components/SiteFooter";
-import { SiteHeader } from "../../components/SiteHeader";
+import { SiteFooterEn } from "../../components/SiteFooterEn";
+import { SiteHeaderEn } from "../../components/SiteHeaderEn";
 import { WaitlistForm } from "../../components/WaitlistForm";
 
 const INSTALL_CMD = "npm install -g @kojihq/lens";
@@ -12,7 +12,7 @@ const NPM_URL = "https://www.npmjs.com/package/@kojihq/lens";
 export default function Page() {
   return (
     <main className="flex min-h-screen flex-col">
-      <SiteHeader />
+      <SiteHeaderEn />
       <Hero />
       <Problem />
       <Features />
@@ -22,8 +22,7 @@ export default function Page() {
       <Pricing />
       <Waitlist />
       <Links />
-      <LangSwitcher />
-      <SiteFooter />
+      <SiteFooterEn />
     </main>
   );
 }
@@ -771,17 +770,3 @@ function Links() {
   );
 }
 
-function LangSwitcher() {
-  return (
-    <section className="border-b border-slate-200 bg-slate-50">
-      <div className="mx-auto max-w-3xl px-6 py-6 text-center text-sm">
-        <a
-          href="/"
-          className="inline-flex items-center gap-1.5 text-slate-500 transition hover:text-slate-700"
-        >
-          日本語 →
-        </a>
-      </div>
-    </section>
-  );
-}

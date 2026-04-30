@@ -1,7 +1,7 @@
 import { Mail } from "lucide-react";
 import { ContactForm } from "../../../components/ContactForm";
-import { SiteFooter } from "../../../components/SiteFooter";
-import { SiteHeader } from "../../../components/SiteHeader";
+import { SiteFooterEn } from "../../../components/SiteFooterEn";
+import { SiteHeaderEn } from "../../../components/SiteHeaderEn";
 
 export const metadata = {
   title: "Contact | koji-lens",
@@ -16,7 +16,7 @@ export default function ContactPage() {
 
   return (
     <main className="flex min-h-screen flex-col">
-      <SiteHeader />
+      <SiteHeaderEn />
 
       <section className="border-b border-slate-200 bg-gradient-to-b from-slate-50 to-white">
         <div className="mx-auto max-w-3xl px-6 py-16">
@@ -79,7 +79,7 @@ export default function ContactPage() {
         </div>
       </section>
 
-      <SiteFooter />
+      <SiteFooterEn />
     </main>
   );
 }
