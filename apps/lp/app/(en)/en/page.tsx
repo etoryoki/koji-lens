@@ -577,8 +577,8 @@ const PLANS: Plan[] = [
     price: "$7",
     unit: "/month",
     features: [
+      "All your machines in one timeline (multi-device sync)",
       "Cloud sync (unlimited history)",
-      "Multi-device sync",
       "CSV / JSON export",
       "Weekly / monthly reports",
     ],
@@ -598,6 +598,9 @@ function Pricing() {
     <section id="pricing" className="border-b border-slate-200">
       <div className="mx-auto max-w-6xl px-6 py-20">
         <div className="mx-auto mb-4 max-w-2xl text-center">
+          <p className="mb-2 text-sm leading-relaxed text-slate-500">
+            Know your AI coding spend before month-end. — And know it across all your machines.
+          </p>
           <h2 className="text-3xl font-semibold tracking-tight text-slate-900">
             Pricing
           </h2>
@@ -634,7 +637,7 @@ function Pricing() {
             </li>
           </ul>
           <p className="mt-5 text-sm leading-relaxed text-slate-600">
-            → Pro adds budget tracking, multi-device sync, and monthly report emails.
+            → Pro syncs all your machines into one timeline so monthly reports show your real usage. Budget tracking and email delivery included.
             <span className="ml-1 text-slate-500">
               (Launching late May 2026)
             </span>

@@ -572,8 +572,8 @@ const PLANS: Plan[] = [
     price: "$7",
     unit: "/月",
     features: [
+      "3 台分のデータが 1 本になる（複数デバイス同期）",
       "クラウド同期（履歴無制限）",
-      "複数デバイス同期",
       "CSV / JSON エクスポート",
       "週次 / 月次レポート",
     ],
@@ -593,6 +593,9 @@ function Pricing() {
     <section id="pricing" className="border-b border-slate-200">
       <div className="mx-auto max-w-6xl px-6 py-20">
         <div className="mx-auto mb-4 max-w-2xl text-center">
+          <p className="mb-2 text-sm leading-relaxed text-slate-500">
+            月末に驚く前に、今日知る。— そして、3 台全部の数字で知る。
+          </p>
           <h2 className="text-3xl font-semibold tracking-tight text-slate-900">
             料金
           </h2>
@@ -629,7 +632,7 @@ function Pricing() {
             </li>
           </ul>
           <p className="mt-5 text-sm leading-relaxed text-slate-600">
-            → Pro では予算残量の追跡、複数デバイス間の同期、月次レポートのメール配信が使えるようになります。
+            → Pro では 3 台分のデータが 1 本になり、月次レポートに「あなたの本当の使用量」が出ます。予算残量の追跡やメール配信も対応。
             <span className="ml-1 text-slate-500">
               （2026 年 5 月下旬リリース予定）
             </span>
