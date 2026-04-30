@@ -34,7 +34,7 @@ export function WaitlistFormEn({ enabled }: Props) {
       const res = await fetch("/api/waitlist", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ email: trimmed }),
+        body: JSON.stringify({ email: trimmed, locale: "en" }),
       });
 
       if (!res.ok) {

@@ -70,6 +70,7 @@ export function ContactFormEn({ enabled }: Props) {
           category,
           body: trimmedBody,
           website,
+          locale: "en",
         }),
       });
 

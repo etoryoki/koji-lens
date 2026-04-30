@@ -4,8 +4,11 @@ import { isValidEmail } from "../../../lib/validation";
 
 export const runtime = "nodejs";
 
+type Locale = "ja" | "en";
+
 type Body = {
   email?: unknown;
+  locale?: unknown;
 };
 
 export async function POST(req: Request) {
@@ -21,10 +24,12 @@ export async function POST(req: Request) {
   }
 
   let email: string;
+  let locale: Locale = "ja";
   try {
     const body = (await req.json()) as Body;
     email =
       typeof body?.email === "string" ? body.email.trim().toLowerCase() : "";
+    locale = body?.locale === "en" ? "en" : "ja";
   } catch {
     return NextResponse.json({ error: "invalid_body" }, { status: 400 });
   }
@@ -52,13 +57,16 @@ export async function POST(req: Request) {
     }
   }
 
-  // 確認メール送信。送信失敗は audience 登録の成功を妨げない（ログに残して成功を返す）
+  // 確認メール送信。送信失敗は audience 登録の成功を妨げない
   const sendRes = await resend.emails.send({
     from: `Koji <${fromAddress}>`,
     to: email,
-    subject: "Pro リリース先行通知リストにご登録いただきありがとうございます",
-    html: buildConfirmationHtml(),
-    text: buildConfirmationText(),
+    subject:
+      locale === "en"
+        ? "Thanks for joining the koji-lens Pro waitlist"
+        : "Pro リリース先行通知リストにご登録いただきありがとうございます",
+    html: buildConfirmationHtml(locale),
+    text: buildConfirmationText(locale),
   });
 
   if (sendRes.error) {
@@ -68,7 +76,43 @@ export async function POST(req: Request) {
   return NextResponse.json({ ok: true });
 }
 
-function buildConfirmationHtml(): string {
+function buildConfirmationHtml(locale: Locale): string {
+  if (locale === "en") {
+    return `<!doctype html>
+<html lang="en">
+  <body style="margin:0;padding:0;background:#f8fafc;font-family:system-ui,-apple-system,'Segoe UI',sans-serif;color:#0f172a;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f8fafc;padding:32px 16px;">
+      <tr>
+        <td align="center">
+          <table role="presentation" width="560" cellpadding="0" cellspacing="0" style="max-width:560px;background:#ffffff;border:1px solid #e2e8f0;border-radius:12px;padding:32px;">
+            <tr>
+              <td>
+                <div style="font-size:14px;color:#2563eb;font-weight:600;margin-bottom:8px;">koji-lens · Pro launch notification</div>
+                <h1 style="margin:0 0 16px 0;font-size:22px;line-height:1.4;color:#0f172a;">Thanks for signing up</h1>
+                <p style="margin:0 0 12px 0;font-size:15px;line-height:1.7;color:#334155;">
+                  You're on the launch notification list for koji-lens Pro ($7/month or $70/year).
+                </p>
+                <p style="margin:0 0 12px 0;font-size:15px;line-height:1.7;color:#334155;">
+                  Pro launches in late May 2026. We'll send you an early-access notice at this email address.
+                  Meanwhile, all CLI features are free during the β period — feel free to try them out.
+                </p>
+                <p style="margin:24px 0 0 0;font-size:14px;color:#64748b;">
+                  To unsubscribe or for any questions, contact us at <a href="mailto:support@kojihq.com" style="color:#2563eb;text-decoration:none;">support@kojihq.com</a>.
+                </p>
+                <hr style="margin:24px 0;border:0;border-top:1px solid #e2e8f0;" />
+                <p style="margin:0;font-size:12px;color:#94a3b8;">
+                  Koji / Quinque, Inc.<br />
+                  <a href="https://lens.kojihq.com/en" style="color:#64748b;text-decoration:none;">lens.kojihq.com/en</a>
+                </p>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>`;
+  }
   return `<!doctype html>
 <html lang="ja">
   <body style="margin:0;padding:0;background:#f8fafc;font-family:system-ui,-apple-system,'Segoe UI','Hiragino Sans',sans-serif;color:#0f172a;">
@@ -81,7 +125,7 @@ function buildConfirmationHtml(): string {
                 <div style="font-size:14px;color:#2563eb;font-weight:600;margin-bottom:8px;">koji-lens · Pro リリース先行通知</div>
                 <h1 style="margin:0 0 16px 0;font-size:22px;line-height:1.4;color:#0f172a;">ご登録ありがとうございます</h1>
                 <p style="margin:0 0 12px 0;font-size:15px;line-height:1.7;color:#334155;">
-                  koji-lens Pro プラン（月額 $8 / 年額 $80）の販売開始先行通知リストへのご登録を受け付けました。
+                  koji-lens Pro プラン（月額 $7 / 年額 $70）の販売開始先行通知リストへのご登録を受け付けました。
                 </p>
                 <p style="margin:0 0 12px 0;font-size:15px;line-height:1.7;color:#334155;">
                   2026 年 5 月下旬の販売開始に合わせて、このメールアドレス宛に先行案内をお送りします。
@@ -105,13 +149,28 @@ function buildConfirmationHtml(): string {
 </html>`;
 }
 
-function buildConfirmationText(): string {
+function buildConfirmationText(locale: Locale): string {
+  if (locale === "en") {
+    return [
+      "koji-lens / Pro launch notification",
+      "",
+      "Thanks for signing up.",
+      "",
+      "You're on the launch notification list for Pro ($7/month or $70/year), launching in late May 2026. We'll send you an early-access notice at this email address.",
+      "Meanwhile, all CLI features are free during the β period — feel free to try them out.",
+      "",
+      "To unsubscribe or for questions, write to support@kojihq.com.",
+      "",
+      "Koji / Quinque, Inc.",
+      "https://lens.kojihq.com/en",
+    ].join("\n");
+  }
   return [
     "koji-lens / Pro リリース先行通知",
     "",
     "ご登録ありがとうございます。",
     "",
-    "Pro プラン（月額 $8 / 年額 $80）の販売開始（2026 年 5 月下旬予定）に合わせて、このメールアドレスへ先行案内をお送りします。",
+    "Pro プラン（月額 $7 / 年額 $70）の販売開始（2026 年 5 月下旬予定）に合わせて、このメールアドレスへ先行案内をお送りします。",
     "β 期間中は CLI の全機能を無料でご利用いただけますので、ぜひご体験ください。",
     "",
     "登録解除やご質問は support@kojihq.com までご連絡ください。",

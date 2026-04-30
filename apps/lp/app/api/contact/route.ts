@@ -6,11 +6,18 @@ export const runtime = "nodejs";
 
 const CATEGORIES = ["billing", "technical", "other"] as const;
 type Category = (typeof CATEGORIES)[number];
+type Locale = "ja" | "en";
 
-const CATEGORY_LABEL: Record<Category, string> = {
+const CATEGORY_LABEL_JA: Record<Category, string> = {
   billing: "料金・契約",
   technical: "技術サポート",
   other: "その他",
+};
+
+const CATEGORY_LABEL_EN: Record<Category, string> = {
+  billing: "Pricing & contract",
+  technical: "Technical support",
+  other: "Other",
 };
 
 const NAME_MAX = 100;
@@ -21,6 +28,7 @@ type ContactBody = {
   email?: unknown;
   category?: unknown;
   body?: unknown;
+  locale?: unknown;
   // honeypot field - real users leave this empty; bots tend to fill it
   website?: unknown;
 };
@@ -49,7 +57,6 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "invalid_body" }, { status: 400 });
   }
 
-  // honeypot: silently accept and discard (do not signal detection to bots)
   const honeypot =
     typeof payload.website === "string" ? payload.website.trim() : "";
   if (honeypot.length > 0) {
@@ -69,6 +76,7 @@ export async function POST(req: Request) {
       : null;
   const body =
     typeof payload.body === "string" ? payload.body.trim().slice(0, BODY_MAX) : "";
+  const locale: Locale = payload.locale === "en" ? "en" : "ja";
 
   if (!isValidEmail(email)) {
     return NextResponse.json({ error: "invalid_email" }, { status: 400 });
@@ -81,26 +89,31 @@ export async function POST(req: Request) {
   }
 
   const resend = new Resend(apiKey);
-  const categoryLabel = CATEGORY_LABEL[category];
+  const categoryLabelInternal = CATEGORY_LABEL_JA[category]; // 社内転送は日本語固定
+  const categoryLabelUser =
+    locale === "en" ? CATEGORY_LABEL_EN[category] : CATEGORY_LABEL_JA[category];
   const summary = body.slice(0, 40).replace(/\s+/g, " ");
 
   // 2 emails in parallel:
-  //   (a) forward to support@ (Reply-To: sender so support can reply with one click)
-  //   (b) auto-acknowledgement to the sender
+  //   (a) forward to support@ (always Japanese for internal handling)
+  //   (b) auto-acknowledgement to the sender (locale-aware)
   const [forwardRes, ackRes] = await Promise.allSettled([
     resend.emails.send({
       from: `Koji Contact <${fromAddress}>`,
       to: supportEmail,
       replyTo: email,
-      subject: `[問い合わせ/${categoryLabel}] ${summary}`,
-      text: buildForwardText({ name, email, categoryLabel, body }),
+      subject: `[問い合わせ/${categoryLabelInternal}/${locale}] ${summary}`,
+      text: buildForwardText({ name, email, categoryLabel: categoryLabelInternal, body, locale }),
     }),
     resend.emails.send({
       from: `Koji Support <${supportEmail}>`,
       to: email,
-      subject: "お問い合わせを受け付けました",
-      html: buildAckHtml({ name, categoryLabel, body }),
-      text: buildAckText({ name, categoryLabel, body }),
+      subject:
+        locale === "en"
+          ? "We've received your inquiry"
+          : "お問い合わせを受け付けました",
+      html: buildAckHtml({ name, categoryLabel: categoryLabelUser, body, locale }),
+      text: buildAckText({ name, categoryLabel: categoryLabelUser, body, locale }),
     }),
   ]);
 
@@ -115,7 +128,6 @@ export async function POST(req: Request) {
     console.error("[contact] ack failed", extractError(ackRes));
   }
 
-  // Both failed → 502. One succeeded → 200 (avoid duplicate submissions on retry).
   if (!forwardOk && !ackOk) {
     return NextResponse.json({ error: "send_failed" }, { status: 502 });
   }
@@ -135,9 +147,10 @@ function buildForwardText(args: {
   email: string;
   categoryLabel: string;
   body: string;
+  locale: Locale;
 }): string {
   return [
-    `LP /contact から新しい問い合わせが届きました。`,
+    `LP /contact から新しい問い合わせが届きました（locale: ${args.locale}）。`,
     "",
     `カテゴリ: ${args.categoryLabel}`,
     `お名前:   ${args.name || "(未入力)"}`,
@@ -156,7 +169,40 @@ function buildAckHtml(args: {
   name: string;
   categoryLabel: string;
   body: string;
+  locale: Locale;
 }): string {
+  if (args.locale === "en") {
+    const greet = args.name ? `Hi ${escapeHtml(args.name)},` : "Hi,";
+    return `<!doctype html>
+<html lang="en">
+  <body style="margin:0;padding:0;background:#f8fafc;font-family:system-ui,-apple-system,'Segoe UI',sans-serif;color:#0f172a;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f8fafc;padding:32px 16px;">
+      <tr>
+        <td align="center">
+          <table role="presentation" width="560" cellpadding="0" cellspacing="0" style="max-width:560px;background:#ffffff;border:1px solid #e2e8f0;border-radius:12px;padding:32px;">
+            <tr>
+              <td>
+                <div style="font-size:14px;color:#2563eb;font-weight:600;margin-bottom:8px;">koji-lens · Contact</div>
+                <h1 style="margin:0 0 16px 0;font-size:22px;line-height:1.4;color:#0f172a;">We've received your inquiry</h1>
+                <p style="margin:0 0 12px 0;font-size:15px;line-height:1.7;color:#334155;">${greet} thanks for reaching out.</p>
+                <p style="margin:0 0 12px 0;font-size:15px;line-height:1.7;color:#334155;">We've received your inquiry as below. We aim to reply <strong>within 5 business days</strong> (some categories or busy periods may take longer).</p>
+                <div style="margin:16px 0;padding:16px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;font-size:14px;color:#334155;">
+                  <div style="margin-bottom:8px;"><strong>Category:</strong> ${escapeHtml(args.categoryLabel)}</div>
+                  <div><strong>Message:</strong></div>
+                  <pre style="margin:8px 0 0 0;white-space:pre-wrap;font-family:inherit;font-size:14px;color:#0f172a;">${escapeHtml(args.body)}</pre>
+                </div>
+                <p style="margin:0 0 12px 0;font-size:14px;color:#64748b;">You can reply to this email to reach our team directly.</p>
+                <hr style="margin:24px 0;border:0;border-top:1px solid #e2e8f0;" />
+                <p style="margin:0;font-size:12px;color:#94a3b8;">Koji / Quinque, Inc.<br /><a href="https://lens.kojihq.com/en" style="color:#64748b;text-decoration:none;">lens.kojihq.com/en</a></p>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>`;
+  }
   const greet = args.name ? `${args.name} 様` : "お問い合わせいただいた方へ";
   return `<!doctype html>
 <html lang="ja">
@@ -193,7 +239,28 @@ function buildAckText(args: {
   name: string;
   categoryLabel: string;
   body: string;
+  locale: Locale;
 }): string {
+  if (args.locale === "en") {
+    const greet = args.name ? `Hi ${args.name},` : "Hi,";
+    return [
+      greet,
+      "",
+      "Thanks for contacting koji-lens. We've received your inquiry as below.",
+      "We aim to reply within 5 business days (some categories or busy periods may take longer).",
+      "",
+      `Category: ${args.categoryLabel}`,
+      "Message:",
+      "----",
+      args.body,
+      "----",
+      "",
+      "You can reply to this email to reach our team directly.",
+      "",
+      "Koji / Quinque, Inc.",
+      "https://lens.kojihq.com/en",
+    ].join("\n");
+  }
   const greet = args.name ? `${args.name} 様` : "お問い合わせいただいた方へ";
   return [
     `${greet}`,
