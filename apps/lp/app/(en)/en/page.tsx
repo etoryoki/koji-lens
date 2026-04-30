@@ -89,8 +89,8 @@ function Hero() {
 function Problem() {
   const questions: { num: string; text: string }[] = [
     { num: "01", text: "How much did Claude Code cost you this month?" },
-    { num: "02", text: "Which day burned the most tokens, and on what?" },
-    { num: "03", text: "Which tool calls are eating your time?" },
+    { num: "02", text: "What was your biggest cost day, and what were you building?" },
+    { num: "03", text: "Which tool calls are taking the longest to run?" },
   ];
   return (
     <section className="border-b border-slate-800 bg-slate-950">
@@ -134,13 +134,13 @@ const FEATURES: Feature[] = [
   },
   {
     icon: Lock,
-    title: "Your data stays on your machine",
+    title: "Why your data never leaves your machine",
     body: "No cloud uploads. Prompt bodies are never written to SQLite. Safe to analyze your full log history.",
   },
   {
     icon: Puzzle,
-    title: "Works with Claude Code today, and tomorrow",
-    body: "Full support for the Claude Code log format. Cursor / Cline support is in development as OSS (MIT-licensed).",
+    title: "Why it works today, and tomorrow",
+    body: "First-class support for Claude Code logs. Cursor / Cline support is actively developed as open-source (MIT).",
   },
 ];
 
@@ -221,14 +221,14 @@ function Comparison() {
       <div className="mx-auto max-w-5xl px-6 py-20">
         <div className="mx-auto mb-12 max-w-2xl text-center">
           <h2 className="text-3xl font-semibold tracking-tight text-slate-900">
-            How is this different from official usage?
+            How koji-lens compares to /usage and ccusage
           </h2>
           <p className="mt-3 text-slate-600">
             Comparison against the Claude Code{" "}
             <code className="rounded bg-slate-200 px-1.5 py-0.5 font-mono text-xs">
               /usage
             </code>{" "}
-            command and Anthropic Console.
+            command, Anthropic Console, and the popular OSS tool ccusage.
           </p>
         </div>
 
@@ -624,7 +624,7 @@ function Pricing() {
                 aria-hidden
                 className="mt-1 inline-flex size-4 shrink-0 items-center justify-center rounded border border-slate-400 text-xs"
               />
-              <span>You can't tell which project is over-spending</span>
+              <span>You can't see which project is eating your budget</span>
             </li>
             <li className="flex gap-3">
               <span
@@ -713,9 +713,6 @@ function Waitlist() {
             The Pro plan ($7/month, $70/year) launches in late May 2026.
             Drop your email below and we'll send you an early-access notice
             at launch.
-          </p>
-          <p className="mt-2 text-sm leading-relaxed text-slate-500">
-            β testers who share feedback may receive special offers at the Pro launch.
           </p>
           <WaitlistForm enabled={enabled} />
         </div>
