@@ -19,7 +19,7 @@ import { parseArgs } from "node:util";
 
 import { AtpAgent } from "@atproto/api";
 
-const TARGET_DISPLAY_NAME = "Koji";
+const TARGET_DISPLAY_NAME = "Koji_麹";
 
 const TARGET_DESCRIPTION = `小さなソフトウェアで、AI コーディングの成果を増幅する。
 Small software that amplifies AI coding outcomes.
