@@ -4,7 +4,7 @@
 [![license](https://img.shields.io/npm/l/@kojihq/lens.svg)](./LICENSE)
 [![node](https://img.shields.io/node/v/@kojihq/lens/beta.svg)](https://nodejs.org/)
 
-> **Visualize your AI coding usage.** — [lens.kojihq.com](https://lens.kojihq.com)
+> **Visualize your AI coding usage.** — [lens.kojihq.com](https://lens.kojihq.com) ([English](https://lens.kojihq.com/en))
 
 Your local Claude Code usage analyzer. No servers, no signup — reads your local JSONL logs and shows your token usage with API-equivalent cost.
 
