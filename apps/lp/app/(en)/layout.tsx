@@ -58,11 +58,20 @@ export const metadata: Metadata = {
     siteName: SITE_NAME,
     locale: "en_US",
     type: "website",
+    images: [
+      {
+        url: "/og-en.png",
+        width: 1200,
+        height: 630,
+        alt: "koji-lens — Know your AI coding spend before month-end.",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
     title: SITE_TITLE,
     description: SITE_DESCRIPTION,
+    images: ["/og-en.png"],
   },
   robots: {
     index: true,
