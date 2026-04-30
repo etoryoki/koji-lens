@@ -1,0 +1,53 @@
+name: 💡 Feature request
+description: Suggest a new feature or improvement
+title: "[Feature]: "
+labels: ["enhancement", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for proposing a feature. Please describe the use case before the implementation — that helps us evaluate fit and priority.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem does this solve?
+      description: Describe the situation where you'd want this feature.
+      placeholder: e.g., "I want to compare cost between two date ranges to see if my optimization worked."
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: What you'd like koji-lens to do. Concrete examples (CLI commands, output format) are appreciated.
+      placeholder: |
+        e.g., "Add a `koji-lens compare --before 2026-04-01 --after 2026-04-15` subcommand that shows cost / token deltas across the two ranges."
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Other approaches you've thought about and why they don't fit (or do fit).
+
+  - type: dropdown
+    id: scope
+    attributes:
+      label: Scope
+      description: Where would this feature live?
+      options:
+        - CLI (subcommand or flag)
+        - Web dashboard
+        - Both
+        - Not sure
+    validations:
+      required: true
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional context
+      description: Anything else that would help us understand the request.

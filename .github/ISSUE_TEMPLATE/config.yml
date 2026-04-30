@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 💬 Bluesky
+    url: https://bsky.app/profile/kojihq.com
+    about: For light questions or discussions, DM us on Bluesky.
+  - name: 📧 Email support
+    url: mailto:support@kojihq.com
+    about: For pricing / contract / private inquiries.
