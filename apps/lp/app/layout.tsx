@@ -91,7 +91,7 @@ const softwareApplicationLd = {
   description: SITE_DESCRIPTION,
   applicationCategory: "DeveloperApplication",
   operatingSystem: "macOS, Windows, Linux",
-  softwareVersion: "0.1.0-beta.2",
+  softwareVersion: "0.1.0-beta.3",
   softwareRequirements: "Node.js 22+",
   downloadUrl: "https://www.npmjs.com/package/@kojihq/lens",
   license: "https://opensource.org/licenses/MIT",
