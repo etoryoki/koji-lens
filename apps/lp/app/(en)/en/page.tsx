@@ -735,8 +735,8 @@ function Links() {
     },
     {
       label: "Documentation",
-      href: "/docs",
-      desc: "Quickstart · Command reference · FAQ",
+      href: "https://github.com/etoryoki/koji-lens#koji-lens",
+      desc: "README on GitHub · Quickstart · CLI reference",
     },
     {
       label: "Contact",

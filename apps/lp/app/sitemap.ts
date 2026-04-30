@@ -42,13 +42,31 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.5,
     },
     {
+      url: `${BASE_URL}/en/contact`,
+      lastModified: now,
+      changeFrequency: "monthly",
+      priority: 0.5,
+    },
+    {
       url: `${BASE_URL}/legal/tos`,
       lastModified: now,
       changeFrequency: "monthly",
       priority: 0.3,
     },
     {
+      url: `${BASE_URL}/en/legal/tos`,
+      lastModified: now,
+      changeFrequency: "monthly",
+      priority: 0.3,
+    },
+    {
       url: `${BASE_URL}/legal/privacy`,
+      lastModified: now,
+      changeFrequency: "monthly",
+      priority: 0.3,
+    },
+    {
+      url: `${BASE_URL}/en/legal/privacy`,
       lastModified: now,
       changeFrequency: "monthly",
       priority: 0.3,
