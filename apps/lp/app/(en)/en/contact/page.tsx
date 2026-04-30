@@ -1,5 +1,5 @@
 import { Mail } from "lucide-react";
-import { ContactForm } from "../../../components/ContactForm";
+import { ContactFormEn } from "../../../components/ContactFormEn";
 import { SiteFooterEn } from "../../../components/SiteFooterEn";
 import { SiteHeaderEn } from "../../../components/SiteHeaderEn";
 
@@ -59,7 +59,7 @@ export default function ContactPage() {
       <section className="flex-1 bg-white">
         <div className="mx-auto max-w-3xl px-6 py-16">
           <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm md:p-8">
-            <ContactForm enabled={enabled} />
+            <ContactFormEn enabled={enabled} />
             <p className="mt-6 text-xs leading-relaxed text-slate-500">
               Personal information collected through this form is used only
               for responding to your inquiry. See our{" "}
