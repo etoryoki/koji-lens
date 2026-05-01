@@ -80,7 +80,7 @@ export default function DocsPage() {
           </nav>
         </aside>
 
-        <article className="flex-1 space-y-16">
+        <article className="min-w-0 flex-1 space-y-16">
           <section id="quickstart" className="scroll-mt-8">
             <h2 className="text-2xl font-semibold tracking-tight text-slate-900">
               クイックスタート
