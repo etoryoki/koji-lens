@@ -15,7 +15,7 @@ const SITE_URL = "https://lens.kojihq.com";
 const SITE_NAME = "koji-lens";
 const SITE_TITLE = "koji-lens — Know your AI coding spend before month-end.";
 const SITE_DESCRIPTION =
-  "A local-only OSS observability tool for Claude Code. Parses your local session logs and visualizes cost, tokens, and tool usage with a single command. One-line install, no servers, no signup.";
+  "A local-only OSS observability tool for Claude Code. Parses your local session logs and visualizes cost, tokens, and tool usage with a single command. One-line install, sample output visible on the homepage, no servers, no signup.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -98,6 +98,7 @@ const softwareApplicationLd = {
   softwareVersion: "0.1.0-beta.3",
   softwareRequirements: "Node.js 22+",
   downloadUrl: "https://www.npmjs.com/package/@kojihq/lens",
+  screenshot: `${SITE_URL}/og-en.png`,
   license: "https://opensource.org/licenses/MIT",
   inLanguage: "en",
   author: {

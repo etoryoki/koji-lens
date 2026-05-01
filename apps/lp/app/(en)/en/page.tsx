@@ -30,13 +30,13 @@ export default function Page() {
 function Hero() {
   return (
     <section className="border-b border-slate-800 bg-[#0f172a]">
-      <div className="mx-auto max-w-6xl px-6 py-20 md:py-28">
-        <div className="mx-auto max-w-3xl text-center">
-          <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-slate-700 bg-slate-800/60 px-3 py-1 text-xs text-slate-300">
+      <div className="mx-auto max-w-6xl px-6 pt-12 pb-16 md:py-28">
+        <div className="mx-auto flex max-w-3xl flex-col text-center">
+          <div className="mb-5 inline-flex items-center gap-2 self-center rounded-full border border-slate-700 bg-slate-800/60 px-3 py-1 text-xs text-slate-300">
             <span className="size-1.5 rounded-full bg-emerald-400" />
             β release · OSS (MIT)
           </div>
-          <h1 className="text-balance text-4xl font-semibold leading-tight tracking-tight text-white md:text-6xl">
+          <h1 className="text-balance text-3xl font-semibold leading-tight tracking-tight text-white md:text-6xl">
             Know your AI coding budget — before month-end.
           </h1>
           <p className="mx-auto mt-6 max-w-2xl text-pretty text-base leading-relaxed text-slate-400 md:text-lg">
@@ -45,7 +45,7 @@ function Hero() {
             and visualizes cost, tokens, and tool usage in one command.
           </p>
 
-          <div className="mx-auto mt-10 max-w-xl text-left">
+          <div className="mx-auto mt-10 max-w-xl text-left order-3 md:order-2">
             <TerminalPane title="koji-lens summary --since 24h">
               <Line>{"$ koji-lens summary --since 24h"}</Line>
               <Line className="text-slate-400">
@@ -71,7 +71,7 @@ function Hero() {
             </TerminalPane>
           </div>
 
-          <div className="mt-8 flex flex-col items-center gap-3">
+          <div className="mt-8 flex flex-col items-center gap-3 order-2 md:order-3">
             <div className="flex w-full max-w-xl items-center gap-2 rounded-lg border border-slate-700 bg-slate-800 p-2 shadow-lg">
               <span className="select-none pl-2 font-mono text-sm text-blue-400">
                 $
@@ -257,6 +257,9 @@ function Comparison() {
           </p>
         </div>
 
+        <p className="mb-3 text-center text-xs text-slate-500 md:hidden">
+          → Scroll horizontally
+        </p>
         <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm">
           <table className="w-full text-sm">
             <thead className="bg-slate-50 text-slate-600">

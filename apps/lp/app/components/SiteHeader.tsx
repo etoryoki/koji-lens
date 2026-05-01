@@ -14,7 +14,7 @@ export function SiteHeader() {
           </span>
           <span className="font-semibold tracking-tight">koji-lens</span>
         </Link>
-        <nav className="flex items-center gap-5 text-sm text-slate-300">
+        <nav className="hidden md:flex items-center gap-5 text-sm text-slate-300">
           <Link href="/#features" className="transition hover:text-white">
             機能
           </Link>
