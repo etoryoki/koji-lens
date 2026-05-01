@@ -345,28 +345,26 @@ function Screenshots() {
             <Line>{"$ koji-lens sessions --since 24h --limit 5"}</Line>
             <Line>{" "}</Line>
             <Line className="text-slate-400">
-              {"055a662d-...   8m 58s      "}
-              <Cost>$9.6253</Cost>
+              {"055a662d-...  8m 58s     "}
+              <Cost>$9.63</Cost>
             </Line>
             <Line className="text-slate-400">
-              {"44c29745-...   1h 7m 33s   "}
-              <Cost>$32.7546</Cost>
+              {"44c29745-...  1h 7m 33s  "}
+              <Cost>$32.75</Cost>
             </Line>
             <Line className="text-slate-300">
-              {"28cf16fa-...   7h 38m 22s  "}
-              <Cost>$420.6613</Cost>
+              {"28cf16fa-...  7h 38m 22s "}
+              <Cost>$420.66</Cost>
               <span className="text-amber-300">{"  ← 突出"}</span>
             </Line>
             <Line className="text-slate-400">
-              {"agent-a94b...  1m 9s       "}
-              <Cost>$0.2880</Cost>
-              <span className="text-slate-500">
-                {"  ↳ subagent 9b630739"}
-              </span>
+              {"agent-a94b... 1m 9s      "}
+              <Cost>$0.29</Cost>
+              <span className="text-slate-500">{"  ↳ subagent"}</span>
             </Line>
             <Line className="text-slate-400">
-              {"22a919c7-...   12m 4s      "}
-              <Cost>$20.7381</Cost>
+              {"22a919c7-...  12m 4s     "}
+              <Cost>$20.74</Cost>
             </Line>
             <Line className="text-slate-500">{"... (10 more)"}</Line>
             <Line>{" "}</Line>
