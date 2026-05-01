@@ -36,12 +36,7 @@ export function SiteFooterEn() {
             <Link href="/en/contact" className="transition hover:text-white">
               Contact
             </Link>
-            <Link
-              href="https://github.com/etoryoki/koji-lens#koji-lens"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="transition hover:text-white"
-            >
+            <Link href="/en/docs" className="transition hover:text-white">
               Docs
             </Link>
             <Link href="/en/legal/tos" className="transition hover:text-white">
