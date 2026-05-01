@@ -21,7 +21,7 @@
     "survey:run": "tsx --env-file-if-exists=scripts/.env.local scripts/send-survey.ts"
   },
   "devDependencies": {
-    "@atproto/api": "^0.13.35",
+    "@atproto/api": "^0.19.11",
     "@resvg/resvg-js": "^2.6.2",
     "tsx": "^4.19.2"
   }
