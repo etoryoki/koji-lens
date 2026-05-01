@@ -65,3 +65,12 @@ export {
   listKnownConfigKeys,
   type KojiLensConfig,
 } from "./config.js";
+
+export {
+  computePeriodSummary,
+  computeCompare,
+  type PeriodSummary,
+  type CompareResult,
+} from "./compare.js";
+
+export { generateInsights } from "./insights.js";

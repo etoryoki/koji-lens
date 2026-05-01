@@ -18,12 +18,7 @@ export function SiteHeaderEn() {
           <Link href="/en#features" className="transition hover:text-white">
             Features
           </Link>
-          <Link
-            href="https://github.com/etoryoki/koji-lens#koji-lens"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="transition hover:text-white"
-          >
+          <Link href="/en/docs" className="transition hover:text-white">
             Docs
           </Link>
           <Link href="/en#pricing" className="transition hover:text-white">
