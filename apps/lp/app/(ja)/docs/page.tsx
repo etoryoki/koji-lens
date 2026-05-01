@@ -30,14 +30,14 @@ export default function DocsPage() {
       <SiteHeader />
 
       <section className="border-b border-slate-200 bg-slate-50">
-        <div className="mx-auto max-w-6xl px-6 py-16">
+        <div className="mx-auto max-w-6xl px-6 py-10 md:py-16">
           <Link
             href="/"
             className="text-sm text-blue-600 hover:underline"
           >
             ← koji-lens トップへ
           </Link>
-          <h1 className="mt-4 text-4xl font-semibold tracking-tight text-slate-900">
+          <h1 className="mt-4 text-3xl font-semibold tracking-tight text-slate-900 md:text-4xl">
             ドキュメント
           </h1>
           <p className="mt-3 max-w-3xl text-pretty text-lg text-slate-600">
@@ -65,7 +65,7 @@ export default function DocsPage() {
         </ul>
       </nav>
 
-      <div className="mx-auto flex w-full max-w-6xl gap-10 px-6 py-12">
+      <div className="mx-auto flex w-full max-w-6xl gap-6 px-6 py-8 md:gap-10 md:py-12">
         <aside className="hidden w-56 shrink-0 md:block">
           <nav className="sticky top-8 space-y-1 text-sm">
             {SECTIONS.map((s) => (
@@ -423,7 +423,7 @@ export default function DocsPage() {
 
 function CodeBlock({ code }: { code: string }) {
   return (
-    <pre className="mt-4 overflow-x-auto rounded-lg border border-slate-700 bg-slate-900 p-4 text-sm leading-relaxed text-slate-100">
+    <pre className="mt-4 overflow-x-auto rounded-lg border border-slate-700 bg-slate-900 p-4 text-xs leading-relaxed text-slate-100 md:text-sm">
       <code className="whitespace-pre font-mono">{code}</code>
     </pre>
   );
