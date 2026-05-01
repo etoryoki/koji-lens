@@ -13,7 +13,7 @@ import {
   isCacheFresh,
   openCacheDb,
   upsertSessionCache,
-} from "@kojihq/core/db";
+} from "@kojihq/core-sqlite";
 
 export interface SessionOptions {
   usdJpy?: string;

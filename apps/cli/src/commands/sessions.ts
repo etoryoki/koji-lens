@@ -1,6 +1,5 @@
 import {
   analyzeDirectory,
-  analyzeDirectoryCached,
   defaultClaudeLogDir,
   extractParentFromPath,
   formatDuration,
@@ -9,7 +8,7 @@ import {
   parseSince,
   type SessionAggregate,
 } from "@kojihq/core";
-import { openCacheDb } from "@kojihq/core/db";
+import { analyzeDirectoryCached, openCacheDb } from "@kojihq/core-sqlite";
 
 export interface SessionsOptions {
   since: string;

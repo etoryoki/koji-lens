@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
 import type { BetterSQLite3Database } from "drizzle-orm/better-sqlite3";
-import type { SessionAggregate } from "../aggregate.js";
+import type { SessionAggregate } from "@kojihq/core";
 import { sessions } from "./schema.js";
 
 export interface CachedSessionAggregate extends SessionAggregate {

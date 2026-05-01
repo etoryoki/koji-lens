@@ -37,10 +37,8 @@ export {
 export {
   analyzeFile,
   analyzeDirectory,
-  analyzeDirectoryCached,
   parseSince,
   type AnalyzeOptions,
-  type CachedAnalyzeOptions,
 } from "./analyze.js";
 
 export {

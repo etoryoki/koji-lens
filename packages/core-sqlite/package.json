@@ -1,23 +1,23 @@
 {
-  "name": "@kojihq/core",
+  "name": "@kojihq/core-sqlite",
   "version": "0.1.0-beta.3",
   "type": "module",
-  "description": "Core types and parsers for koji-lens (Claude Code local usage analyzer)",
+  "description": "SQLite cache adapter for @kojihq/core (CLI use only, native dep)",
   "license": "MIT",
   "author": "株式会社クインクエ (Koji) <support@kojihq.com>",
   "homepage": "https://lens.kojihq.com",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/etoryoki/koji-lens.git",
-    "directory": "packages/core"
+    "directory": "packages/core-sqlite"
   },
   "bugs": {
     "url": "https://github.com/etoryoki/koji-lens/issues"
   },
   "keywords": [
     "claude-code",
-    "jsonl",
-    "analytics",
+    "sqlite",
+    "cache",
     "koji-lens"
   ],
   "publishConfig": {
@@ -42,9 +42,12 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "zod": "^4.4.1"
+    "@kojihq/core": "workspace:*",
+    "better-sqlite3": "^11.5.0",
+    "drizzle-orm": "^0.36.0"
   },
   "devDependencies": {
+    "@types/better-sqlite3": "^7.6.0",
     "@types/node": "^22.0.0",
     "typescript": "^6.0.3",
     "vitest": "^2.1.0"

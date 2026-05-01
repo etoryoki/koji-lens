@@ -47,6 +47,7 @@
   },
   "dependencies": {
     "@kojihq/core": "workspace:^0.1.0-beta.3",
+    "@kojihq/core-sqlite": "workspace:^0.1.0-beta.3",
     "commander": "^13.0.0"
   },
   "devDependencies": {

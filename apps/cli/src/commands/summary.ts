@@ -1,6 +1,5 @@
 import {
   analyzeDirectory,
-  analyzeDirectoryCached,
   defaultClaudeLogDir,
   loadConfig,
   parseSince,
@@ -8,7 +7,7 @@ import {
   sumAggregates,
   type SessionAggregate,
 } from "@kojihq/core";
-import { openCacheDb } from "@kojihq/core/db";
+import { analyzeDirectoryCached, openCacheDb } from "@kojihq/core-sqlite";
 
 export interface SummaryOptions {
   since: string;

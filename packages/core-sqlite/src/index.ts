@@ -1,4 +1,4 @@
-export { sessions, CREATE_TABLES_SQL } from "./schema.js";
+export { sessions, CREATE_TABLES_SQL, CURRENT_SCHEMA_VERSION } from "./schema.js";
 export {
   defaultCacheDbPath,
   openCacheDb,
@@ -12,3 +12,7 @@ export {
   clearSessionCache,
   type CachedSessionAggregate,
 } from "./cache.js";
+export {
+  analyzeDirectoryCached,
+  type CachedAnalyzeOptions,
+} from "./analyze-cached.js";

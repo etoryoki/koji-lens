@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { createEmptyAggregate } from "../src/aggregate.js";
+import { createEmptyAggregate } from "@kojihq/core";
 import {
   clearSessionCache,
   getSessionCache,
@@ -7,7 +7,7 @@ import {
   listSessionCaches,
   openCacheDb,
   upsertSessionCache,
-} from "../src/db/index.js";
+} from "../src/index.js";
 
 function makeAgg(id: string, overrides: Partial<ReturnType<typeof createEmptyAggregate>> = {}) {
   const agg = createEmptyAggregate(id, `/tmp/${id}.jsonl`);
