@@ -7,6 +7,7 @@ import {
   type SessionAggregate,
 } from "@kojihq/core";
 import { CostBarChart, TokensStackedBar, ToolPie } from "./components/Charts";
+import { KojiMark } from "./components/KojiMark";
 
 export const dynamic = "force-dynamic";
 
@@ -56,8 +57,8 @@ export default async function Page() {
       <div className="mx-auto max-w-6xl space-y-10">
         <header className="flex items-center justify-between" role="banner">
           <div className="flex items-center gap-2">
-            <span className="inline-flex size-7 items-center justify-center rounded-md bg-slate-800 text-sm font-bold tracking-tight text-white">
-              K
+            <span className="inline-flex size-7 items-center justify-center rounded-md bg-[#F2EDE4]">
+              <KojiMark className="size-5" />
             </span>
             <span className="font-semibold tracking-tight text-white">
               koji-lens

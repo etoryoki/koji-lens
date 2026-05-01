@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { KojiMark } from "./KojiMark";
 
 const SUPPORT_EMAIL = "support@kojihq.com";
 
@@ -12,8 +13,8 @@ export function SiteFooterEn() {
               href="/en"
               className="inline-flex items-center gap-2 text-white"
             >
-              <span className="inline-flex size-7 items-center justify-center rounded-md bg-slate-800 font-bold tracking-tight">
-                K
+              <span className="inline-flex size-7 items-center justify-center rounded-md bg-[#F2EDE4]">
+                <KojiMark className="size-5" />
               </span>
               <span className="font-semibold tracking-tight">koji-lens</span>
             </Link>
