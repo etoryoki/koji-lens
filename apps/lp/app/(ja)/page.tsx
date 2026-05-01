@@ -45,7 +45,34 @@ function Hero() {
             コスト・トークン・ツール使用を 1 コマンドで可視化する。
           </p>
 
-          <div className="mt-10 flex flex-col items-center gap-3">
+          <div className="mx-auto mt-10 max-w-xl text-left">
+            <TerminalPane title="koji-lens summary --since 24h">
+              <Line>{"$ koji-lens summary --since 24h"}</Line>
+              <Line className="text-slate-400">
+                koji-lens — analyzed 15 sessions
+              </Line>
+              <Line className="text-slate-400">period: last 24h</Line>
+              <Line className="text-slate-600">
+                ==============================
+              </Line>
+              <Line className="font-semibold text-slate-100">TOTAL</Line>
+              <Line className="text-slate-300">{"  sessions: 15"}</Line>
+              <Line className="text-slate-300">{"  duration: 16h 24m 10s"}</Line>
+              <Line className="text-slate-300">
+                {"  cost:     "}
+                <Cost>$874.12</Cost>
+                {" (¥135K)"}
+              </Line>
+              <Line className="text-slate-300">
+                {"  models:   opus×1562"}
+              </Line>
+              <Line className="text-slate-500">
+                {"  note: API-rate equivalent"}
+              </Line>
+            </TerminalPane>
+          </div>
+
+          <div className="mt-8 flex flex-col items-center gap-3">
             <div className="flex w-full max-w-xl items-center gap-2 rounded-lg border border-slate-700 bg-slate-800 p-2 shadow-lg">
               <span className="select-none pl-2 font-mono text-sm text-blue-400">
                 $
@@ -300,82 +327,17 @@ function Screenshots() {
       <div className="mx-auto max-w-6xl px-6 py-20">
         <div className="mx-auto mb-12 max-w-2xl text-center">
           <h2 className="text-3xl font-semibold tracking-tight text-slate-900">
-            実際に動かすと、こう見える。
+            セッション単位でも、突出を一目で。
           </h2>
           <p className="mt-3 text-slate-600">
-            インストールしてすぐ、こんな出力が得られます。コスト表示は API 換算で、サブスクリプション利用者は使い方の可視化として活用できます。
+            <code className="rounded bg-slate-100 px-1.5 py-0.5 font-mono text-xs">
+              koji-lens sessions
+            </code>{" "}
+            で個別セッションを並べ、コストの大きい行を即特定。ブラウザでも同じデータをひと目で確認できます。
           </p>
         </div>
 
-        <div className="grid gap-6 lg:grid-cols-2">
-          <TerminalPane title="koji-lens summary --since 24h">
-            <Line>{"$ koji-lens summary --since 24h"}</Line>
-            <Line className="text-slate-400">
-              koji-lens — analyzed 15 session(s)
-            </Line>
-            <Line className="text-slate-400">
-              period: 2026-04-27 15:00 → 2026-04-28 15:00 local (last 24h)
-            </Line>
-            <Line className="text-slate-600">
-              ============================================================
-            </Line>
-            <Line className="font-semibold text-slate-100">TOTAL</Line>
-            <Line className="text-slate-300">{"  sessions:  15"}</Line>
-            <Line className="text-slate-300">{"  duration:  16h 24m 10s"}</Line>
-            <Line className="text-slate-300">
-              {"  cost:      "}
-              <Cost>$874.1162</Cost>
-              {" (¥135,488)"}
-            </Line>
-            <Line className="text-slate-300">
-              {"  cost by model: opus="}
-              <Cost>$865.4523</Cost>
-              {", sonnet="}
-              <Cost>$8.6639</Cost>
-            </Line>
-            <Line className="text-slate-300">
-              {"  models:    opus×1562, sonnet×60"}
-            </Line>
-            <Line>{" "}</Line>
-            <Line className="text-slate-500">
-              {"  note: Cost is API-rate equivalent."}
-            </Line>
-            <Line className="text-slate-500">
-              {"        Subscribers pay a flat fee regardless."}
-            </Line>
-            <Line className="text-slate-600">
-              ============================================================
-            </Line>
-            <Line>{" "}</Line>
-            <Line className="text-slate-300">
-              Session 055a662d-f09c-4541-...
-            </Line>
-            <Line className="text-slate-400">{"  duration: 5m 51s"}</Line>
-            <Line className="text-slate-400">
-              {"  cost:     "}
-              <Cost>$6.5186</Cost>
-              {" (¥1,010)"}
-            </Line>
-            <Line className="text-slate-400">
-              {"  tools:    Bash×6, Read×4"}
-            </Line>
-            <Line>{" "}</Line>
-            <Line className="text-slate-300">
-              Session 28cf16fa-26f8-4182-...
-            </Line>
-            <Line className="text-slate-400">{"  duration: 7h 38m 22s"}</Line>
-            <Line className="text-slate-400">
-              {"  cost:     "}
-              <Cost>$420.6613</Cost>
-              {" (¥65,202)"}
-            </Line>
-            <Line className="text-slate-400">
-              {"  tools:    Bash×102, Edit×89, Read×59..."}
-            </Line>
-            <Line>{" "}</Line>
-            <Line className="text-slate-500">{"(以下 13 セッション省略)"}</Line>
-          </TerminalPane>
-
+        <div className="mx-auto max-w-2xl">
           <TerminalPane title="koji-lens sessions --since 24h --limit 5">
             <Line>{"$ koji-lens sessions --since 24h --limit 5"}</Line>
             <Line>{" "}</Line>
