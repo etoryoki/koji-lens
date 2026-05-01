@@ -37,7 +37,7 @@ function Hero() {
             β release · OSS (MIT)
           </div>
           <h1 className="text-balance text-4xl font-semibold leading-tight tracking-tight text-white md:text-6xl">
-            Know your AI coding spend before month-end.
+            Know your AI coding budget — before month-end.
           </h1>
           <p className="mx-auto mt-6 max-w-2xl text-pretty text-base leading-relaxed text-slate-400 md:text-lg">
             A local-only CLI that parses your Claude Code session logs
@@ -89,7 +89,7 @@ function Problem() {
   const questions: { num: string; text: string }[] = [
     { num: "01", text: "How much did Claude Code cost you this month?" },
     { num: "02", text: "What was your biggest cost day, and what were you building?" },
-    { num: "03", text: "Which tool calls are taking the longest to run?" },
+    { num: "03", text: "Which tool calls are burning the most tokens?" },
   ];
   return (
     <section className="border-b border-slate-800 bg-slate-950">
@@ -133,12 +133,12 @@ const FEATURES: Feature[] = [
   },
   {
     icon: Lock,
-    title: "Why your data never leaves your machine",
+    title: "Your data stays on your machine, always",
     body: "No cloud uploads. Prompt bodies are never written to SQLite. Safe to analyze your full log history.",
   },
   {
     icon: Puzzle,
-    title: "Why it works today, and tomorrow",
+    title: "Claude Code today. Cursor and Cline next.",
     body: "First-class support for Claude Code logs. Cursor / Cline support is actively developed as open-source (MIT).",
   },
 ];
@@ -599,7 +599,7 @@ function Pricing() {
       <div className="mx-auto max-w-6xl px-6 py-20">
         <div className="mx-auto mb-4 max-w-2xl text-center">
           <p className="mb-2 text-sm leading-relaxed text-slate-500">
-            Know your AI coding spend before month-end. — And know it across all your machines.
+            Know your AI coding budget — before month-end. And know it across all your machines.
           </p>
           <h2 className="text-3xl font-semibold tracking-tight text-slate-900">
             Pricing
@@ -637,7 +637,7 @@ function Pricing() {
             </li>
           </ul>
           <p className="mt-5 text-sm leading-relaxed text-slate-600">
-            → Pro syncs all your machines into one timeline so monthly reports show your real usage. Budget tracking and email delivery included.
+            → Pro syncs all your machines into one timeline, tracks before/after deltas when you change your setup (e.g. Opus → Sonnet), and delivers monthly reports with real usage. Budget alerts included.
             <span className="ml-1 text-slate-500">
               (Launching late May 2026)
             </span>
@@ -709,12 +709,22 @@ function Waitlist() {
             Early access notification
           </div>
           <h2 className="text-2xl font-semibold tracking-tight text-slate-900">
-            Get notified when Pro launches
+            Free is live now. Pro launches May 26.
           </h2>
           <p className="mt-3 text-pretty leading-relaxed text-slate-600">
-            The Pro plan ($7/month, $70/year) launches in late May 2026.
-            Drop your email below and we'll send you an early-access notice
-            at launch.
+            <strong className="font-semibold text-slate-900">
+              Install the Free CLI today
+            </strong>{" "}
+            (
+            <a
+              href="#install"
+              className="text-blue-600 underline-offset-2 hover:underline"
+            >
+              jump to install
+            </a>
+            ) — it's the full thing, no waitlist needed.
+            Or drop your email below and we'll send you an early-access notice
+            when Pro ($7/month, $70/year) launches.
           </p>
           <WaitlistFormEn enabled={enabled} />
         </div>
