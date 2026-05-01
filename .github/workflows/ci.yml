@@ -19,6 +19,7 @@ jobs:
           cache: "pnpm"
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter @kojihq/core build
+      - run: pnpm --filter @kojihq/core-sqlite build
       - run: pnpm typecheck
       - run: pnpm test
 
@@ -37,6 +38,8 @@ jobs:
       # explicit ordering avoids parallel race that broke 2026-04-30 CI
       - name: Build @kojihq/core
         run: pnpm --filter @kojihq/core build
+      - name: Build @kojihq/core-sqlite
+        run: pnpm --filter @kojihq/core-sqlite build
       - name: Build @kojihq/web (standalone)
         run: pnpm --filter @kojihq/web build
       - name: Build @kojihq/lens (CLI + bundle web-standalone)
