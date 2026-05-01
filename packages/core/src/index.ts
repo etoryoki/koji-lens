@@ -74,3 +74,8 @@ export {
 } from "./compare.js";
 
 export { generateInsights } from "./insights.js";
+
+export {
+  rollupSubagents,
+  type SessionAggregateWithChildren,
+} from "./rollup.js";
