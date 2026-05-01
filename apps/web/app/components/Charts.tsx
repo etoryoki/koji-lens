@@ -1,11 +1,13 @@
 "use client";
 
 import {
-  Bar,
-  BarChart,
+  Area,
+  AreaChart,
   CartesianGrid,
   Cell,
   Legend,
+  Line,
+  LineChart,
   Pie,
   PieChart,
   ResponsiveContainer,
@@ -28,14 +30,16 @@ const TOOLTIP_STYLE = {
   borderRadius: 8,
 };
 
-export function CostBarChart({
+export function CostLineChart({
   data,
+  costLabel,
 }: {
   data: Array<{ label: string; cost: number }>;
+  costLabel: string;
 }) {
   return (
     <ResponsiveContainer width="100%" height={280}>
-      <BarChart data={data} margin={{ top: 16, right: 16, left: 8, bottom: 16 }}>
+      <LineChart data={data} margin={{ top: 16, right: 16, left: 8, bottom: 16 }}>
         <CartesianGrid strokeDasharray="3 3" stroke="#1f2937" />
         <XAxis dataKey="label" stroke="#9ca3af" tick={{ fontSize: 11 }} />
         <YAxis
@@ -45,18 +49,27 @@ export function CostBarChart({
         />
         <Tooltip
           contentStyle={TOOLTIP_STYLE}
-          formatter={(v) => [`$${Number(v).toFixed(4)}`, "コスト"]}
+          formatter={(v) => [`$${Number(v).toFixed(4)}`, costLabel]}
         />
-        <Bar dataKey="cost" fill="#60a5fa" radius={[6, 6, 0, 0]} />
-      </BarChart>
+        <Line
+          type="monotone"
+          dataKey="cost"
+          stroke="#60a5fa"
+          strokeWidth={2}
+          dot={{ r: 3, fill: "#60a5fa" }}
+          activeDot={{ r: 5 }}
+        />
+      </LineChart>
     </ResponsiveContainer>
   );
 }
 
 export function ToolPie({
   data,
+  usageLabel,
 }: {
   data: Array<{ name: string; value: number }>;
+  usageLabel: string;
 }) {
   return (
     <ResponsiveContainer width="100%" height={280}>
@@ -75,7 +88,7 @@ export function ToolPie({
         </Pie>
         <Tooltip
           contentStyle={TOOLTIP_STYLE}
-          formatter={(v) => [String(v), "使用回数"]}
+          formatter={(v) => [String(v), usageLabel]}
         />
         <Legend wrapperStyle={{ color: "#e5e7eb", fontSize: 12 }} />
       </PieChart>
@@ -83,47 +96,57 @@ export function ToolPie({
   );
 }
 
-export function TokensStackedBar({
+const MODEL_COLORS: Record<string, string> = {
+  Opus: "#a78bfa", // violet-400 — 高単価
+  Sonnet: "#60a5fa", // blue-400 — メイン
+  Haiku: "#34d399", // emerald-400 — 低単価
+};
+
+const FALLBACK_COLORS = [
+  "#38bdf8", // sky-400
+  "#818cf8", // indigo-400
+  "#f472b6", // pink-400
+  "#94a3b8", // slate-400
+];
+
+export function ModelCostStackedArea({
   data,
+  keys,
 }: {
-  data: Array<{
-    label: string;
-    input: number;
-    output: number;
-    cacheRead: number;
-    cacheCreate: number;
-  }>;
+  data: Array<Record<string, number | string>>;
+  keys: string[];
 }) {
   return (
     <ResponsiveContainer width="100%" height={280}>
-      <BarChart data={data} margin={{ top: 16, right: 16, left: 8, bottom: 16 }}>
+      <AreaChart data={data} margin={{ top: 16, right: 16, left: 8, bottom: 16 }}>
         <CartesianGrid strokeDasharray="3 3" stroke="#1f2937" />
         <XAxis dataKey="label" stroke="#9ca3af" tick={{ fontSize: 11 }} />
         <YAxis
           stroke="#9ca3af"
           tick={{ fontSize: 11 }}
-          tickFormatter={(v) => `${(Number(v) / 1000).toFixed(0)}k`}
+          tickFormatter={(v) => `$${Number(v).toFixed(2)}`}
         />
         <Tooltip
           contentStyle={TOOLTIP_STYLE}
-          formatter={(v) => Number(v).toLocaleString()}
+          formatter={(v) => `$${Number(v).toFixed(4)}`}
         />
         <Legend wrapperStyle={{ color: "#e5e7eb", fontSize: 12 }} />
-        <Bar
-          dataKey="cacheRead"
-          stackId="a"
-          fill="#60a5fa"
-          name="キャッシュ読み"
-        />
-        <Bar
-          dataKey="cacheCreate"
-          stackId="a"
-          fill="#818cf8"
-          name="キャッシュ作成"
-        />
-        <Bar dataKey="output" stackId="a" fill="#38bdf8" name="出力" />
-        <Bar dataKey="input" stackId="a" fill="#94a3b8" name="入力" />
-      </BarChart>
+        {keys.map((k, i) => {
+          const color = MODEL_COLORS[k] ?? FALLBACK_COLORS[i % FALLBACK_COLORS.length];
+          return (
+            <Area
+              key={k}
+              type="monotone"
+              dataKey={k}
+              stackId="1"
+              stroke={color}
+              fill={color}
+              fillOpacity={0.65}
+              name={k}
+            />
+          );
+        })}
+      </AreaChart>
     </ResponsiveContainer>
   );
 }

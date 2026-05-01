@@ -1,48 +1,197 @@
+import { headers } from "next/headers";
 import {
   analyzeDirectory,
   defaultClaudeLogDir,
   formatDuration,
   formatJpy,
   formatUsd,
-  type SessionAggregate,
+  rollupSubagents,
+  type SessionAggregateWithChildren,
 } from "@kojihq/core";
-import { CostBarChart, TokensStackedBar, ToolPie } from "./components/Charts";
+import { CostLineChart, ModelCostStackedArea, ToolPie } from "./components/Charts";
 import { KojiMark } from "./components/KojiMark";
+import { detectLang, DEFAULT_LANG, t, type Lang } from "./i18n";
 
 export const dynamic = "force-dynamic";
 
 const USD_JPY = 155;
 
-export default async function Page() {
+function formatShortDateTime(iso: string | undefined): string {
+  if (!iso) return "-";
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "-";
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const dd = String(d.getDate()).padStart(2, "0");
+  const hh = String(d.getHours()).padStart(2, "0");
+  const min = String(d.getMinutes()).padStart(2, "0");
+  return `${mm}/${dd} ${hh}:${min}`;
+}
+
+function extractProjectKey(filePath: string): string {
+  const m = filePath.match(/[\\/]projects[\\/]([^\\/]+)[\\/]/);
+  return m ? m[1] : "(unknown)";
+}
+
+function projectLabel(key: string): string {
+  if (key === "(unknown)") return key;
+  const segments = key.split("-").filter((s) => s.length > 0);
+  if (segments.length <= 2) return segments.join("-");
+  return segments.slice(-2).join("-");
+}
+
+type PeriodKey = "24h" | "7d" | "30d" | "all";
+
+const PERIOD_HOURS: Record<Exclude<PeriodKey, "all">, number> = {
+  "24h": 24,
+  "7d": 24 * 7,
+  "30d": 24 * 30,
+};
+
+const PERIOD_KEY_MAP: Record<PeriodKey, string> = {
+  "24h": "period.24h",
+  "7d": "period.7d",
+  "30d": "period.30d",
+  all: "period.all",
+};
+
+const DEFAULT_PERIOD: PeriodKey = "30d";
+
+function isValidPeriod(v: string | undefined): v is PeriodKey {
+  return v === "24h" || v === "7d" || v === "30d" || v === "all";
+}
+
+export default async function Page({
+  searchParams,
+}: {
+  searchParams?: Promise<{
+    project?: string;
+    period?: string;
+    lang?: string;
+  }>;
+}) {
+  const params = (await searchParams) ?? {};
+  const headersList = await headers();
+  const lang = detectLang(params.lang, headersList.get("accept-language"));
+  const _ = (key: string, p?: Record<string, string | number>) => t(lang, key, p);
+
+  const selectedProject = params.project;
+  const selectedPeriod: PeriodKey = isValidPeriod(params.period)
+    ? params.period
+    : DEFAULT_PERIOD;
+
+  const periodSinceIso =
+    selectedPeriod === "all"
+      ? undefined
+      : new Date(
+          Date.now() - PERIOD_HOURS[selectedPeriod] * 60 * 60 * 1000,
+        ).toISOString();
+  const byHour = selectedPeriod === "24h";
+
   const all = await analyzeDirectory(defaultClaudeLogDir());
-  const aggs = all
-    .filter((a) => a.assistantTurns > 0 || a.userTurns > 0)
-    .sort((a, b) => (b.endedAt ?? "").localeCompare(a.endedAt ?? ""))
-    .slice(0, 30);
+  const rolled = rollupSubagents(all);
+  const filteredByActivity = rolled.filter(
+    (a) => a.assistantTurns > 0 || a.userTurns > 0,
+  );
 
-  const totalCost = aggs.reduce((s, a) => s + a.costUsd, 0);
-  const totalInput = aggs.reduce((s, a) => s + a.inputTokens, 0);
-  const totalOutput = aggs.reduce((s, a) => s + a.outputTokens, 0);
-  const totalCacheRead = aggs.reduce((s, a) => s + a.cacheReadTokens, 0);
-  const totalCacheCreate = aggs.reduce((s, a) => s + a.cacheCreateTokens, 0);
-  const totalDurationMs = aggs.reduce((s, a) => s + a.durationMs, 0);
-  const totalAssistant = aggs.reduce((s, a) => s + a.assistantTurns, 0);
+  const projectCounts = new Map<string, number>();
+  for (const a of filteredByActivity) {
+    const key = extractProjectKey(a.filePath);
+    projectCounts.set(key, (projectCounts.get(key) ?? 0) + 1);
+  }
+  const projectKeys = [...projectCounts.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .map(([k]) => k);
 
-  const costChart = aggs.map((a) => ({
-    label: a.sessionId.slice(0, 8),
-    cost: Number(a.costUsd.toFixed(4)),
+  const filteredAll = filteredByActivity
+    .filter((a) =>
+      selectedProject ? extractProjectKey(a.filePath) === selectedProject : true,
+    )
+    .filter((a) =>
+      periodSinceIso ? (a.endedAt ?? "") >= periodSinceIso : true,
+    )
+    .sort((a, b) => (b.endedAt ?? "").localeCompare(a.endedAt ?? ""));
+
+  const aggs = filteredAll.slice(0, 30);
+
+  const totalCost = filteredAll.reduce((s, a) => s + a.costUsd, 0);
+  const totalInput = filteredAll.reduce((s, a) => s + a.inputTokens, 0);
+  const totalOutput = filteredAll.reduce((s, a) => s + a.outputTokens, 0);
+  const totalCacheRead = filteredAll.reduce(
+    (s, a) => s + a.cacheReadTokens,
+    0,
+  );
+  const totalCacheCreate = filteredAll.reduce(
+    (s, a) => s + a.cacheCreateTokens,
+    0,
+  );
+  const totalDurationMs = filteredAll.reduce((s, a) => s + a.durationMs, 0);
+  const totalAssistant = filteredAll.reduce(
+    (s, a) => s + a.assistantTurns,
+    0,
+  );
+
+  function bucketKey(iso: string): string {
+    const d = new Date(iso);
+    const mm = String(d.getMonth() + 1).padStart(2, "0");
+    const dd = String(d.getDate()).padStart(2, "0");
+    if (byHour) {
+      const hh = String(d.getHours()).padStart(2, "0");
+      return `${mm}/${dd} ${hh}:00`;
+    }
+    return `${mm}/${dd}`;
+  }
+
+  function shortModelName(model: string): string {
+    const m = model.toLowerCase();
+    if (m.includes("opus")) return "Opus";
+    if (m.includes("sonnet")) return "Sonnet";
+    if (m.includes("haiku")) return "Haiku";
+    return model;
+  }
+
+  const modelCostTotals = new Map<string, number>();
+  for (const a of filteredAll) {
+    for (const [model, cost] of Object.entries(a.costsByModel)) {
+      const k = shortModelName(model);
+      modelCostTotals.set(k, (modelCostTotals.get(k) ?? 0) + cost);
+    }
+  }
+  const modelKeys = [...modelCostTotals.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .map(([k]) => k);
+
+  const buckets = new Map<string, { cost: number; byModel: Record<string, number> }>();
+  for (const a of filteredAll) {
+    const ts = a.endedAt ?? a.startedAt;
+    if (!ts) continue;
+    const key = bucketKey(ts);
+    const b = buckets.get(key) ?? { cost: 0, byModel: {} };
+    b.cost += a.costUsd;
+    for (const [model, cost] of Object.entries(a.costsByModel)) {
+      const k = shortModelName(model);
+      b.byModel[k] = (b.byModel[k] ?? 0) + cost;
+    }
+    buckets.set(key, b);
+  }
+  const sortedBuckets = [...buckets.entries()].sort((x, y) =>
+    x[0].localeCompare(y[0]),
+  );
+
+  const costChart = sortedBuckets.map(([label, v]) => ({
+    label,
+    cost: Number(v.cost.toFixed(4)),
   }));
 
-  const tokensChart = aggs.map((a) => ({
-    label: a.sessionId.slice(0, 8),
-    input: a.inputTokens,
-    output: a.outputTokens,
-    cacheRead: a.cacheReadTokens,
-    cacheCreate: a.cacheCreateTokens,
-  }));
+  const modelCostChart = sortedBuckets.map(([label, v]) => {
+    const row: Record<string, number | string> = { label };
+    for (const m of modelKeys) {
+      row[m] = Number((v.byModel[m] ?? 0).toFixed(4));
+    }
+    return row;
+  });
 
   const toolTotals: Record<string, number> = {};
-  for (const a of aggs) {
+  for (const a of filteredAll) {
     for (const [k, v] of Object.entries(a.tools)) {
       toolTotals[k] = (toolTotals[k] ?? 0) + v;
     }
@@ -51,6 +200,15 @@ export default async function Page() {
     .sort((x, y) => y[1] - x[1])
     .slice(0, 10)
     .map(([name, value]) => ({ name, value }));
+
+  const langSwitchHref = (target: Lang) => {
+    const search = new URLSearchParams();
+    if (selectedProject) search.set("project", selectedProject);
+    if (selectedPeriod !== DEFAULT_PERIOD) search.set("period", selectedPeriod);
+    if (target !== DEFAULT_LANG) search.set("lang", target);
+    const qs = search.toString();
+    return qs ? `/?${qs}` : "/";
+  };
 
   return (
     <main className="min-h-screen px-6 py-10">
@@ -64,89 +222,172 @@ export default async function Page() {
               koji-lens
             </span>
           </div>
-          <p className="text-xs text-slate-500">
-            直近 {aggs.length} セッション
-          </p>
+          <div className="flex items-center gap-3">
+            <p className="text-xs text-slate-500">
+              {_("header.session_count", { n: filteredAll.length })}
+            </p>
+            <span className="text-xs text-slate-600">·</span>
+            <div className="flex gap-1 text-xs">
+              <a
+                href={langSwitchHref("ja")}
+                className={
+                  lang === "ja"
+                    ? "text-slate-200"
+                    : "text-slate-500 hover:text-slate-300"
+                }
+              >
+                {_("lang.ja")}
+              </a>
+              <span className="text-slate-700">/</span>
+              <a
+                href={langSwitchHref("en")}
+                className={
+                  lang === "en"
+                    ? "text-slate-200"
+                    : "text-slate-500 hover:text-slate-300"
+                }
+              >
+                {_("lang.en")}
+              </a>
+            </div>
+          </div>
         </header>
 
         <aside
           role="note"
-          aria-label="コスト表示に関するお知らせ"
           className="rounded-md border border-amber-700/40 bg-amber-950/40 px-4 py-3 text-xs leading-relaxed text-amber-100"
         >
-          <span className="font-semibold text-amber-200">参考値の表示について:</span>{" "}
-          本ダッシュボードのコスト数値は、トークン量 × Anthropic
-          API レートで算出した換算値です。Claude Pro / Max
-          ご利用の場合、実際のご請求はサブスクリプション料金のみ。表示金額は使用量の目安・モデル使い分けの判断材料としてご活用ください。
+          <span className="font-semibold text-amber-200">
+            {_("disclaimer.title")}
+          </span>{" "}
+          {_("disclaimer.body")}
         </aside>
 
         <section className="rounded-xl border border-slate-800 bg-slate-900/40 p-6 md:p-8">
           <p className="mb-1 text-xs uppercase tracking-widest text-slate-500">
-            合計コスト
+            {_("kpi.total_cost")}
           </p>
           <p className="text-4xl font-semibold tracking-tight text-white tabular-nums md:text-5xl">
             {formatUsd(totalCost)}
           </p>
-          <p className="mt-1 text-sm text-slate-400 tabular-nums">
-            {formatJpy(totalCost, USD_JPY)}
-          </p>
+          {lang === "ja" ? (
+            <p className="mt-1 text-sm text-slate-400 tabular-nums">
+              {formatJpy(totalCost, USD_JPY)}
+            </p>
+          ) : null}
           <div className="mt-5 flex flex-wrap gap-x-6 gap-y-1 text-sm text-slate-400 tabular-nums">
-            <span>{totalAssistant.toLocaleString()} ターン</span>
+            <span>
+              {_("kpi.turns_count", { n: totalAssistant.toLocaleString() })}
+            </span>
             <span>{formatDuration(totalDurationMs)}</span>
             <span>
-              {((totalInput + totalOutput) / 1_000_000).toFixed(1)}M トークン
+              {_("kpi.tokens_count", {
+                n: ((totalInput + totalOutput) / 1_000_000).toFixed(1),
+              })}
             </span>
           </div>
         </section>
 
         <section className="grid grid-cols-2 gap-4 md:grid-cols-3">
           <Card
-            label="アシスタントターン"
+            label={_("kpi.assistant_turns")}
             value={totalAssistant.toLocaleString()}
           />
           <Card
-            label="入出力トークン"
+            label={_("kpi.io_tokens")}
             value={(totalInput + totalOutput).toLocaleString()}
-            sub="トークン"
+            sub={_("kpi.tokens_unit")}
           />
           <Card
-            label="キャッシュ 読み / 作成"
+            label={_("kpi.cache_read_create")}
             value={`${(totalCacheRead / 1_000_000).toFixed(2)}M / ${(totalCacheCreate / 1_000_000).toFixed(2)}M`}
-            sub="トークン"
+            sub={_("kpi.tokens_unit")}
           />
         </section>
 
         <section className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-          <Panel title="セッション別コスト" className="lg:col-span-2">
-            <CostBarChart data={costChart} />
+          <Panel
+            title={
+              byHour
+                ? _("chart.cost_trend_hourly")
+                : _("chart.cost_trend_daily")
+            }
+            className="lg:col-span-2"
+          >
+            <CostLineChart
+              data={costChart}
+              costLabel={_("chart.cost_label")}
+            />
           </Panel>
-          <Panel title="ツール使用（上位 10）">
-            <ToolPie data={toolPie} />
+          <Panel title={_("chart.tool_top10")}>
+            <ToolPie data={toolPie} usageLabel={_("chart.usage_count")} />
           </Panel>
         </section>
 
         <section>
-          <Panel title="セッション別トークン内訳">
-            <TokensStackedBar data={tokensChart} />
+          <Panel
+            title={
+              byHour
+                ? _("chart.model_cost_hourly")
+                : _("chart.model_cost_daily")
+            }
+          >
+            <ModelCostStackedArea data={modelCostChart} keys={modelKeys} />
           </Panel>
         </section>
 
         <section>
-          <h2 className="mb-3 text-sm font-medium uppercase tracking-widest text-slate-400">
-            セッション一覧
-          </h2>
-          <SessionTable sessions={aggs} />
+          <div className="mb-3 flex items-baseline justify-between gap-3">
+            <h2 className="text-sm font-medium uppercase tracking-widest text-slate-400">
+              {_("section.session_list")}
+            </h2>
+            {selectedProject || selectedPeriod !== DEFAULT_PERIOD ? (
+              <p className="text-xs text-slate-500">
+                {_("filter.filtering")}{" "}
+                ·{" "}
+                <a
+                  href={lang === DEFAULT_LANG ? "/" : `/?lang=${lang}`}
+                  className="text-blue-400 hover:underline"
+                >
+                  {_("filter.reset")}
+                </a>
+              </p>
+            ) : null}
+          </div>
+          <PeriodFilter
+            selected={selectedPeriod}
+            project={selectedProject}
+            lang={lang}
+            t={_}
+          />
+          <ProjectFilter
+            projectKeys={projectKeys}
+            selected={selectedProject}
+            counts={projectCounts}
+            period={selectedPeriod}
+            lang={lang}
+            t={_}
+          />
+          <SessionTable sessions={aggs} t={_} />
         </section>
 
         <footer className="flex flex-col gap-1 border-t border-slate-800 pt-6 text-xs text-slate-500 md:flex-row md:items-center md:justify-between">
           <span>
             koji-lens ·{" "}
-            <code className="text-slate-400">
-              ~/.claude/projects/**/*.jsonl
-            </code>{" "}
-            をローカルで解析
+            {_("footer.about_path", { path: "~/.claude/projects/**/*.jsonl" })
+              .split("~/.claude/projects/**/*.jsonl")
+              .map((part, i, arr) => (
+                <span key={i}>
+                  {part}
+                  {i < arr.length - 1 ? (
+                    <code className="text-slate-400">
+                      ~/.claude/projects/**/*.jsonl
+                    </code>
+                  ) : null}
+                </span>
+              ))}
           </span>
-          <span>コストは Anthropic 公式レートの計算値</span>
+          <span>{_("footer.cost_note")}</span>
         </footer>
       </div>
     </main>
@@ -196,29 +437,144 @@ function Panel({
   );
 }
 
-function SessionTable({ sessions }: { sessions: SessionAggregate[] }) {
+type TFn = (key: string, params?: Record<string, string | number>) => string;
+
+function buildHref(params: {
+  project?: string;
+  period?: PeriodKey;
+  lang?: Lang;
+}): string {
+  const search = new URLSearchParams();
+  if (params.project) search.set("project", params.project);
+  if (params.period && params.period !== DEFAULT_PERIOD) {
+    search.set("period", params.period);
+  }
+  if (params.lang && params.lang !== DEFAULT_LANG) {
+    search.set("lang", params.lang);
+  }
+  const qs = search.toString();
+  return qs ? `/?${qs}` : "/";
+}
+
+function PeriodFilter({
+  selected,
+  project,
+  lang,
+  t,
+}: {
+  selected: PeriodKey;
+  project: string | undefined;
+  lang: Lang;
+  t: TFn;
+}) {
+  const periods: PeriodKey[] = ["24h", "7d", "30d", "all"];
+  return (
+    <div className="mb-2 flex flex-wrap items-center gap-1.5">
+      <span className="mr-1 text-[10px] uppercase tracking-widest text-slate-500">
+        {t("filter.period")}
+      </span>
+      {periods.map((p) => {
+        const isActive = selected === p;
+        return (
+          <a
+            key={p}
+            href={buildHref({ project, period: p, lang })}
+            className={`rounded-md px-2.5 py-1 text-xs ${
+              isActive
+                ? "bg-blue-500/20 text-blue-200 ring-1 ring-blue-500/40"
+                : "bg-slate-800/60 text-slate-400 hover:bg-slate-800"
+            }`}
+          >
+            {t(PERIOD_KEY_MAP[p])}
+          </a>
+        );
+      })}
+    </div>
+  );
+}
+
+function ProjectFilter({
+  projectKeys,
+  selected,
+  counts,
+  period,
+  lang,
+  t,
+}: {
+  projectKeys: string[];
+  selected: string | undefined;
+  counts: Map<string, number>;
+  period: PeriodKey;
+  lang: Lang;
+  t: TFn;
+}) {
+  return (
+    <div className="mb-3 flex flex-wrap items-center gap-1.5">
+      <span className="mr-1 text-[10px] uppercase tracking-widest text-slate-500">
+        {t("filter.project")}
+      </span>
+      <a
+        href={buildHref({ period, lang })}
+        className={`rounded-md px-2.5 py-1 text-xs ${
+          !selected
+            ? "bg-blue-500/20 text-blue-200 ring-1 ring-blue-500/40"
+            : "bg-slate-800/60 text-slate-400 hover:bg-slate-800"
+        }`}
+      >
+        {t("filter.all")}
+      </a>
+      {projectKeys.map((key) => {
+        const isActive = selected === key;
+        const count = counts.get(key) ?? 0;
+        return (
+          <a
+            key={key}
+            href={buildHref({ project: key, period, lang })}
+            title={key}
+            className={`rounded-md px-2.5 py-1 text-xs ${
+              isActive
+                ? "bg-blue-500/20 text-blue-200 ring-1 ring-blue-500/40"
+                : "bg-slate-800/60 text-slate-400 hover:bg-slate-800"
+            }`}
+          >
+            {projectLabel(key)}{" "}
+            <span className="text-slate-500">({count})</span>
+          </a>
+        );
+      })}
+    </div>
+  );
+}
+
+function SessionTable({
+  sessions,
+  t,
+}: {
+  sessions: SessionAggregateWithChildren[];
+  t: TFn;
+}) {
   return (
     <div className="overflow-x-auto rounded-xl border border-slate-800">
       <table className="w-full text-sm">
         <thead className="bg-slate-900 text-slate-300">
           <tr>
             <th scope="col" className="px-4 py-2 text-left font-medium">
-              セッション ID
+              {t("table.project")}
             </th>
             <th scope="col" className="px-4 py-2 text-left font-medium">
-              開始
+              {t("table.start")}
             </th>
             <th scope="col" className="px-4 py-2 text-right font-medium">
-              経過時間
+              {t("table.duration")}
             </th>
             <th scope="col" className="px-4 py-2 text-right font-medium">
-              ターン
+              {t("table.turns")}
             </th>
             <th scope="col" className="px-4 py-2 text-right font-medium">
-              コスト
+              {t("table.cost")}
             </th>
             <th scope="col" className="px-4 py-2 text-left font-medium">
-              ツール上位
+              {t("table.tools_top")}
             </th>
           </tr>
         </thead>
@@ -229,13 +585,31 @@ function SessionTable({ sessions }: { sessions: SessionAggregate[] }) {
               .slice(0, 4)
               .map(([k, v]) => `${k}×${v}`)
               .join(", ");
+            const projectKey = extractProjectKey(a.filePath);
             return (
               <tr key={a.sessionId} className="border-t border-slate-800">
-                <td className="px-4 py-2 font-mono text-xs text-blue-400">
-                  {a.sessionId.slice(0, 8)}
+                <td
+                  className="px-4 py-2 text-xs text-slate-300"
+                  title={projectKey}
+                >
+                  {projectLabel(projectKey)}
                 </td>
-                <td className="px-4 py-2 text-slate-400 tabular-nums">
-                  {a.startedAt ?? "-"}
+                <td className="px-4 py-2 tabular-nums">
+                  <div className="flex items-center gap-2">
+                    <span className="text-slate-200">
+                      {formatShortDateTime(a.startedAt ?? undefined)}
+                    </span>
+                    {a.subagents.length > 0 ? (
+                      <span className="rounded bg-slate-800 px-1.5 py-0.5 text-[10px] text-slate-300">
+                        {t("filter.subagents_badge", {
+                          n: a.subagents.length,
+                        })}
+                      </span>
+                    ) : null}
+                  </div>
+                  <div className="font-mono text-[10px] text-slate-500">
+                    {a.sessionId.slice(0, 8)}
+                  </div>
                 </td>
                 <td className="px-4 py-2 text-right tabular-nums">
                   {formatDuration(a.durationMs)}
