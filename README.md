@@ -14,6 +14,43 @@ Your local Claude Code usage analyzer. No servers, no signup — reads your loca
 
 ---
 
+## What can you do with this?
+
+Two common situations where koji-lens earns its place.
+
+### Story 1 — Claude Pro / Max subscriber: see what your subscription is really worth
+
+You pay a flat $20/month for Pro (or $200 for Max). But are you using it like a $20 subscription, or like a $500 one? Anthropic doesn't show the answer anywhere.
+
+```bash
+$ koji-lens summary --since 30d
+TOTAL
+  cost: $874.12 (API-equivalent)
+  models: opus×1562, sonnet×60
+  note: Cost is API-rate equivalent.
+        Subscribers pay a flat fee regardless.
+```
+
+That `$874.12` is what 30 days of usage would have cost on the API. If you're a $20/month Pro user, you just got 40× your subscription back. That's information you can't get from the Claude Code dashboard or the Anthropic Console — only from your local logs.
+
+### Story 2 — API user: catch overspend before month-end
+
+You pay per token via the API. You suspect Claude Code is burning through Opus on tasks Sonnet could handle, but you want numbers, not hunches.
+
+```bash
+$ koji-lens summary --since 7d
+TOTAL
+  cost:  $187.45
+  cost by model:
+    claude-opus-4-7    $173.21 (92%)
+    claude-sonnet-4-6  $14.24  ( 8%)
+  models: opus×238, sonnet×12
+```
+
+Now you have evidence: 92% of your spend is Opus. Switch the easy turns to Sonnet, run `koji-lens summary --since 7d` again next week, and see the difference. (A built-in `compare` command lands in a future release; for now you can pipe to `--format json` and diff yourself.)
+
+---
+
 ## Install
 
 ```bash

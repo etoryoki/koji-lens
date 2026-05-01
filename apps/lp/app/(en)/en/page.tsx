@@ -614,6 +614,9 @@ function Pricing() {
           </a>
         </div>
 
+        <p className="mb-4 text-center text-sm text-slate-500 md:hidden">
+          Free <span className="font-medium text-slate-700">$0</span> · Pro Monthly <span className="font-medium text-slate-700">$7</span> · Pro Annual <span className="font-medium text-slate-700">$70</span>
+        </p>
         <div className="grid gap-4 md:grid-cols-3">
           {PLANS.map((p) => (
             <div
