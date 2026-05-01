@@ -1,0 +1,7 @@
+Claude Code、自分のプランが本当に合ってるか数字で確かめた。
+
+私のケースは Max 5x で API 換算 $8,833 / 月 = 88× 価値。Pro / Max / API の使い分け表と、自分の数字を測る方法を Zenn に書きました。
+
+ローカルログから自分の数字を測りたい人向けに koji-lens（クラウド送信なし）の使い方も。
+
+https://zenn.dev/kojihq/articles/42addb8f5acd4b
