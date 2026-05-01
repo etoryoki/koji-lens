@@ -7,6 +7,7 @@ import { sessionsCommand } from "./commands/sessions.js";
 import { sessionCommand } from "./commands/session.js";
 import { serveCommand } from "./commands/serve.js";
 import { configCommand } from "./commands/config.js";
+import { compareCommand } from "./commands/compare.js";
 
 const pkgPath = fileURLToPath(new URL("../package.json", import.meta.url));
 const pkg = JSON.parse(readFileSync(pkgPath, "utf8")) as { version: string };
@@ -70,6 +71,32 @@ program
   .action(async (id: string, opts) => {
     try {
       await sessionCommand(id, opts);
+    } catch (err) {
+      console.error(err instanceof Error ? err.message : err);
+      process.exit(1);
+    }
+  });
+
+program
+  .command("compare")
+  .description(
+    "Compare usage between two periods (e.g. before/after Sonnet migration)",
+  )
+  .requiredOption(
+    "--before <range>",
+    "Before period (YYYY-MM-DD..YYYY-MM-DD format)",
+  )
+  .requiredOption(
+    "--after <range>",
+    "After period (YYYY-MM-DD..YYYY-MM-DD format)",
+  )
+  .option("--format <format>", "Output format: text | json", "text")
+  .option("--dir <path>", "Claude Code log directory")
+  .option("--usd-jpy <rate>", "USD -> JPY conversion rate")
+  .option("--no-cache", "Disable SQLite cache (~/.koji-lens/cache.db)")
+  .action(async (opts) => {
+    try {
+      await compareCommand(opts);
     } catch (err) {
       console.error(err instanceof Error ? err.message : err);
       process.exit(1);
