@@ -150,8 +150,83 @@ function buildMark13Svg(opts: { withBackground: boolean; viewBoxOnly?: boolean }
 </svg>`;
 }
 
+function generateKojiMarkTsx(): string {
+  const rng = mulberry32(91);
+  const placed: { x: number; y: number; ang: number; s: number }[] = [];
+  let attempts = 0;
+  while (placed.length < 70 && attempts < 4000) {
+    attempts++;
+    const r = 74 * Math.sqrt(rng());
+    const a = rng() * Math.PI * 2;
+    const x = 100 + Math.cos(a) * r;
+    const y = 108 + Math.sin(a) * r * 0.96;
+    const inFace = x > 60 && x < 140 && y > 92 && y < 142;
+    if (inFace && rng() > 0.15) continue;
+    let ok = true;
+    for (const p of placed) {
+      const dx = p.x - x;
+      const dy = p.y - y;
+      if (dx * dx + dy * dy < 130) { ok = false; break; }
+    }
+    if (ok) placed.push({ x, y, ang: rng() * 360, s: 0.85 + rng() * 0.4 });
+  }
+  const fuzz: { x: number; y: number; sz: number; op: number }[] = [];
+  for (let i = 0; i < 80; i++) {
+    const a = rng() * Math.PI * 2;
+    const r = 70 + rng() * 22;
+    const x = 100 + Math.cos(a) * r;
+    const y = 108 + Math.sin(a) * r * 0.95;
+    fuzz.push({ x, y, sz: 0.6 + rng() * 1.4, op: 0.25 + rng() * 0.45 });
+  }
+  const onigiriD = onigiriPath(100, 108, 78, 80, 0, 1);
+  const fuzzJsx = fuzz
+    .map((p) => `      <circle cx="${p.x.toFixed(2)}" cy="${p.y.toFixed(2)}" r="${p.sz.toFixed(2)}" fill="${INK}" opacity="${p.op.toFixed(2)}" />`)
+    .join("\n");
+  const grainsJsx = placed
+    .map((p) => `        <ellipse cx="${p.x.toFixed(2)}" cy="${p.y.toFixed(2)}" rx="${(5.2 * p.s).toFixed(2)}" ry="${(2.4 * p.s).toFixed(2)}" transform="rotate(${p.ang.toFixed(2)} ${p.x.toFixed(2)} ${p.y.toFixed(2)})" fill="${KINARI}" opacity="0.55" />`)
+    .join("\n");
+
+  return `import { useId } from "react";
+
+interface KojiMarkProps {
+  className?: string;
+}
+
+export function KojiMark({ className = "size-5" }: KojiMarkProps) {
+  const clipId = useId();
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 200 200"
+      className={className}
+      role="img"
+      aria-label="koji"
+    >
+      <defs>
+        <clipPath id={clipId}>
+          <path d="${onigiriD}" />
+        </clipPath>
+      </defs>
+${fuzzJsx}
+      <path d="${onigiriD}" fill="${INK}" opacity="0.92" />
+      <g clipPath={\`url(#\${clipId})\`} opacity="0.78">
+${grainsJsx}
+      </g>
+      <ellipse cx="78" cy="106" rx="5" ry="7" fill="${KINARI}" />
+      <ellipse cx="122" cy="106" rx="5" ry="7" fill="${KINARI}" />
+      <ellipse cx="64" cy="128" rx="6" ry="3" fill="${KINARI}" opacity="0.5" />
+      <ellipse cx="136" cy="128" rx="6" ry="3" fill="${KINARI}" opacity="0.5" />
+      <path d="M 88 134 Q 100 144 112 134" fill="none" stroke="${KINARI}" strokeWidth="3" strokeLinecap="round" />
+    </svg>
+  );
+}
+`;
+}
+
 const AVATAR_PATH = "C:/Users/User/Desktop/ai-project/ai-company/ceo/assets/brand/bluesky-avatar-v1-draft/01-K-monogram.svg";
 const ICON_PATH = resolve(here, "../apps/lp/app/icon.svg");
+const TSX_LP_PATH = resolve(here, "../apps/lp/app/components/KojiMark.tsx");
+const TSX_WEB_PATH = resolve(here, "../apps/web/app/components/KojiMark.tsx");
 
 const svgWithBg = buildMark13Svg({ withBackground: true });
 writeFileSync(AVATAR_PATH, svgWithBg);
@@ -159,3 +234,10 @@ console.log(`[build-koji-mark] wrote ${AVATAR_PATH} (${svgWithBg.length.toLocale
 
 writeFileSync(ICON_PATH, svgWithBg);
 console.log(`[build-koji-mark] wrote ${ICON_PATH} (${svgWithBg.length.toLocaleString()} bytes)`);
+
+const tsx = generateKojiMarkTsx();
+writeFileSync(TSX_LP_PATH, tsx);
+console.log(`[build-koji-mark] wrote ${TSX_LP_PATH} (${tsx.length.toLocaleString()} bytes)`);
+
+writeFileSync(TSX_WEB_PATH, tsx);
+console.log(`[build-koji-mark] wrote ${TSX_WEB_PATH} (${tsx.length.toLocaleString()} bytes)`);
