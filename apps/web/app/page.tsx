@@ -1,13 +1,14 @@
 import { headers } from "next/headers";
 import {
-  analyzeDirectory,
   defaultClaudeLogDir,
   formatDuration,
   formatJpy,
   formatUsd,
   rollupSubagents,
+  type SessionAggregate,
   type SessionAggregateWithChildren,
 } from "@kojihq/core";
+import { analyzeDirectoryCached, openCacheDb } from "@kojihq/core-sqlite";
 import { CostLineChart, ModelCostStackedArea, ToolPie } from "./components/Charts";
 import { KojiMark } from "./components/KojiMark";
 import { detectLang, DEFAULT_LANG, t, type Lang } from "./i18n";
@@ -87,7 +88,13 @@ export default async function Page({
         ).toISOString();
   const byHour = selectedPeriod === "24h";
 
-  const all = await analyzeDirectory(defaultClaudeLogDir());
+  let all: SessionAggregate[];
+  const cache = openCacheDb();
+  try {
+    all = await analyzeDirectoryCached(defaultClaudeLogDir(), cache.db);
+  } finally {
+    cache.close();
+  }
   const rolled = rollupSubagents(all);
   const filteredByActivity = rolled.filter(
     (a) => a.assistantTurns > 0 || a.userTurns > 0,

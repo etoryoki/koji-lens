@@ -7,7 +7,7 @@ import {
   type AnalyzeOptions,
   type SessionAggregate,
 } from "@kojihq/core";
-import { getSessionCache, isCacheFresh, upsertSessionCache } from "./cache.js";
+import { getSessionCacheIfFresh, upsertSessionCache } from "./cache.js";
 
 export interface CachedAnalyzeOptions extends AnalyzeOptions {
   onHit?: (sessionId: string) => void;
@@ -30,15 +30,14 @@ export async function analyzeDirectoryCached(
       continue;
     }
 
-    let agg: SessionAggregate | null = null;
-    if (isCacheFresh(db, sessionId, mtimeMs)) {
-      const cached = getSessionCache(db, sessionId);
-      if (cached) {
-        agg = cached;
-        opts.onHit?.(sessionId);
-      }
-    }
-    if (!agg) {
+    let agg: SessionAggregate | null = getSessionCacheIfFresh(
+      db,
+      sessionId,
+      mtimeMs,
+    );
+    if (agg) {
+      opts.onHit?.(sessionId);
+    } else {
       agg = await analyzeFile(f);
       upsertSessionCache(db, agg, mtimeMs);
       opts.onMiss?.(sessionId);

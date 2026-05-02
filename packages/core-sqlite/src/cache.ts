@@ -71,6 +71,20 @@ export function isCacheFresh(
   return row ? row.mtimeMs >= currentMtimeMs : false;
 }
 
+export function getSessionCacheIfFresh(
+  db: BetterSQLite3Database,
+  sessionId: string,
+  currentMtimeMs: number,
+): CachedSessionAggregate | null {
+  const row = db
+    .select()
+    .from(sessions)
+    .where(eq(sessions.sessionId, sessionId))
+    .get();
+  if (!row || row.mtimeMs < currentMtimeMs) return null;
+  return rowToCachedAggregate(row);
+}
+
 export function clearSessionCache(db: BetterSQLite3Database): number {
   const result = db.delete(sessions).run();
   return Number(result.changes ?? 0);

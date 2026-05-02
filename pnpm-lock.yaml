@@ -72,6 +72,9 @@ importers:
       '@kojihq/core':
         specifier: workspace:*
         version: link:../../packages/core
+      '@kojihq/core-sqlite':
+        specifier: workspace:*
+        version: link:../../packages/core-sqlite
       next:
         specifier: ^16.0.0
         version: 16.2.4(react-dom@19.2.5(react@19.2.5))(react@19.2.5)

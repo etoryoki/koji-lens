@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { Resend } from "resend";
-import { isValidEmail } from "../../../lib/validation";
+import { isValidEmail, verifyApiRequest } from "../../../lib/validation";
 
 export const runtime = "nodejs";
 
@@ -12,6 +12,11 @@ type Body = {
 };
 
 export async function POST(req: Request) {
+  const guard = verifyApiRequest(req);
+  if (!guard.ok) {
+    return NextResponse.json({ error: guard.error }, { status: guard.status });
+  }
+
   const apiKey = process.env.RESEND_API_KEY;
   const audienceId = process.env.RESEND_AUDIENCE_ID_WAITLIST;
   const fromAddress = process.env.RESEND_FROM_EMAIL ?? "noreply@kojihq.com";
