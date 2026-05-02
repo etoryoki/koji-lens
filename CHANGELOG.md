@@ -42,7 +42,6 @@ For detailed release notes, see [GitHub Releases](https://github.com/etoryoki/ko
 
 ### Changed
 
-- Pricing finalized: Pro Monthly **$7/month** (was $8), Pro Annual **$70/year** (was $80)
 - Bluesky profile: bilingual JA + EN description, Koji-brand-first structure
 - `metadata.alternates.languages` (hreflang) added to all paginated routes (root, contact, legal/{privacy,tos})
 - sitemap.ts: alternates.languages on every JA/EN paired route
@@ -51,7 +50,7 @@ For detailed release notes, see [GitHub Releases](https://github.com/etoryoki/ko
 ### Fixed
 
 - EN page components were inheriting JP versions; now fully English (`SiteHeaderEn`, `SiteFooterEn`, `ContactFormEn`, `WaitlistFormEn`, `CopyButton` accepts `copiedLabel` prop)
-- Waitlist confirmation email previously had stale $8/$80 pricing; now $7/$70 in both JA and EN templates
+- Waitlist confirmation email pricing synchronized between JA and EN templates
 - `apps/lp/app/layout.tsx` was emitting `<html lang="ja">` for `/en` routes; resolved via Multiple Root Layouts
 
 ### Differentiator vs ccusage

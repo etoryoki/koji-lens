@@ -13,3 +13,7 @@ apps/cli/web-standalone
 
 # SNS post drafts and marketing assets — managed in ai-company (private)
 scripts/posts/
+
+# CEO operations scripts and internal decisions — managed in ai-company (private)
+scripts/
+decisions/

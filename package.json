@@ -12,17 +12,6 @@
     "build": "pnpm -r build",
     "dev": "pnpm -r --parallel dev",
     "typecheck": "pnpm -r typecheck",
-    "test": "pnpm -r --if-present test",
-    "post:bluesky": "tsx --env-file-if-exists=scripts/.env.local scripts/bluesky-post.ts",
-    "bluesky:profile": "tsx --env-file-if-exists=scripts/.env.local scripts/bluesky-profile.ts",
-    "support:send": "tsx --env-file-if-exists=scripts/.env.local scripts/send-support-test.ts",
-    "waitlist:count": "tsx --env-file-if-exists=scripts/.env.local scripts/get-waitlist-count.ts",
-    "survey:dry-run": "tsx --env-file-if-exists=scripts/.env.local scripts/send-survey.ts --dry-run",
-    "survey:run": "tsx --env-file-if-exists=scripts/.env.local scripts/send-survey.ts"
-  },
-  "devDependencies": {
-    "@atproto/api": "^0.19.11",
-    "@resvg/resvg-js": "^2.6.2",
-    "tsx": "^4.19.2"
+    "test": "pnpm -r --if-present test"
   }
 }
