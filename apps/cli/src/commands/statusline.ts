@@ -2,7 +2,9 @@ import {
   computeCompare,
   computeMonthRanges,
   defaultClaudeLogDir,
+  defaultStateFilePath,
   loadConfig,
+  readAgentState,
   renderStatusline,
   analyzeDirectory,
   type SessionAggregate,
@@ -14,6 +16,8 @@ export interface StatuslineOptions {
   format: string;
   mode: string;
   dir?: string;
+  stateFile?: string;
+  state: boolean;
   cache: boolean;
 }
 
@@ -79,6 +83,11 @@ export async function statuslineCommand(
 
   const mode = parseMode(opts.mode);
 
+  const stateRead =
+    opts.state === false
+      ? { icon: null, state: null, staleMs: null }
+      : readAgentState(opts.stateFile ?? defaultStateFilePath());
+
   if (opts.format === "json") {
     process.stdout.write(
       JSON.stringify(
@@ -98,7 +107,10 @@ export async function statuslineCommand(
           before: result.before,
           after: result.after,
           delta: result.delta,
-          statusline: renderStatusline(result, mode),
+          agentState: stateRead,
+          statusline: renderStatusline(result, mode, {
+            stateIcon: stateRead.icon,
+          }),
         },
         null,
         2,
@@ -107,5 +119,7 @@ export async function statuslineCommand(
     return;
   }
 
-  process.stdout.write(renderStatusline(result, mode) + "\n");
+  process.stdout.write(
+    renderStatusline(result, mode, { stateIcon: stateRead.icon }) + "\n",
+  );
 }

@@ -214,3 +214,49 @@ describe("renderStatusline modes", () => {
     expect(renderStatusline(result, "minimal")).toBe("⚪");
   });
 });
+
+describe("renderStatusline state icon integration", () => {
+  const before = [
+    makeAgg({
+      sessionId: "b",
+      endedAt: "2026-04-15T00:00:00.000Z",
+      costUsd: 100,
+    }),
+  ];
+  const after = [
+    makeAgg({
+      sessionId: "a",
+      endedAt: "2026-05-10T00:00:00.000Z",
+      costUsd: 60,
+    }),
+  ];
+
+  it("appends state icon to minimal mode with single space", () => {
+    const result = computeCompare(before, after, lastMonthRange, thisMonthRange);
+    expect(renderStatusline(result, "minimal", { stateIcon: "⚡" })).toBe(
+      "💚 ⚡",
+    );
+  });
+
+  it("appends state icon to normal mode with single space", () => {
+    const result = computeCompare(before, after, lastMonthRange, thisMonthRange);
+    expect(renderStatusline(result, "normal", { stateIcon: "💤" })).toBe(
+      "💚 -40% 💤",
+    );
+  });
+
+  it("appends state icon to detailed mode with pipe separator", () => {
+    const result = computeCompare(before, after, lastMonthRange, thisMonthRange);
+    expect(renderStatusline(result, "detailed", { stateIcon: "🛑" })).toBe(
+      "💚 -40% vs last month | $40 saved | 🛑",
+    );
+  });
+
+  it("omits state icon when null (no state file or stale)", () => {
+    const result = computeCompare(before, after, lastMonthRange, thisMonthRange);
+    expect(renderStatusline(result, "normal", { stateIcon: null })).toBe(
+      "💚 -40%",
+    );
+    expect(renderStatusline(result, "normal")).toBe("💚 -40%");
+  });
+});

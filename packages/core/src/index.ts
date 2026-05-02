@@ -80,7 +80,16 @@ export {
   renderStatusline,
   type MonthRanges,
   type StatuslineMode,
+  type RenderOptions as StatuslineRenderOptions,
 } from "./statusline.js";
+
+export {
+  defaultStateFilePath,
+  readAgentState,
+  type AgentState,
+  type AgentStateFile,
+  type AgentStateRead,
+} from "./state.js";
 
 export {
   rollupSubagents,

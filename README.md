@@ -136,6 +136,32 @@ koji-lens statusline --format json         # full CompareResult for scripting
 
 **Mode selection guide**: `minimal` when you run alongside another statusline (e.g. ccusage) and want the smallest possible footprint / `normal` for standalone use / `detailed` when statusline is your only spend dashboard.
 
+#### Optional: agent state icon (⚡ / 💤 / 🛑)
+
+If you write Claude Code's current state to `~/.koji-lens/state.json` from hooks, koji-lens appends an icon: ⚡ running / 💤 idle / 🛑 awaiting approval. The icon disappears automatically after 60 seconds of staleness (so a crashed session doesn't leave a permanent ⚡).
+
+State file schema:
+
+```json
+{ "state": "thinking" | "running" | "idle" | "awaiting_approval", "since": 1714680000000, "tool": "Bash" }
+```
+
+Example `~/.claude/settings.json` hooks (Windows / PowerShell):
+
+```json
+{
+  "hooks": {
+    "UserPromptSubmit": [{ "hooks": [{ "type": "command", "command": "powershell -NoProfile -ExecutionPolicy Bypass -File C:/Users/<you>/.koji-lens/set-state.ps1 -State thinking" }] }],
+    "PreToolUse":       [{ "matcher": "*", "hooks": [{ "type": "command", "command": "powershell -NoProfile -ExecutionPolicy Bypass -File C:/Users/<you>/.koji-lens/set-state.ps1 -State running" }] }],
+    "PostToolUse":      [{ "matcher": "*", "hooks": [{ "type": "command", "command": "powershell -NoProfile -ExecutionPolicy Bypass -File C:/Users/<you>/.koji-lens/set-state.ps1 -State thinking" }] }],
+    "Notification":     [{ "hooks": [{ "type": "command", "command": "powershell -NoProfile -ExecutionPolicy Bypass -File C:/Users/<you>/.koji-lens/set-state.ps1 -State awaiting_approval" }] }],
+    "Stop":             [{ "hooks": [{ "type": "command", "command": "powershell -NoProfile -ExecutionPolicy Bypass -File C:/Users/<you>/.koji-lens/set-state.ps1 -State idle" }] }]
+  }
+}
+```
+
+macOS / Linux equivalent (replace `set-state.ps1` invocation with a one-line `bash` `printf` or a `set-state.sh` helper that writes the same JSON schema). Pass `--no-state` to `koji-lens statusline` to opt out of the icon entirely.
+
 To wire it into Claude Code, add to `~/.claude/settings.json`:
 
 ```json

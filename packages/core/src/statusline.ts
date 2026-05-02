@@ -1,5 +1,9 @@
 import type { CompareResult } from "./compare.js";
 
+export interface RenderOptions {
+  stateIcon?: string | null;
+}
+
 export interface MonthRanges {
   thisMonth: { from: Date; to: Date };
   lastMonth: { from: Date; to: Date };
@@ -26,6 +30,22 @@ export type StatuslineMode = "minimal" | "normal" | "detailed";
 export function renderStatusline(
   result: CompareResult,
   mode: StatuslineMode = "normal",
+  options: RenderOptions = {},
+): string {
+  const base = renderSpendSignal(result, mode);
+  const stateIcon = options.stateIcon;
+
+  if (!stateIcon) return base;
+
+  if (mode === "detailed") {
+    return `${base} | ${stateIcon}`;
+  }
+  return `${base} ${stateIcon}`;
+}
+
+function renderSpendSignal(
+  result: CompareResult,
+  mode: StatuslineMode,
 ): string {
   const before = result.before;
   const after = result.after;
