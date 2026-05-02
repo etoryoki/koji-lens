@@ -10,3 +10,6 @@ coverage
 *.log
 apps/cli/web-standalone
 *.tgz
+
+# SNS post drafts and marketing assets — managed in ai-company (private)
+scripts/posts/

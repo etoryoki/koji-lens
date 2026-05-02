@@ -1,6 +1,0 @@
-koji-lens でローカルログを解析したら、先月の Claude Code コストは $874 でした。
-subagent 経由の Bash 呼び出しが全体の 68%。/usage コマンドには出てこない数字です。
-
-同じ JSONL を読むので ccusage と併用可。tool ごとの内訳が差分です。
-
-https://lens.kojihq.com

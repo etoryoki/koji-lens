@@ -1,9 +1,0 @@
-koji-lens v0.1.0-beta.4 released.
-
-New `statusline` command for Claude Code's statusLine setting — 3-axis at-a-glance signal (spend trend / cache efficiency / agent state). Coexists with ccusage; koji-lens focuses on signals you act on, not raw numbers.
-
-⚡ 💚 -40% 💎 78%
-
-npm i -g @kojihq/lens@beta
-
-https://github.com/etoryoki/koji-lens/releases/tag/v0.1.0-beta.4

@@ -1,6 +1,0 @@
-Parsed my Claude Code logs with koji-lens: $874 last month.
-68% of that was Bash calls via subagents — not visible in /usage.
-
-Works alongside ccusage (same JSONL files). Per-tool breakdown is the diff.
-
-https://lens.kojihq.com/en
