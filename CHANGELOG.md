@@ -4,29 +4,59 @@ All notable changes to this project are documented in this file.
 
 For detailed release notes, see [GitHub Releases](https://github.com/etoryoki/koji-lens/releases).
 
-## [Unreleased] — Targeted for v0.1.0-beta.4 (next republish)
+## [0.1.0-beta.4] — 2026-05-02
 
-### Added
+### Added — CLI
+
+- **`koji-lens statusline`**: One-line savings signal for [Claude Code's `statusLine` integration](https://docs.claude.com/en/docs/claude-code/settings#status-line). Three independent signal axes designed for at-a-glance reading:
+  - **Spend trend**: 💚 / 💛 / 🚨 / ⚪ (this month vs last month)
+  - **Cache efficiency**: 💎 / 🧊 / 💧 (prompt cache hit rate, 70% / 30% boundary)
+  - **Agent state**: ⚡ / 💤 / 🛑 (running / idle / awaiting approval, requires hooks setup)
+- **`koji-lens statusline --mode <minimal|normal|detailed>`**: Display density selector
+  - `minimal` — icons only (e.g. `⚡ 💚 💎`), max compact for ccusage co-existence
+  - `normal` — icons + percentages (e.g. `⚡ 💚 -40% 💎 78%`), default
+  - `detailed` — icons + percentages + amounts + labels
+- **`koji-lens statusline --no-state` / `--no-cache-rate`**: Opt-out flags for individual signal axes
+- **`koji-lens compare --before <range> --after <range>`**: Period comparison command (e.g. before/after Sonnet migration), with rule-based Insights output
+- Agent state hooks integration: write `~/.koji-lens/state.json` from Claude Code hooks (`UserPromptSubmit` / `PreToolUse` / `PostToolUse` / `Notification` / `Stop`) → statusline prepends state icon. 60s stale threshold prevents stuck icons after crashes.
+
+### Added — LP / Web
+
 - LP English version at <https://lens.kojihq.com/en> (Multiple Root Layouts via `app/(ja)/` + `app/(en)/`)
-- Bilingual confirmation emails for waitlist + contact (EN body when `locale=en` in form submission)
+- LP Hero terminal pane integration (live `summary` example on the landing page)
+- LP SEO: `description` enrichment + JSON-LD `screenshot` property
+- LP Footer: Follow section with X / Bluesky / GitHub links (JA + EN)
+- Web dashboard UX overhaul: subagent parent aggregation, project filter, period switcher (24h / 7d / 30d / all, default 30d), line chart + model-cost stacked area, EN/JA i18n
+- Bilingual confirmation emails for waitlist + contact (EN body when `locale=en`)
 - English OG image (`/og-en.png`) with English Hero copy
+
+### Added — Repo / CI
+
 - `CHANGELOG.md`, `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`
 - `.github/ISSUE_TEMPLATE/` (bug report + feature request, form-based)
 - `.github/PULL_REQUEST_TEMPLATE.md`
 - `.github/dependabot.yml` (monthly npm + GitHub Actions updates)
 - CI: explicit `build` job with workspace ordering (`core` → `web` → `lens` → `lp`) + CLI smoke check
+- README: X (`@kojihq_jp`) + Bluesky (`@kojihq.com`) badges
 - `packages/ccsg-poc/` (Claude Code Security Gateway PoC for Day 45 product evaluation)
 
 ### Changed
+
 - Pricing finalized: Pro Monthly **$7/month** (was $8), Pro Annual **$70/year** (was $80)
 - Bluesky profile: bilingual JA + EN description, Koji-brand-first structure
 - `metadata.alternates.languages` (hreflang) added to all paginated routes (root, contact, legal/{privacy,tos})
 - sitemap.ts: alternates.languages on every JA/EN paired route
+- README: "What can you do with this?" section with 2 user stories (Pro/Max subscriber + API user)
 
 ### Fixed
+
 - EN page components were inheriting JP versions; now fully English (`SiteHeaderEn`, `SiteFooterEn`, `ContactFormEn`, `WaitlistFormEn`, `CopyButton` accepts `copiedLabel` prop)
 - Waitlist confirmation email previously had stale $8/$80 pricing; now $7/$70 in both JA and EN templates
 - `apps/lp/app/layout.tsx` was emitting `<html lang="ja">` for `/en` routes; resolved via Multiple Root Layouts
+
+### Differentiator vs ccusage
+
+koji-lens's statusline focuses on **signal** (judgment trigger) rather than raw cost numbers — `ccusage` excels at the latter. They coexist: ccusage shows what you're spending right now, koji-lens shows whether the trend is healthy. The cache-efficiency signal (💎 / 🧊 / 💧) in particular is a koji-lens-only axis (ccusage tracks raw cache token counts but not hit rate).
 
 ## [0.1.0-beta.3] — 2026-04-30
 

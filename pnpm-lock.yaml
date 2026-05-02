@@ -21,10 +21,10 @@ importers:
   apps/cli:
     dependencies:
       '@kojihq/core':
-        specifier: workspace:^0.1.0-beta.3
+        specifier: workspace:^0.1.0-beta.4
         version: link:../../packages/core
       '@kojihq/core-sqlite':
-        specifier: workspace:^0.1.0-beta.3
+        specifier: workspace:^0.1.0-beta.4
         version: link:../../packages/core-sqlite
       commander:
         specifier: ^13.0.0
