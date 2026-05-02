@@ -403,7 +403,7 @@ function Screenshots() {
               </div>
               <div className="relative aspect-[16/10] w-full overflow-hidden">
                 <Image
-                  src="/screenshots/screenshots.png"
+                  src="/screenshots/screenshots.webp"
                   alt="koji-lens Web ダッシュボード — 合計コスト・KPI カード・セッション別コストとツール使用のチャートを 1 画面で可視化"
                   fill
                   className="object-cover object-top"

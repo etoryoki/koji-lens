@@ -406,7 +406,7 @@ function Screenshots() {
               </div>
               <div className="relative aspect-[16/10] w-full overflow-hidden">
                 <Image
-                  src="/screenshots/screenshots.png"
+                  src="/screenshots/screenshots.webp"
                   alt="koji-lens web dashboard — total cost, KPI cards, per-session cost and tool usage charts in a single view"
                   fill
                   className="object-cover object-top"
