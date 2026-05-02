@@ -37,10 +37,7 @@ export function renderStatusline(
 
   if (!stateIcon) return base;
 
-  if (mode === "detailed") {
-    return `${base} | ${stateIcon}`;
-  }
-  return `${base} ${stateIcon}`;
+  return `${stateIcon} ${base}`;
 }
 
 function renderSpendSignal(

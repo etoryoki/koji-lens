@@ -231,24 +231,24 @@ describe("renderStatusline state icon integration", () => {
     }),
   ];
 
-  it("appends state icon to minimal mode with single space", () => {
+  it("prepends state icon to minimal mode", () => {
     const result = computeCompare(before, after, lastMonthRange, thisMonthRange);
     expect(renderStatusline(result, "minimal", { stateIcon: "⚡" })).toBe(
-      "💚 ⚡",
+      "⚡ 💚",
     );
   });
 
-  it("appends state icon to normal mode with single space", () => {
+  it("prepends state icon to normal mode", () => {
     const result = computeCompare(before, after, lastMonthRange, thisMonthRange);
     expect(renderStatusline(result, "normal", { stateIcon: "💤" })).toBe(
-      "💚 -40% 💤",
+      "💤 💚 -40%",
     );
   });
 
-  it("appends state icon to detailed mode with pipe separator", () => {
+  it("prepends state icon to detailed mode", () => {
     const result = computeCompare(before, after, lastMonthRange, thisMonthRange);
     expect(renderStatusline(result, "detailed", { stateIcon: "🛑" })).toBe(
-      "💚 -40% vs last month | $40 saved | 🛑",
+      "🛑 💚 -40% vs last month | $40 saved",
     );
   });
 
