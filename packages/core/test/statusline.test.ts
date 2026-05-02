@@ -58,7 +58,7 @@ describe("computeMonthRanges", () => {
 describe("renderStatusline", () => {
   it("returns no-data marker when both periods empty", () => {
     const result = computeCompare([], [], lastMonthRange, thisMonthRange);
-    expect(renderStatusline(result)).toBe("⚪ no data yet");
+    expect(renderStatusline(result)).toBe("⚪ no data");
   });
 
   it("returns ⚪ new when last month has no data", () => {
@@ -67,23 +67,18 @@ describe("renderStatusline", () => {
         sessionId: "a",
         endedAt: "2026-05-05T00:00:00.000Z",
         costUsd: 50,
-        costsByModel: { "claude-sonnet-4-6": 50 },
       }),
     ];
     const result = computeCompare([], after, lastMonthRange, thisMonthRange);
-    const out = renderStatusline(result);
-    expect(out).toContain("⚪ new");
-    expect(out).toContain("$50");
-    expect(out).toContain("this month");
+    expect(renderStatusline(result)).toBe("⚪ new");
   });
 
-  it("emits 💚 on track when cost dropped > 10%", () => {
+  it("emits 💚 + negative pct when cost dropped > 10%", () => {
     const before = [
       makeAgg({
         sessionId: "b",
         endedAt: "2026-04-15T00:00:00.000Z",
         costUsd: 100,
-        costsByModel: { "claude-opus-4-7": 100 },
       }),
     ];
     const after = [
@@ -91,17 +86,13 @@ describe("renderStatusline", () => {
         sessionId: "a",
         endedAt: "2026-05-10T00:00:00.000Z",
         costUsd: 60,
-        costsByModel: { "claude-sonnet-4-6": 60 },
       }),
     ];
     const result = computeCompare(before, after, lastMonthRange, thisMonthRange);
-    const out = renderStatusline(result);
-    expect(out).toContain("💚 on track");
-    expect(out).toContain("📉");
-    expect(out).toContain("saved");
+    expect(renderStatusline(result)).toBe("💚 -40%");
   });
 
-  it("emits 🚨 over budget when cost rose > 10%", () => {
+  it("emits 🚨 + positive pct when cost rose > 10%", () => {
     const before = [
       makeAgg({
         sessionId: "b",
@@ -117,13 +108,10 @@ describe("renderStatusline", () => {
       }),
     ];
     const result = computeCompare(before, after, lastMonthRange, thisMonthRange);
-    const out = renderStatusline(result);
-    expect(out).toContain("🚨 over budget");
-    expect(out).toContain("📈");
-    expect(out).toContain("over");
+    expect(renderStatusline(result)).toBe("🚨 +100%");
   });
 
-  it("emits 💛 watch when within ±10%", () => {
+  it("emits 💛 + small pct when within ±10%", () => {
     const before = [
       makeAgg({
         sessionId: "b",
@@ -139,52 +127,25 @@ describe("renderStatusline", () => {
       }),
     ];
     const result = computeCompare(before, after, lastMonthRange, thisMonthRange);
-    expect(renderStatusline(result)).toContain("💛 watch");
+    expect(renderStatusline(result)).toBe("💛 +5%");
   });
 
-  it("includes Sonnet shift annotation when ratio shifts ≥ 5pt", () => {
+  it("renders 0% without sign when delta is exactly zero", () => {
     const before = [
       makeAgg({
         sessionId: "b",
         endedAt: "2026-04-15T00:00:00.000Z",
         costUsd: 100,
-        costsByModel: { "claude-opus-4-7": 92, "claude-sonnet-4-6": 8 },
       }),
     ];
     const after = [
       makeAgg({
         sessionId: "a",
         endedAt: "2026-05-10T00:00:00.000Z",
-        costUsd: 60,
-        costsByModel: { "claude-opus-4-7": 24, "claude-sonnet-4-6": 36 },
-      }),
-    ];
-    const result = computeCompare(before, after, lastMonthRange, thisMonthRange);
-    const out = renderStatusline(result);
-    expect(out).toContain("Sonnet 60%");
-    expect(out).toContain("was 8%");
-  });
-
-  it("omits Sonnet annotation when ratio shift < 5pt", () => {
-    const before = [
-      makeAgg({
-        sessionId: "b",
-        endedAt: "2026-04-15T00:00:00.000Z",
         costUsd: 100,
-        costsByModel: { "claude-opus-4-7": 50, "claude-sonnet-4-6": 50 },
-      }),
-    ];
-    const after = [
-      makeAgg({
-        sessionId: "a",
-        endedAt: "2026-05-10T00:00:00.000Z",
-        costUsd: 80,
-        costsByModel: { "claude-opus-4-7": 40, "claude-sonnet-4-6": 40 },
       }),
     ];
     const result = computeCompare(before, after, lastMonthRange, thisMonthRange);
-    const out = renderStatusline(result);
-    expect(out).not.toContain("Sonnet");
-    expect(out).not.toContain("was");
+    expect(renderStatusline(result)).toBe("💛 0%");
   });
 });

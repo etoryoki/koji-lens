@@ -125,13 +125,13 @@ Dashboard includes cost/session bar chart, tokens stacked bar, tool usage pie, a
 
 ### `statusline`
 
-Prints a one-line savings status comparing this month vs. last month. Designed for [Claude Code's `statusLine` integration](https://docs.claude.com/en/docs/claude-code/settings#status-line) — runs on every Claude Code refresh, so the current spend trend is always visible.
+Prints a one-glance savings signal comparing this month vs. last month. Designed for [Claude Code's `statusLine` integration](https://docs.claude.com/en/docs/claude-code/settings#status-line) — minimal pixel footprint, just an emoji + delta percentage, so you instantly know if you're saving or overspending. Drill into details via `koji-lens summary` or the web dashboard.
 
 ```bash
 koji-lens statusline
-# 📉 -40% vs last month | 🎯 $200 saved (Sonnet 60%, was 8%) | 💚 on track
+# 💚 -40%
 
-koji-lens statusline --format json   # full CompareResult + statusline string
+koji-lens statusline --format json   # full CompareResult for scripting
 ```
 
 To wire it into Claude Code, add to `~/.claude/settings.json`:
@@ -146,9 +146,9 @@ To wire it into Claude Code, add to `~/.claude/settings.json`:
 }
 ```
 
-Status emoji legend: 💚 on track (cost dropped > 10%) / 💛 watch (within ±10%) / 🚨 over budget (cost rose > 10%) / ⚪ new (no last-month data).
+Emoji legend: 💚 cost dropped > 10% / 💛 within ±10% / 🚨 cost rose > 10% / ⚪ no last-month data.
 
-Runs alongside [ccusage](https://ccusage.com)'s statusline — koji-lens shows *trend vs. last month*, ccusage shows *current spend in the moment*. Use both, or pick one.
+Designed to coexist with [ccusage](https://ccusage.com)'s statusline — ccusage shows *current spend in detail*, koji-lens shows *the one signal you need to act on*. Use both, or pick one.
 
 ### `config`
 

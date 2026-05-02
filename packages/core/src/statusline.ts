@@ -26,63 +26,20 @@ export function renderStatusline(result: CompareResult): string {
   const after = result.after;
 
   if (before.sessionsCount === 0 && after.sessionsCount === 0) {
-    return "⚪ no data yet";
+    return "⚪ no data";
   }
   if (before.sessionsCount === 0) {
-    return `⚪ new | 💰 $${after.totalCostUsd.toFixed(0)} this month`;
+    return "⚪ new";
   }
 
   const pct = result.delta.costUsdPct;
-  const savings = -result.delta.costUsd;
-
-  const status =
-    pct < -10 ? "💚 on track" : pct > 10 ? "🚨 over budget" : "💛 watch";
-
-  const trendIcon = pct < -1 ? "📉" : pct > 1 ? "📈" : "➖";
-  const trendText = `${trendIcon} ${formatPct(pct)} vs last month`;
-
-  const savingsAbs = Math.abs(savings).toFixed(0);
-  const savingsText =
-    savings > 0 ? `🎯 $${savingsAbs} saved` : `💸 $${savingsAbs} over`;
-
-  const sonnetText = computeSonnetShift(result);
-  const middleText = sonnetText ? `${savingsText} (${sonnetText})` : savingsText;
-
-  return `${trendText} | ${middleText} | ${status}`;
+  const emoji = pct < -10 ? "💚" : pct > 10 ? "🚨" : "💛";
+  return `${emoji} ${formatPct(pct)}`;
 }
 
 function formatPct(pct: number): string {
-  const sign = pct > 0 ? "+" : "";
-  return `${sign}${pct.toFixed(0)}%`;
-}
-
-function computeSonnetShift(result: CompareResult): string | null {
-  const beforeSonnet = sumByModelMatch(result.before.costByModel, "sonnet");
-  const afterSonnet = sumByModelMatch(result.after.costByModel, "sonnet");
-
-  const beforeRatio =
-    result.before.totalCostUsd > 0
-      ? (beforeSonnet / result.before.totalCostUsd) * 100
-      : 0;
-  const afterRatio =
-    result.after.totalCostUsd > 0
-      ? (afterSonnet / result.after.totalCostUsd) * 100
-      : 0;
-
-  if (Math.abs(afterRatio - beforeRatio) < 5) return null;
-
-  return `Sonnet ${Math.round(afterRatio)}%, was ${Math.round(beforeRatio)}%`;
-}
-
-function sumByModelMatch(
-  costByModel: Record<string, number>,
-  keyword: string,
-): number {
-  let sum = 0;
-  for (const [model, cost] of Object.entries(costByModel)) {
-    if (model.toLowerCase().includes(keyword)) {
-      sum += cost;
-    }
-  }
-  return sum;
+  const rounded = Math.round(pct);
+  if (rounded === 0) return "0%";
+  const sign = rounded > 0 ? "+" : "";
+  return `${sign}${rounded}%`;
 }
