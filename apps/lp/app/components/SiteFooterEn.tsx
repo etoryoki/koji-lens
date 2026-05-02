@@ -31,6 +31,35 @@ export function SiteFooterEn() {
                 {SUPPORT_EMAIL}
               </Link>
             </div>
+            <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1">
+              <span className="text-xs text-slate-500">Follow:</span>
+              <a
+                href="https://x.com/kojihq_jp"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="transition hover:text-white"
+              >
+                X
+              </a>
+              <span className="text-slate-600">·</span>
+              <a
+                href="https://bsky.app/profile/kojihq.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="transition hover:text-white"
+              >
+                Bluesky
+              </a>
+              <span className="text-slate-600">·</span>
+              <a
+                href="https://github.com/etoryoki/koji-lens"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="transition hover:text-white"
+              >
+                GitHub
+              </a>
+            </div>
           </div>
           <div className="flex flex-wrap gap-x-5 gap-y-2 text-sm text-slate-400">
             <Link href="/en/contact" className="transition hover:text-white">

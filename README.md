@@ -3,6 +3,8 @@
 [![npm beta](https://img.shields.io/npm/v/@kojihq/lens/beta.svg?label=@kojihq/lens)](https://www.npmjs.com/package/@kojihq/lens)
 [![license](https://img.shields.io/npm/l/@kojihq/lens.svg)](./LICENSE)
 [![node](https://img.shields.io/node/v/@kojihq/lens/beta.svg)](https://nodejs.org/)
+[![X](https://img.shields.io/badge/X-@kojihq__jp-000000?logo=x&logoColor=white)](https://x.com/kojihq_jp)
+[![Bluesky](https://img.shields.io/badge/Bluesky-@kojihq.com-0085ff?logo=bluesky&logoColor=white)](https://bsky.app/profile/kojihq.com)
 
 > **Visualize your AI coding usage.** — [lens.kojihq.com](https://lens.kojihq.com) ([English](https://lens.kojihq.com/en))
 
