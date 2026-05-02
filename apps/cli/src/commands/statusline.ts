@@ -6,13 +6,30 @@ import {
   renderStatusline,
   analyzeDirectory,
   type SessionAggregate,
+  type StatuslineMode,
 } from "@kojihq/core";
 import { analyzeDirectoryCached, openCacheDb } from "@kojihq/core-sqlite";
 
 export interface StatuslineOptions {
   format: string;
+  mode: string;
   dir?: string;
   cache: boolean;
+}
+
+const VALID_MODES: ReadonlyArray<StatuslineMode> = [
+  "minimal",
+  "normal",
+  "detailed",
+];
+
+function parseMode(input: string): StatuslineMode {
+  if ((VALID_MODES as ReadonlyArray<string>).includes(input)) {
+    return input as StatuslineMode;
+  }
+  throw new Error(
+    `Invalid --mode: "${input}". Expected one of: ${VALID_MODES.join(", ")}`,
+  );
 }
 
 interface DateRange {
@@ -60,11 +77,14 @@ export async function statuslineCommand(
     ranges.thisMonth,
   );
 
+  const mode = parseMode(opts.mode);
+
   if (opts.format === "json") {
     process.stdout.write(
       JSON.stringify(
         {
           generatedAt: new Date().toISOString(),
+          mode,
           ranges: {
             lastMonth: {
               from: ranges.lastMonth.from.toISOString(),
@@ -78,7 +98,7 @@ export async function statuslineCommand(
           before: result.before,
           after: result.after,
           delta: result.delta,
-          statusline: renderStatusline(result),
+          statusline: renderStatusline(result, mode),
         },
         null,
         2,
@@ -87,5 +107,5 @@ export async function statuslineCommand(
     return;
   }
 
-  process.stdout.write(renderStatusline(result) + "\n");
+  process.stdout.write(renderStatusline(result, mode) + "\n");
 }

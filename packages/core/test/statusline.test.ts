@@ -149,3 +149,68 @@ describe("renderStatusline", () => {
     expect(renderStatusline(result)).toBe("💛 0%");
   });
 });
+
+describe("renderStatusline modes", () => {
+  const before = [
+    makeAgg({
+      sessionId: "b",
+      endedAt: "2026-04-15T00:00:00.000Z",
+      costUsd: 100,
+    }),
+  ];
+  const after = [
+    makeAgg({
+      sessionId: "a",
+      endedAt: "2026-05-10T00:00:00.000Z",
+      costUsd: 60,
+    }),
+  ];
+
+  it("minimal mode strips percent and text, leaving icon only", () => {
+    const result = computeCompare(before, after, lastMonthRange, thisMonthRange);
+    expect(renderStatusline(result, "minimal")).toBe("💚");
+  });
+
+  it("normal mode (default) renders icon + percent", () => {
+    const result = computeCompare(before, after, lastMonthRange, thisMonthRange);
+    expect(renderStatusline(result, "normal")).toBe("💚 -40%");
+  });
+
+  it("detailed mode adds comparison label and absolute saved amount", () => {
+    const result = computeCompare(before, after, lastMonthRange, thisMonthRange);
+    expect(renderStatusline(result, "detailed")).toBe(
+      "💚 -40% vs last month | $40 saved",
+    );
+  });
+
+  it("detailed mode flips wording for cost increase", () => {
+    const beforeLow = [
+      makeAgg({
+        sessionId: "b",
+        endedAt: "2026-04-15T00:00:00.000Z",
+        costUsd: 50,
+      }),
+    ];
+    const afterHigh = [
+      makeAgg({
+        sessionId: "a",
+        endedAt: "2026-05-10T00:00:00.000Z",
+        costUsd: 80,
+      }),
+    ];
+    const result = computeCompare(beforeLow, afterHigh, lastMonthRange, thisMonthRange);
+    expect(renderStatusline(result, "detailed")).toBe(
+      "🚨 +60% vs last month | $30 over",
+    );
+  });
+
+  it("minimal mode collapses no-data message to icon", () => {
+    const result = computeCompare([], [], lastMonthRange, thisMonthRange);
+    expect(renderStatusline(result, "minimal")).toBe("⚪");
+  });
+
+  it("minimal mode collapses ⚪ new to icon", () => {
+    const result = computeCompare([], after, lastMonthRange, thisMonthRange);
+    expect(renderStatusline(result, "minimal")).toBe("⚪");
+  });
+});

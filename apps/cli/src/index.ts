@@ -109,6 +109,11 @@ program
   .description(
     "Print a one-line savings status for Claude Code statusLine integration (this month vs last month)",
   )
+  .option(
+    "--mode <mode>",
+    "Display density: minimal (icon only) | normal (icon + %) | detailed (icon + % + amount)",
+    "normal",
+  )
   .option("--format <format>", "Output format: statusline | json", "statusline")
   .option("--dir <path>", "Claude Code log directory")
   .option("--no-cache", "Disable SQLite cache (~/.koji-lens/cache.db)")

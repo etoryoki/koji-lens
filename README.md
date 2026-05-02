@@ -125,14 +125,16 @@ Dashboard includes cost/session bar chart, tokens stacked bar, tool usage pie, a
 
 ### `statusline`
 
-Prints a one-glance savings signal comparing this month vs. last month. Designed for [Claude Code's `statusLine` integration](https://docs.claude.com/en/docs/claude-code/settings#status-line) — minimal pixel footprint, just an emoji + delta percentage, so you instantly know if you're saving or overspending. Drill into details via `koji-lens summary` or the web dashboard.
+Prints a one-glance savings signal comparing this month vs. last month. Designed for [Claude Code's `statusLine` integration](https://docs.claude.com/en/docs/claude-code/settings#status-line) — pick the density that fits your status bar real estate. Drill into details via `koji-lens summary` or the web dashboard.
 
 ```bash
-koji-lens statusline
-# 💚 -40%
-
-koji-lens statusline --format json   # full CompareResult for scripting
+koji-lens statusline                       # 💚 -40%               (default = normal)
+koji-lens statusline --mode minimal        # 💚                    (icon only, max compact)
+koji-lens statusline --mode detailed       # 💚 -40% vs last month | $40 saved
+koji-lens statusline --format json         # full CompareResult for scripting
 ```
+
+**Mode selection guide**: `minimal` when you run alongside another statusline (e.g. ccusage) and want the smallest possible footprint / `normal` for standalone use / `detailed` when statusline is your only spend dashboard.
 
 To wire it into Claude Code, add to `~/.claude/settings.json`:
 

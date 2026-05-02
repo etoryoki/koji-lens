@@ -21,19 +21,36 @@ export function computeMonthRanges(now: Date = new Date()): MonthRanges {
   };
 }
 
-export function renderStatusline(result: CompareResult): string {
+export type StatuslineMode = "minimal" | "normal" | "detailed";
+
+export function renderStatusline(
+  result: CompareResult,
+  mode: StatuslineMode = "normal",
+): string {
   const before = result.before;
   const after = result.after;
 
   if (before.sessionsCount === 0 && after.sessionsCount === 0) {
-    return "⚪ no data";
+    return mode === "minimal" ? "⚪" : "⚪ no data";
   }
   if (before.sessionsCount === 0) {
-    return "⚪ new";
+    return mode === "minimal" ? "⚪" : "⚪ new";
   }
 
   const pct = result.delta.costUsdPct;
   const emoji = pct < -10 ? "💚" : pct > 10 ? "🚨" : "💛";
+
+  if (mode === "minimal") {
+    return emoji;
+  }
+
+  if (mode === "detailed") {
+    const savings = -result.delta.costUsd;
+    const savingsAbs = Math.abs(savings).toFixed(0);
+    const direction = savings > 0 ? "saved" : "over";
+    return `${emoji} ${formatPct(pct)} vs last month | $${savingsAbs} ${direction}`;
+  }
+
   return `${emoji} ${formatPct(pct)}`;
 }
 

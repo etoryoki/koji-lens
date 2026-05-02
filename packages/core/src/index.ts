@@ -79,6 +79,7 @@ export {
   computeMonthRanges,
   renderStatusline,
   type MonthRanges,
+  type StatuslineMode,
 } from "./statusline.js";
 
 export {
