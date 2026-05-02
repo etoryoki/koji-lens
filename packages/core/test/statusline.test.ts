@@ -316,4 +316,50 @@ describe("renderStatusline cache rate integration", () => {
       "💚 -40%",
     );
   });
+
+  it("uses 🧊 icon when cache rate is between 30 and 70", () => {
+    const result = computeCompare(before, after, lastMonthRange, thisMonthRange);
+    const midRate = { rate: 50, inputTokens: 500, cacheReadTokens: 500 };
+    expect(renderStatusline(result, "normal", { cacheRate: midRate })).toBe(
+      "💚 -40% 🧊 50%",
+    );
+    expect(renderStatusline(result, "minimal", { cacheRate: midRate })).toBe(
+      "💚 🧊",
+    );
+  });
+
+  it("uses 💧 icon when cache rate is below 30", () => {
+    const result = computeCompare(before, after, lastMonthRange, thisMonthRange);
+    const lowRate = { rate: 15, inputTokens: 850, cacheReadTokens: 150 };
+    expect(renderStatusline(result, "normal", { cacheRate: lowRate })).toBe(
+      "💚 -40% 💧 15%",
+    );
+    expect(renderStatusline(result, "minimal", { cacheRate: lowRate })).toBe(
+      "💚 💧",
+    );
+  });
+
+  it("rate=70 maps to 💎 (boundary check)", () => {
+    const result = computeCompare(before, after, lastMonthRange, thisMonthRange);
+    const boundary = { rate: 70, inputTokens: 300, cacheReadTokens: 700 };
+    expect(renderStatusline(result, "minimal", { cacheRate: boundary })).toBe(
+      "💚 💎",
+    );
+  });
+
+  it("rate=30 maps to 🧊 (boundary check)", () => {
+    const result = computeCompare(before, after, lastMonthRange, thisMonthRange);
+    const boundary = { rate: 30, inputTokens: 700, cacheReadTokens: 300 };
+    expect(renderStatusline(result, "minimal", { cacheRate: boundary })).toBe(
+      "💚 🧊",
+    );
+  });
+
+  it("detailed mode uses correct icon for low rate", () => {
+    const result = computeCompare(before, after, lastMonthRange, thisMonthRange);
+    const lowRate = { rate: 10, inputTokens: 900, cacheReadTokens: 100 };
+    expect(renderStatusline(result, "detailed", { cacheRate: lowRate })).toBe(
+      "💚 -40% vs last month | $40 saved | 💧 10% cache",
+    );
+  });
 });

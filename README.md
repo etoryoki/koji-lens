@@ -135,7 +135,7 @@ koji-lens statusline --no-cache-rate       # 💚 -40%                          
 koji-lens statusline --format json         # full CompareResult + cache rate for scripting
 ```
 
-The `💎 X%` signal shows this month's prompt-cache hit rate (cache read / (cache read + new input tokens)). Higher = more cache reuse = lower cost per turn. koji-lens's independent axis from spend trend.
+The cache signal shows this month's prompt-cache hit rate (cache read / (cache read + new input tokens)). Higher = more cache reuse = lower cost per turn. Icon shifts with the rate so you can read the state at a glance without checking the number: 💎 ≥ 70% (excellent) / 🧊 30–70% (cool) / 💧 < 30% (low). koji-lens's independent axis from spend trend.
 
 **Mode selection guide**: `minimal` when you run alongside another statusline (e.g. ccusage) and want the smallest possible footprint / `normal` for standalone use / `detailed` when statusline is your only spend dashboard.
 

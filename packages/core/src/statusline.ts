@@ -51,14 +51,15 @@ function renderCacheSuffix(
 ): string {
   if (!cacheRate) return "";
   const rate = Math.round(cacheRate.rate);
+  const icon = rate >= 70 ? "💎" : rate >= 30 ? "🧊" : "💧";
   switch (mode) {
     case "minimal":
-      return " 💎";
+      return ` ${icon}`;
     case "detailed":
-      return ` | 💎 ${rate}% cache`;
+      return ` | ${icon} ${rate}% cache`;
     case "normal":
     default:
-      return ` 💎 ${rate}%`;
+      return ` ${icon} ${rate}%`;
   }
 }
 
