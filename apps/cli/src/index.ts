@@ -121,6 +121,7 @@ program
     "Path to agent-state JSON written by Claude Code hooks (default: ~/.koji-lens/state.json)",
   )
   .option("--no-state", "Skip agent-state lookup (suppress ⚡/💤/🛑 icon)")
+  .option("--no-cache-rate", "Suppress cache hit rate signal (💎 X%)")
   .option("--no-cache", "Disable SQLite cache (~/.koji-lens/cache.db)")
   .action(async (opts) => {
     try {

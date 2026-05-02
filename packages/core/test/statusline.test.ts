@@ -260,3 +260,60 @@ describe("renderStatusline state icon integration", () => {
     expect(renderStatusline(result, "normal")).toBe("💚 -40%");
   });
 });
+
+describe("renderStatusline cache rate integration", () => {
+  const before = [
+    makeAgg({
+      sessionId: "b",
+      endedAt: "2026-04-15T00:00:00.000Z",
+      costUsd: 100,
+    }),
+  ];
+  const after = [
+    makeAgg({
+      sessionId: "a",
+      endedAt: "2026-05-10T00:00:00.000Z",
+      costUsd: 60,
+    }),
+  ];
+  const cacheRate = {
+    rate: 78.4,
+    inputTokens: 200,
+    cacheReadTokens: 800,
+  };
+
+  it("appends 💎 (no number) to minimal mode", () => {
+    const result = computeCompare(before, after, lastMonthRange, thisMonthRange);
+    expect(renderStatusline(result, "minimal", { cacheRate })).toBe(
+      "💚 💎",
+    );
+  });
+
+  it("appends 💎 + percent to normal mode", () => {
+    const result = computeCompare(before, after, lastMonthRange, thisMonthRange);
+    expect(renderStatusline(result, "normal", { cacheRate })).toBe(
+      "💚 -40% 💎 78%",
+    );
+  });
+
+  it("appends 💎 + percent + label with pipe to detailed mode", () => {
+    const result = computeCompare(before, after, lastMonthRange, thisMonthRange);
+    expect(renderStatusline(result, "detailed", { cacheRate })).toBe(
+      "💚 -40% vs last month | $40 saved | 💎 78% cache",
+    );
+  });
+
+  it("places state icon leftmost when both state and cache rate present", () => {
+    const result = computeCompare(before, after, lastMonthRange, thisMonthRange);
+    expect(
+      renderStatusline(result, "normal", { stateIcon: "⚡", cacheRate }),
+    ).toBe("⚡ 💚 -40% 💎 78%");
+  });
+
+  it("omits cache suffix when cacheRate is null", () => {
+    const result = computeCompare(before, after, lastMonthRange, thisMonthRange);
+    expect(renderStatusline(result, "normal", { cacheRate: null })).toBe(
+      "💚 -40%",
+    );
+  });
+});

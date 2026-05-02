@@ -128,11 +128,14 @@ Dashboard includes cost/session bar chart, tokens stacked bar, tool usage pie, a
 Prints a one-glance savings signal comparing this month vs. last month. Designed for [Claude Code's `statusLine` integration](https://docs.claude.com/en/docs/claude-code/settings#status-line) — pick the density that fits your status bar real estate. Drill into details via `koji-lens summary` or the web dashboard.
 
 ```bash
-koji-lens statusline                       # 💚 -40%               (default = normal)
-koji-lens statusline --mode minimal        # 💚                    (icon only, max compact)
-koji-lens statusline --mode detailed       # 💚 -40% vs last month | $40 saved
-koji-lens statusline --format json         # full CompareResult for scripting
+koji-lens statusline                       # 💚 -40% 💎 78%                              (default = normal)
+koji-lens statusline --mode minimal        # 💚 💎                                       (icons only, max compact)
+koji-lens statusline --mode detailed       # 💚 -40% vs last month | $40 saved | 💎 78% cache
+koji-lens statusline --no-cache-rate       # 💚 -40%                                     (suppress cache signal)
+koji-lens statusline --format json         # full CompareResult + cache rate for scripting
 ```
+
+The `💎 X%` signal shows this month's prompt-cache hit rate (cache read / (cache read + new input tokens)). Higher = more cache reuse = lower cost per turn. koji-lens's independent axis from spend trend.
 
 **Mode selection guide**: `minimal` when you run alongside another statusline (e.g. ccusage) and want the smallest possible footprint / `normal` for standalone use / `detailed` when statusline is your only spend dashboard.
 

@@ -76,6 +76,11 @@ export {
 export { generateInsights } from "./insights.js";
 
 export {
+  computeCacheRate,
+  type CacheRateResult,
+} from "./cache-rate.js";
+
+export {
   computeMonthRanges,
   renderStatusline,
   type MonthRanges,

@@ -1,7 +1,9 @@
+import type { CacheRateResult } from "./cache-rate.js";
 import type { CompareResult } from "./compare.js";
 
 export interface RenderOptions {
   stateIcon?: string | null;
+  cacheRate?: CacheRateResult | null;
 }
 
 export interface MonthRanges {
@@ -33,11 +35,31 @@ export function renderStatusline(
   options: RenderOptions = {},
 ): string {
   const base = renderSpendSignal(result, mode);
+  const cacheSuffix = renderCacheSuffix(options.cacheRate, mode);
   const stateIcon = options.stateIcon;
 
-  if (!stateIcon) return base;
+  const spendAndCache = cacheSuffix ? `${base}${cacheSuffix}` : base;
 
-  return `${stateIcon} ${base}`;
+  if (!stateIcon) return spendAndCache;
+
+  return `${stateIcon} ${spendAndCache}`;
+}
+
+function renderCacheSuffix(
+  cacheRate: CacheRateResult | null | undefined,
+  mode: StatuslineMode,
+): string {
+  if (!cacheRate) return "";
+  const rate = Math.round(cacheRate.rate);
+  switch (mode) {
+    case "minimal":
+      return " 💎";
+    case "detailed":
+      return ` | 💎 ${rate}% cache`;
+    case "normal":
+    default:
+      return ` 💎 ${rate}%`;
+  }
 }
 
 function renderSpendSignal(

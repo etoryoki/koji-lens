@@ -1,4 +1,5 @@
 import {
+  computeCacheRate,
   computeCompare,
   computeMonthRanges,
   defaultClaudeLogDir,
@@ -18,6 +19,7 @@ export interface StatuslineOptions {
   dir?: string;
   stateFile?: string;
   state: boolean;
+  cacheRate: boolean;
   cache: boolean;
 }
 
@@ -88,6 +90,9 @@ export async function statuslineCommand(
       ? { icon: null, state: null, staleMs: null }
       : readAgentState(opts.stateFile ?? defaultStateFilePath());
 
+  const cacheRate =
+    opts.cacheRate === false ? null : computeCacheRate(afterAggs);
+
   if (opts.format === "json") {
     process.stdout.write(
       JSON.stringify(
@@ -108,8 +113,10 @@ export async function statuslineCommand(
           after: result.after,
           delta: result.delta,
           agentState: stateRead,
+          cacheRate,
           statusline: renderStatusline(result, mode, {
             stateIcon: stateRead.icon,
+            cacheRate,
           }),
         },
         null,
@@ -120,6 +127,9 @@ export async function statuslineCommand(
   }
 
   process.stdout.write(
-    renderStatusline(result, mode, { stateIcon: stateRead.icon }) + "\n",
+    renderStatusline(result, mode, {
+      stateIcon: stateRead.icon,
+      cacheRate,
+    }) + "\n",
   );
 }
