@@ -26,6 +26,7 @@ export {
   sumAggregates,
   type SessionAggregate,
   type TotalAggregate,
+  type ModelChange,
 } from "./aggregate.js";
 
 export {
@@ -74,6 +75,15 @@ export {
 } from "./compare.js";
 
 export { generateInsights } from "./insights.js";
+
+export {
+  computeWeeklyTrend,
+  detectTrendRegressions,
+  renderWeeklyTrendText,
+  type WeeklyTrendResult,
+  type WeeklyTrendBucket,
+  type TrendRegression,
+} from "./trend.js";
 
 export {
   computeCacheRate,

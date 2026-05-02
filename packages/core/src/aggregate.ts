@@ -1,6 +1,12 @@
 import { priceFor } from "./pricing.js";
 import type { ClaudeCodeRecord, Usage } from "./schema.js";
 
+export interface ModelChange {
+  fromModel: string | null;
+  toModel: string;
+  at: string;
+}
+
 export interface SessionAggregate {
   sessionId: string;
   filePath: string;
@@ -18,6 +24,9 @@ export interface SessionAggregate {
   costUsd: number;
   costsByModel: Record<string, number>;
   tools: Record<string, number>;
+  modelChanges: ModelChange[];
+  latencyP50Ms: number;
+  latencyP95Ms: number;
 }
 
 export function createEmptyAggregate(
@@ -41,6 +50,9 @@ export function createEmptyAggregate(
     costUsd: 0,
     costsByModel: {},
     tools: {},
+    modelChanges: [],
+    latencyP50Ms: 0,
+    latencyP95Ms: 0,
   };
 }
 
@@ -77,6 +89,23 @@ function updateTimeRange(agg: SessionAggregate, ts: string | undefined) {
   if (!agg.endedAt || ts > agg.endedAt) agg.endedAt = ts;
 }
 
+interface AggregateScratch {
+  lastUserAt: string | null;
+  lastAssistantModel: string | null;
+  latencies: number[];
+}
+
+const SCRATCH = new WeakMap<SessionAggregate, AggregateScratch>();
+
+function getScratch(agg: SessionAggregate): AggregateScratch {
+  let s = SCRATCH.get(agg);
+  if (!s) {
+    s = { lastUserAt: null, lastAssistantModel: null, latencies: [] };
+    SCRATCH.set(agg, s);
+  }
+  return s;
+}
+
 export function applyRecord(
   agg: SessionAggregate,
   rec: ClaudeCodeRecord,
@@ -84,12 +113,26 @@ export function applyRecord(
   updateTimeRange(agg, rec.timestamp);
   if (rec.isSidechain) agg.sidechainCount += 1;
 
+  const scratch = getScratch(agg);
+
   if (rec.type === "assistant") {
     agg.assistantTurns += 1;
     const msg = rec.message;
     if (msg) {
       if (msg.model) {
         agg.models[msg.model] = (agg.models[msg.model] ?? 0) + 1;
+
+        if (
+          scratch.lastAssistantModel !== null &&
+          scratch.lastAssistantModel !== msg.model
+        ) {
+          agg.modelChanges.push({
+            fromModel: scratch.lastAssistantModel,
+            toModel: msg.model,
+            at: rec.timestamp ?? "",
+          });
+        }
+        scratch.lastAssistantModel = msg.model;
       }
       applyUsage(agg, msg.model, msg.usage);
       if (msg.content) {
@@ -100,9 +143,30 @@ export function applyRecord(
         }
       }
     }
+
+    if (scratch.lastUserAt && rec.timestamp && !rec.isSidechain) {
+      const latency =
+        new Date(rec.timestamp).getTime() - new Date(scratch.lastUserAt).getTime();
+      if (latency > 0 && latency < 600_000) {
+        scratch.latencies.push(latency);
+      }
+      scratch.lastUserAt = null;
+    }
   } else if (rec.type === "user") {
     agg.userTurns += 1;
+    if (rec.timestamp && !rec.isSidechain) {
+      scratch.lastUserAt = rec.timestamp;
+    }
   }
+}
+
+function percentile(sortedAsc: number[], p: number): number {
+  if (sortedAsc.length === 0) return 0;
+  const idx = Math.min(
+    sortedAsc.length - 1,
+    Math.floor((p / 100) * sortedAsc.length),
+  );
+  return sortedAsc[idx];
 }
 
 export function finalizeAggregate(agg: SessionAggregate): SessionAggregate {
@@ -110,6 +174,13 @@ export function finalizeAggregate(agg: SessionAggregate): SessionAggregate {
     agg.durationMs =
       new Date(agg.endedAt).getTime() - new Date(agg.startedAt).getTime();
   }
+  const scratch = SCRATCH.get(agg);
+  if (scratch && scratch.latencies.length > 0) {
+    const sorted = [...scratch.latencies].sort((a, b) => a - b);
+    agg.latencyP50Ms = percentile(sorted, 50);
+    agg.latencyP95Ms = percentile(sorted, 95);
+  }
+  SCRATCH.delete(agg);
   return agg;
 }
 

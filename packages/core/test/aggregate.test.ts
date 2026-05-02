@@ -84,6 +84,79 @@ describe("applyRecord / finalizeAggregate", () => {
   });
 });
 
+describe("modelChanges (Phase A 拡張)", () => {
+  it("does not record change on the first assistant model", () => {
+    const agg = createEmptyAggregate("s1", "/tmp/s1.jsonl");
+    applyRecord(agg, assistantRecord({ model: "claude-opus-4-7" }));
+    expect(agg.modelChanges).toEqual([]);
+  });
+
+  it("records change when assistant model differs from previous", () => {
+    const agg = createEmptyAggregate("s1", "/tmp/s1.jsonl");
+    applyRecord(
+      agg,
+      assistantRecord({ model: "claude-opus-4-7" }, "2026-04-22T10:00:00Z"),
+    );
+    applyRecord(
+      agg,
+      assistantRecord({ model: "claude-sonnet-4-6" }, "2026-04-22T10:01:00Z"),
+    );
+    expect(agg.modelChanges).toHaveLength(1);
+    expect(agg.modelChanges[0].fromModel).toBe("claude-opus-4-7");
+    expect(agg.modelChanges[0].toModel).toBe("claude-sonnet-4-6");
+    expect(agg.modelChanges[0].at).toBe("2026-04-22T10:01:00Z");
+  });
+
+  it("does not record change when same model used twice", () => {
+    const agg = createEmptyAggregate("s1", "/tmp/s1.jsonl");
+    applyRecord(agg, assistantRecord({ model: "claude-opus-4-7" }));
+    applyRecord(
+      agg,
+      assistantRecord({ model: "claude-opus-4-7" }, "2026-04-22T10:01:00Z"),
+    );
+    expect(agg.modelChanges).toEqual([]);
+  });
+});
+
+describe("response latency tracking (Phase A 拡張)", () => {
+  it("computes p50/p95 from user→assistant timestamp diffs", () => {
+    const agg = createEmptyAggregate("s1", "/tmp/s1.jsonl");
+    const pairs: Array<[string, string]> = [
+      ["2026-04-22T10:00:00.000Z", "2026-04-22T10:00:02.000Z"], // 2000ms
+      ["2026-04-22T10:01:00.000Z", "2026-04-22T10:01:05.000Z"], // 5000ms
+      ["2026-04-22T10:02:00.000Z", "2026-04-22T10:02:01.000Z"], // 1000ms
+      ["2026-04-22T10:03:00.000Z", "2026-04-22T10:03:10.000Z"], // 10000ms
+    ];
+    for (const [userTs, assistantTs] of pairs) {
+      applyRecord(agg, { type: "user", timestamp: userTs });
+      applyRecord(agg, assistantRecord({}, assistantTs));
+    }
+    finalizeAggregate(agg);
+    expect(agg.latencyP50Ms).toBeGreaterThan(0);
+    expect(agg.latencyP95Ms).toBeGreaterThanOrEqual(agg.latencyP50Ms);
+  });
+
+  it("ignores latency when user record is sidechain", () => {
+    const agg = createEmptyAggregate("s1", "/tmp/s1.jsonl");
+    applyRecord(agg, {
+      type: "user",
+      timestamp: "2026-04-22T10:00:00.000Z",
+      isSidechain: true,
+    });
+    applyRecord(agg, assistantRecord({}, "2026-04-22T10:00:05.000Z"));
+    finalizeAggregate(agg);
+    expect(agg.latencyP50Ms).toBe(0);
+  });
+
+  it("ignores latency > 10 minutes (likely overnight idle)", () => {
+    const agg = createEmptyAggregate("s1", "/tmp/s1.jsonl");
+    applyRecord(agg, { type: "user", timestamp: "2026-04-22T10:00:00.000Z" });
+    applyRecord(agg, assistantRecord({}, "2026-04-22T22:00:00.000Z"));
+    finalizeAggregate(agg);
+    expect(agg.latencyP50Ms).toBe(0);
+  });
+});
+
 describe("sumAggregates", () => {
   it("combines cost, tokens, tools, models across sessions", () => {
     const a = createEmptyAggregate("s1", "/tmp/s1.jsonl");

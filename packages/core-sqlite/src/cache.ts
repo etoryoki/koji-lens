@@ -32,6 +32,9 @@ export function upsertSessionCache(
     modelsJson: JSON.stringify(agg.models),
     toolsJson: JSON.stringify(agg.tools),
     costsByModelJson: JSON.stringify(agg.costsByModel),
+    modelChangesJson: JSON.stringify(agg.modelChanges),
+    latencyP50Ms: agg.latencyP50Ms,
+    latencyP95Ms: agg.latencyP95Ms,
   };
   db.insert(sessions)
     .values(row)
@@ -110,6 +113,9 @@ function rowToCachedAggregate(row: SessionRow): CachedSessionAggregate {
     models: JSON.parse(row.modelsJson),
     tools: JSON.parse(row.toolsJson),
     costsByModel: JSON.parse(row.costsByModelJson),
+    modelChanges: JSON.parse(row.modelChangesJson),
+    latencyP50Ms: row.latencyP50Ms,
+    latencyP95Ms: row.latencyP95Ms,
     mtimeMs: row.mtimeMs,
     cachedAt: row.cachedAt,
   };

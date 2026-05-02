@@ -38,7 +38,7 @@ function migrateIfNeeded(sqlite: Database.Database): void {
     }
   }
 
-  if (currentVersion < 2) {
+  if (currentVersion < CURRENT_SCHEMA_VERSION) {
     sqlite.exec("DROP TABLE IF EXISTS sessions");
     sqlite.exec(CREATE_TABLES_SQL);
   }

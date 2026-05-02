@@ -9,6 +9,7 @@ import { serveCommand } from "./commands/serve.js";
 import { configCommand } from "./commands/config.js";
 import { compareCommand } from "./commands/compare.js";
 import { statuslineCommand } from "./commands/statusline.js";
+import { trendCommand } from "./commands/trend.js";
 
 const pkgPath = fileURLToPath(new URL("../package.json", import.meta.url));
 const pkg = JSON.parse(readFileSync(pkgPath, "utf8")) as { version: string };
@@ -98,6 +99,24 @@ program
   .action(async (opts) => {
     try {
       await compareCommand(opts);
+    } catch (err) {
+      console.error(err instanceof Error ? err.message : err);
+      process.exit(1);
+    }
+  });
+
+program
+  .command("trend")
+  .description(
+    "Show weekly trend of cost / cache hit rate / latency / model changes (regression detection across N weeks)",
+  )
+  .option("--weeks <num>", "Number of weeks to display (1-52)", "4")
+  .option("--format <format>", "Output format: text | json", "text")
+  .option("--dir <path>", "Claude Code log directory")
+  .option("--no-cache", "Disable SQLite cache (~/.koji-lens/cache.db)")
+  .action(async (opts) => {
+    try {
+      await trendCommand(opts);
     } catch (err) {
       console.error(err instanceof Error ? err.message : err);
       process.exit(1);
