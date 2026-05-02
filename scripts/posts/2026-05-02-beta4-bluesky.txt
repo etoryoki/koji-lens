@@ -1,0 +1,9 @@
+koji-lens v0.1.0-beta.4 をリリースしました。
+
+Claude Code の statusLine に「節約できているか / cache 効率 / いま動いているか」の 3 軸 signal を表示する `koji-lens statusline` を追加。ccusage と並行運用前提、koji-lens は判断トリガー側に特化。
+
+⚡ 💚 -40% 💎 78%
+
+npm i -g @kojihq/lens@beta
+
+[RELEASE_URL]
