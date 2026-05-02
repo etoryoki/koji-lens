@@ -123,6 +123,33 @@ koji-lens serve --port 3500
 
 Dashboard includes cost/session bar chart, tokens stacked bar, tool usage pie, and a sortable session table.
 
+### `statusline`
+
+Prints a one-line savings status comparing this month vs. last month. Designed for [Claude Code's `statusLine` integration](https://docs.claude.com/en/docs/claude-code/settings#status-line) — runs on every Claude Code refresh, so the current spend trend is always visible.
+
+```bash
+koji-lens statusline
+# 📉 -40% vs last month | 🎯 $200 saved (Sonnet 60%, was 8%) | 💚 on track
+
+koji-lens statusline --format json   # full CompareResult + statusline string
+```
+
+To wire it into Claude Code, add to `~/.claude/settings.json`:
+
+```json
+{
+  "statusLine": {
+    "type": "command",
+    "command": "koji-lens statusline",
+    "padding": 0
+  }
+}
+```
+
+Status emoji legend: 💚 on track (cost dropped > 10%) / 💛 watch (within ±10%) / 🚨 over budget (cost rose > 10%) / ⚪ new (no last-month data).
+
+Runs alongside [ccusage](https://ccusage.com)'s statusline — koji-lens shows *trend vs. last month*, ccusage shows *current spend in the moment*. Use both, or pick one.
+
 ### `config`
 
 Persisted in `~/.koji-lens/config.json`.

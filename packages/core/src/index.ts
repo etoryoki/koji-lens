@@ -76,6 +76,12 @@ export {
 export { generateInsights } from "./insights.js";
 
 export {
+  computeMonthRanges,
+  renderStatusline,
+  type MonthRanges,
+} from "./statusline.js";
+
+export {
   rollupSubagents,
   type SessionAggregateWithChildren,
 } from "./rollup.js";

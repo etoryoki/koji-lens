@@ -8,6 +8,7 @@ import { sessionCommand } from "./commands/session.js";
 import { serveCommand } from "./commands/serve.js";
 import { configCommand } from "./commands/config.js";
 import { compareCommand } from "./commands/compare.js";
+import { statuslineCommand } from "./commands/statusline.js";
 
 const pkgPath = fileURLToPath(new URL("../package.json", import.meta.url));
 const pkg = JSON.parse(readFileSync(pkgPath, "utf8")) as { version: string };
@@ -97,6 +98,23 @@ program
   .action(async (opts) => {
     try {
       await compareCommand(opts);
+    } catch (err) {
+      console.error(err instanceof Error ? err.message : err);
+      process.exit(1);
+    }
+  });
+
+program
+  .command("statusline")
+  .description(
+    "Print a one-line savings status for Claude Code statusLine integration (this month vs last month)",
+  )
+  .option("--format <format>", "Output format: statusline | json", "statusline")
+  .option("--dir <path>", "Claude Code log directory")
+  .option("--no-cache", "Disable SQLite cache (~/.koji-lens/cache.db)")
+  .action(async (opts) => {
+    try {
+      await statuslineCommand(opts);
     } catch (err) {
       console.error(err instanceof Error ? err.message : err);
       process.exit(1);
