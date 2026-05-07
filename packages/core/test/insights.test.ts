@@ -21,7 +21,8 @@ function makeResult(partial: {
   const afterCost = partial.afterCost ?? 50;
   return {
     before: {
-      range: { from: "2026-04-01", to: "2026-04-30" },
+      // policy change date 2026-05-06 を跨がない期間 (前年同期)
+      range: { from: "2025-04-01", to: "2025-04-30" },
       dayCount: partial.beforeDays ?? 30,
       sessionsCount: partial.beforeSessions ?? 10,
       totalCostUsd: beforeCost,
@@ -30,7 +31,7 @@ function makeResult(partial: {
       toolsCount: {},
     },
     after: {
-      range: { from: "2026-05-01", to: "2026-05-30" },
+      range: { from: "2025-05-01", to: "2025-05-30" },
       dayCount: partial.afterDays ?? 30,
       sessionsCount: partial.afterSessions ?? 10,
       totalCostUsd: afterCost,
@@ -117,6 +118,48 @@ describe("generateInsights", () => {
     });
     const insights = generateInsights(result);
     expect(insights.some((i) => i.includes("Bash"))).toBe(true);
+  });
+
+  it("policy change date 跨ぐ期間で警告 prefix を付加 (深町 Warning 2、5/07 諹問対処)", () => {
+    const result: CompareResult = {
+      before: {
+        range: { from: "2026-04-01", to: "2026-04-30" },
+        dayCount: 30,
+        sessionsCount: 10,
+        totalCostUsd: 100,
+        totalTokens: 1000000,
+        costByModel: {},
+        toolsCount: {},
+      },
+      after: {
+        range: { from: "2026-05-01", to: "2026-05-30" },
+        dayCount: 30,
+        sessionsCount: 10,
+        totalCostUsd: 50,
+        totalTokens: 800000,
+        costByModel: {},
+        toolsCount: {},
+      },
+      delta: {
+        costUsd: -50,
+        costUsdPct: -50,
+        sessionsCount: 0,
+        sessionsCountPct: 0,
+        costByModel: {},
+        toolsTopChanged: [],
+      },
+    };
+    const insights = generateInsights(result);
+    expect(insights[0]).toContain("2026-05-06");
+    expect(insights[0]).toContain("vendor policy 変更");
+  });
+
+  it("policy change date 跨がない期間で警告なし", () => {
+    const result = makeResult({ beforeCost: 100, afterCost: 50 });
+    const insights = generateInsights(result);
+    if (insights.length > 0) {
+      expect(insights[0]).not.toContain("vendor policy 変更");
+    }
   });
 
   it("respects MAX_INSIGHTS = 3 (深町論点 3 採用)", () => {

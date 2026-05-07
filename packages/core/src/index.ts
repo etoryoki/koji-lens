@@ -74,7 +74,7 @@ export {
   type CompareResult,
 } from "./compare.js";
 
-export { generateInsights } from "./insights.js";
+export { generateInsights, POLICY_CHANGE_DATES } from "./insights.js";
 
 export {
   computeWeeklyTrend,

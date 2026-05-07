@@ -1,11 +1,29 @@
 import type { CompareResult } from "./compare.js";
 
+// 深町 CTO Warning 2 (2026-05-07 Anthropic Higher Limits 影響評価諮問)
+// Anthropic 5/06 発表 (Claude Code rate limit 2 倍化) 等の vendor policy 変更日
+// を跨ぐ before/after 比較は誤 insight を出す構造リスクあり。policy change date
+// 跨ぐ場合は注釈で警告付加 (将来の Phase B で動的 severity 調整候補)。
+export const POLICY_CHANGE_DATES = ["2026-05-06"] as const;
+
 const MIN_SESSIONS_FOR_RULES = 5;
 const PROJECTION_MIN_DAYS = 14;
 const MODEL_SHIFT_THRESHOLD_PCT = -30;
 const DAILY_DROP_THRESHOLD_PCT = -30;
 const TOOL_RATE_CHANGE_THRESHOLD_PCT = 50;
 const MAX_INSIGHTS = 3;
+
+function rangeCrossesPolicyChange(
+  beforeFromIso: string,
+  afterToIso: string,
+): string | null {
+  for (const dateIso of POLICY_CHANGE_DATES) {
+    if (beforeFromIso <= dateIso && dateIso <= afterToIso) {
+      return dateIso;
+    }
+  }
+  return null;
+}
 
 export function generateInsights(result: CompareResult): string[] {
   const hasEnoughSessions =
@@ -17,6 +35,14 @@ export function generateInsights(result: CompareResult): string[] {
   }
 
   const candidates: string[] = [];
+
+  // 深町 Warning 2 (2026-05-07 Anthropic Higher Limits 影響評価諮問):
+  // policy change date 跨ぎは insight 解釈の前提を変える = 警告メッセージを
+  // MAX_INSIGHTS 枠外で先頭に付加 (通常 insight 数を犠牲にしない)
+  const crossedPolicy = rangeCrossesPolicyChange(
+    result.before.range.from,
+    result.after.range.to,
+  );
 
   // 優先度 1: Model shift detection (Opus → Sonnet/Haiku で 30% 以上削減)
   const opusModel = Object.keys(result.delta.costByModel).find((m) =>
@@ -75,5 +101,12 @@ export function generateInsights(result: CompareResult): string[] {
     }
   }
 
-  return candidates.slice(0, MAX_INSIGHTS);
+  const top = candidates.slice(0, MAX_INSIGHTS);
+  if (crossedPolicy) {
+    return [
+      `⚠ 比較期間が ${crossedPolicy} の vendor policy 変更を跨いでいます (rate limit / 機能変更等)。下記 insight は変更前後の単純比較ではない可能性があります。`,
+      ...top,
+    ];
+  }
+  return top;
 }
