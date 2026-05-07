@@ -35,5 +35,5 @@ export const sessions = pgTable("sessions", {
 export type SessionRow = typeof sessions.$inferSelect;
 
 // 設計 v0.2 §2.4: SessionRow → SessionAggregate 変換が型互換であることの assert
-declare const _assertPgRowConvertible: (row: SessionRow) => SessionAggregate;
-void _assertPgRowConvertible;
+// type-only export (declare 単独だと Turbopack で ReferenceError 発生のため)
+export type _AssertPgRowConvertible = (row: SessionRow) => SessionAggregate;

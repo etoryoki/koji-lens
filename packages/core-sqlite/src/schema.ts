@@ -57,6 +57,8 @@ CREATE INDEX IF NOT EXISTS idx_sessions_ended_at ON sessions(ended_at);
 export type SessionRow = typeof sessions.$inferSelect;
 
 // SessionRow → SessionAggregate 変換が型互換であることの assert (設計 v0.2 §2.4)
-// rowToCachedAggregate (cache.ts) の型シグネチャ保証用、compile time チェック
-declare const _assertSqliteRowConvertible: (row: SessionRow) => SessionAggregate;
-void _assertSqliteRowConvertible;
+// type-only export で compile time チェック + ランタイム影響なし (declare 単独だと
+// Turbopack で参照する時 ReferenceError、export type にすれば未使用警告も回避)
+export type _AssertSqliteRowConvertible = (
+  row: SessionRow,
+) => SessionAggregate;

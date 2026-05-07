@@ -26,12 +26,31 @@ export interface WeeklyTrendResult {
   weeks: WeeklyTrendBucket[];
 }
 
+export interface UserPatternChange {
+  dirChange: number;
+  modelChange: number;
+  toolChange: number;
+  sessionCountChangePct: number;
+  newDirs: string[];
+  newModels: string[];
+  newTools: string[];
+}
+
+export interface TrendAttribution {
+  verdict: "vendor_likely" | "user_likely" | "ambiguous";
+  reasoning: string;
+  patternChange: UserPatternChange;
+}
+
 export interface TrendRegression {
   type: "cache_drop" | "latency_spike" | "model_change_spike";
   severity: "warning" | "critical";
   message: string;
   details: string;
+  attribution?: TrendAttribution;
 }
+
+export type TrendRegressionWithAttribution = TrendRegression;
 
 function startOfWeekUtc(d: Date): Date {
   const day = d.getUTCDay();
@@ -206,7 +225,10 @@ export function detectTrendRegressions(
   return regressions;
 }
 
-export function renderWeeklyTrendText(result: WeeklyTrendResult): string {
+export function renderWeeklyTrendText(
+  result: WeeklyTrendResult,
+  regressions?: ReadonlyArray<TrendRegression>,
+): string {
   const lines: string[] = [];
   lines.push(`koji-lens — weekly trend (${result.weeks.length} weeks)`);
   lines.push("=".repeat(60));
@@ -219,14 +241,25 @@ export function renderWeeklyTrendText(result: WeeklyTrendResult): string {
     );
   }
 
-  const regressions = detectTrendRegressions(result);
-  if (regressions.length > 0) {
+  const regs = regressions ?? detectTrendRegressions(result);
+  if (regs.length > 0) {
     lines.push("");
     lines.push("⚠️  Regressions detected:");
-    for (const r of regressions) {
+    for (const r of regs) {
       const icon = r.severity === "critical" ? "🚨" : "⚠️";
       lines.push(`  ${icon} ${r.message}`);
       lines.push(`     ${r.details}`);
+      if (r.attribution) {
+        const verdictIcon =
+          r.attribution.verdict === "vendor_likely"
+            ? "🛰"
+            : r.attribution.verdict === "user_likely"
+              ? "👤"
+              : "❔";
+        lines.push(
+          `     ↳ ${verdictIcon} attribution: ${r.attribution.verdict} (${r.attribution.reasoning})`,
+        );
+      }
     }
   }
 

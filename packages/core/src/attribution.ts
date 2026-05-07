@@ -1,29 +1,11 @@
 import {
   detectTrendRegressions,
-  type TrendRegression,
+  type TrendAttribution,
+  type TrendRegressionWithAttribution,
+  type UserPatternChange,
   type WeeklyTrendBucket,
   type WeeklyTrendResult,
 } from "./trend.js";
-
-export interface UserPatternChange {
-  dirChange: number;
-  modelChange: number;
-  toolChange: number;
-  sessionCountChangePct: number;
-  newDirs: string[];
-  newModels: string[];
-  newTools: string[];
-}
-
-export interface TrendAttribution {
-  verdict: "vendor_likely" | "user_likely" | "ambiguous";
-  reasoning: string;
-  patternChange: UserPatternChange;
-}
-
-export interface TrendRegressionWithAttribution extends TrendRegression {
-  attribution?: TrendAttribution;
-}
 
 export interface DetectOptions {
   enableAttribution?: boolean;

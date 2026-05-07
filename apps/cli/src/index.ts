@@ -114,6 +114,10 @@ program
   .option("--format <format>", "Output format: text | json", "text")
   .option("--dir <path>", "Claude Code log directory")
   .option("--no-cache", "Disable SQLite cache (~/.koji-lens/cache.db)")
+  .option(
+    "--with-attribution",
+    "[Pro] Attribute regressions to vendor (Anthropic) or user-side changes — requires KOJI_LENS_PRO=1 in dev mode",
+  )
   .action(async (opts) => {
     try {
       await trendCommand(opts);

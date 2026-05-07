@@ -83,15 +83,15 @@ export {
   type WeeklyTrendResult,
   type WeeklyTrendBucket,
   type TrendRegression,
+  type TrendRegressionWithAttribution,
+  type UserPatternChange,
+  type TrendAttribution,
 } from "./trend.js";
 
 export {
   analyzeUserPatternChange,
   attributeRegression,
   detectTrendRegressionsWithAttribution,
-  type UserPatternChange,
-  type TrendAttribution,
-  type TrendRegressionWithAttribution,
   type DetectOptions,
 } from "./attribution.js";
 
