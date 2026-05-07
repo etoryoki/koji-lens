@@ -12,6 +12,14 @@ export interface WeeklyTrendBucket {
   latencyP95Ms: number;
   modelChangesCount: number;
   costByModel: Record<string, number>;
+  uniqueDirs: string[];
+  uniqueModels: string[];
+  uniqueTools: string[];
+}
+
+function extractProjectDir(filePath: string): string {
+  const m = filePath.match(/[\\/]projects[\\/]([^\\/]+)[\\/]/);
+  return m ? m[1] : "(unknown)";
 }
 
 export interface WeeklyTrendResult {
@@ -78,6 +86,9 @@ export function computeWeeklyTrend(
     const latenciesP50: number[] = [];
     const latenciesP95: number[] = [];
     const costByModel: Record<string, number> = {};
+    const dirs = new Set<string>();
+    const models = new Set<string>();
+    const tools = new Set<string>();
 
     for (const a of inWeek) {
       totalCost += a.costUsd;
@@ -89,6 +100,9 @@ export function computeWeeklyTrend(
       for (const [m, c] of Object.entries(a.costsByModel)) {
         costByModel[m] = (costByModel[m] ?? 0) + c;
       }
+      dirs.add(extractProjectDir(a.filePath));
+      for (const m of Object.keys(a.models)) models.add(m);
+      for (const t of Object.keys(a.tools)) tools.add(t);
     }
 
     const cacheDenom = totalInput + totalCacheRead;
@@ -110,6 +124,9 @@ export function computeWeeklyTrend(
       latencyP95Ms: percentile(latenciesP95, 95),
       modelChangesCount,
       costByModel,
+      uniqueDirs: [...dirs].sort(),
+      uniqueModels: [...models].sort(),
+      uniqueTools: [...tools].sort(),
     });
   }
 

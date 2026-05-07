@@ -86,6 +86,16 @@ export {
 } from "./trend.js";
 
 export {
+  analyzeUserPatternChange,
+  attributeRegression,
+  detectTrendRegressionsWithAttribution,
+  type UserPatternChange,
+  type TrendAttribution,
+  type TrendRegressionWithAttribution,
+  type DetectOptions,
+} from "./attribution.js";
+
+export {
   computeCacheRate,
   type CacheRateResult,
 } from "./cache-rate.js";

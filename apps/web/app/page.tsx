@@ -1,6 +1,8 @@
 import { headers } from "next/headers";
 import {
+  computeWeeklyTrend,
   defaultClaudeLogDir,
+  detectTrendRegressionsWithAttribution,
   formatDuration,
   formatJpy,
   formatUsd,
@@ -9,6 +11,7 @@ import {
   type SessionAggregateWithChildren,
 } from "@kojihq/core";
 import { analyzeDirectoryCached, openCacheDb } from "@kojihq/core-sqlite";
+import { AttributionBadge } from "./components/AttributionBadge";
 import { CostLineChart, ModelCostStackedArea, ToolPie } from "./components/Charts";
 import { KojiMark } from "./components/KojiMark";
 import { detectLang, DEFAULT_LANG, t, type Lang } from "./i18n";
@@ -208,6 +211,12 @@ export default async function Page({
     .slice(0, 10)
     .map(([name, value]) => ({ name, value }));
 
+  const isPro = process.env.KOJI_LENS_PRO === "1";
+  const weeklyTrend = computeWeeklyTrend(filteredAll, 4);
+  const trendRegressions = detectTrendRegressionsWithAttribution(weeklyTrend, {
+    enableAttribution: isPro,
+  });
+
   const langSwitchHref = (target: Lang) => {
     const search = new URLSearchParams();
     if (selectedProject) search.set("project", selectedProject);
@@ -344,6 +353,82 @@ export default async function Page({
         </section>
 
         <section>
+          <Panel
+            title={
+              <span className="inline-flex items-center gap-2">
+                {_("trend.section_title")}
+                <span
+                  className={`rounded px-1.5 py-0.5 text-[10px] font-bold ${
+                    isPro
+                      ? "bg-amber-500/20 text-amber-200 ring-1 ring-amber-500/40"
+                      : "bg-slate-700/40 text-slate-400 ring-1 ring-slate-600/40"
+                  }`}
+                >
+                  {_("trend.pro_badge")}
+                </span>
+              </span>
+            }
+          >
+            <TrendTable trend={weeklyTrend} t={_} />
+
+            {trendRegressions.length === 0 ? (
+              <p className="mt-4 text-sm text-slate-400">
+                {_("trend.no_regressions")}
+              </p>
+            ) : (
+              <div className="mt-4 space-y-3">
+                <div className="text-xs font-medium uppercase tracking-widest text-slate-500">
+                  {_("trend.regressions_detected", {
+                    n: trendRegressions.length,
+                  })}
+                </div>
+                {trendRegressions.map((r, i) => (
+                  <div
+                    key={`${r.type}-${i}`}
+                    className="rounded-md border border-slate-800 bg-slate-900/40 p-3"
+                  >
+                    <div className="flex items-start gap-2 text-sm">
+                      <span>{r.severity === "critical" ? "🚨" : "⚠️"}</span>
+                      <div className="flex-1">
+                        <div className="text-slate-200">{r.message}</div>
+                        <div className="mt-0.5 text-xs text-slate-400">
+                          {r.details}
+                        </div>
+                      </div>
+                      <span
+                        className={`rounded px-1.5 py-0.5 text-[10px] font-medium ${
+                          r.severity === "critical"
+                            ? "bg-red-500/20 text-red-200 ring-1 ring-red-500/40"
+                            : "bg-amber-500/20 text-amber-200 ring-1 ring-amber-500/40"
+                        }`}
+                      >
+                        {r.severity === "critical"
+                          ? _("trend.severity_critical")
+                          : _("trend.severity_warning")}
+                      </span>
+                    </div>
+                    {isPro && r.attribution ? (
+                      <AttributionBadge attribution={r.attribution} t={_} />
+                    ) : null}
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {!isPro ? (
+              <div className="mt-5 rounded-md border border-amber-500/30 bg-amber-500/5 p-3">
+                <div className="text-xs font-medium text-amber-200">
+                  🔒 {_("trend.pro_locked_title")}
+                </div>
+                <div className="mt-1 text-xs leading-relaxed text-slate-400">
+                  {_("trend.pro_locked_body")}
+                </div>
+              </div>
+            ) : null}
+          </Panel>
+        </section>
+
+        <section>
           <div className="mb-3 flex items-baseline justify-between gap-3">
             <h2 className="text-sm font-medium uppercase tracking-widest text-slate-400">
               {_("section.session_list")}
@@ -430,7 +515,7 @@ function Panel({
   children,
   className,
 }: {
-  title: string;
+  title: React.ReactNode;
   children: React.ReactNode;
   className?: string;
 }) {
@@ -440,6 +525,55 @@ function Panel({
     >
       <div className="mb-3 text-sm font-medium text-slate-200">{title}</div>
       {children}
+    </div>
+  );
+}
+
+function TrendTable({
+  trend,
+  t,
+}: {
+  trend: { weeks: { weekStartIso: string; sessionsCount: number; cacheHitRatePct: number; latencyP95Ms: number }[] };
+  t: TFn;
+}) {
+  return (
+    <div className="overflow-x-auto rounded-md border border-slate-800">
+      <table className="w-full text-xs">
+        <thead className="bg-slate-900/80 text-slate-400">
+          <tr>
+            <th scope="col" className="px-3 py-2 text-left font-medium">
+              {t("trend.weekly_label")}
+            </th>
+            <th scope="col" className="px-3 py-2 text-right font-medium">
+              {t("trend.sessions_label")}
+            </th>
+            <th scope="col" className="px-3 py-2 text-right font-medium">
+              {t("trend.cache_hit_label")}
+            </th>
+            <th scope="col" className="px-3 py-2 text-right font-medium">
+              {t("trend.p95_label")} (ms)
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {trend.weeks.map((w) => (
+            <tr key={w.weekStartIso} className="border-t border-slate-800">
+              <td className="px-3 py-1.5 font-mono text-slate-300">
+                {w.weekStartIso}
+              </td>
+              <td className="px-3 py-1.5 text-right tabular-nums text-slate-300">
+                {w.sessionsCount}
+              </td>
+              <td className="px-3 py-1.5 text-right tabular-nums text-slate-300">
+                {w.cacheHitRatePct.toFixed(1)}%
+              </td>
+              <td className="px-3 py-1.5 text-right tabular-nums text-slate-300">
+                {w.latencyP95Ms}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 }

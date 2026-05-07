@@ -55,6 +55,22 @@ const ja: Record<string, string> = {
   "table.tools_top": "ツール上位",
   "footer.about_path": "{path} をローカルで解析",
   "footer.cost_note": "コストは Anthropic 公式レートの計算値",
+  "trend.section_title": "週次トレンド & 帰属判定",
+  "trend.pro_badge": "PRO",
+  "trend.no_regressions": "直近 4 週で異常検知なし。継続観測中。",
+  "trend.regressions_detected": "{n} 件の異常検知",
+  "trend.severity_critical": "重大",
+  "trend.severity_warning": "警告",
+  "trend.attribution_vendor_likely": "vendor 由来候補",
+  "trend.attribution_user_likely": "user 由来候補",
+  "trend.attribution_ambiguous": "判定困難",
+  "trend.pro_locked_title": "Pro 機能: 帰属判定 (Attribution)",
+  "trend.pro_locked_body":
+    "regression 検出時に「Anthropic 由来候補」か「ユーザー側変化候補」かを 4 軸 (新規 dir / 新規 model / 新規 tool / セッション数変動) から推論します。dev mode では環境変数 KOJI_LENS_PRO=1 で動作確認可能。",
+  "trend.weekly_label": "週",
+  "trend.cache_hit_label": "cache%",
+  "trend.p95_label": "p95",
+  "trend.sessions_label": "セッション",
 };
 
 const en: Record<string, string> = {
@@ -97,6 +113,22 @@ const en: Record<string, string> = {
   "table.tools_top": "Top tools",
   "footer.about_path": "Analyzes {path} locally",
   "footer.cost_note": "Cost calculated at Anthropic's official rates",
+  "trend.section_title": "Weekly trend & attribution",
+  "trend.pro_badge": "PRO",
+  "trend.no_regressions": "No regressions detected in the last 4 weeks. Monitoring continues.",
+  "trend.regressions_detected": "{n} regression(s) detected",
+  "trend.severity_critical": "critical",
+  "trend.severity_warning": "warning",
+  "trend.attribution_vendor_likely": "vendor likely",
+  "trend.attribution_user_likely": "user likely",
+  "trend.attribution_ambiguous": "ambiguous",
+  "trend.pro_locked_title": "Pro feature: Attribution",
+  "trend.pro_locked_body":
+    "Infers whether a regression is vendor-side (Anthropic) or user-side from 4 axes (new dirs / models / tools / session count change). In dev mode, set KOJI_LENS_PRO=1 to enable.",
+  "trend.weekly_label": "Week",
+  "trend.cache_hit_label": "cache%",
+  "trend.p95_label": "p95",
+  "trend.sessions_label": "sessions",
 };
 
 const dict: Record<Lang, Record<string, string>> = { ja, en };
