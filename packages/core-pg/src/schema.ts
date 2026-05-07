@@ -1,5 +1,4 @@
 import { pgTable, text, integer, real } from "drizzle-orm/pg-core";
-import type { SessionAggregate } from "@kojihq/core";
 
 export const CURRENT_SCHEMA_VERSION = 3;
 
@@ -34,6 +33,7 @@ export const sessions = pgTable("sessions", {
 
 export type SessionRow = typeof sessions.$inferSelect;
 
-// 設計 v0.2 §2.4: SessionRow → SessionAggregate 変換が型互換であることの assert
-// type-only export (declare 単独だと Turbopack で ReferenceError 発生のため)
-export type _AssertPgRowConvertible = (row: SessionRow) => SessionAggregate;
+// 設計 v0.2 §2.4: SessionRow → SessionAggregate の型互換は cache.ts の
+// `function rowToCachedAggregate(row: SessionRow): CachedSessionAggregate`
+// 関数シグネチャで compile time に保証される。Turbopack キャッシュ汚染リスク
+// 回避のため専用 assert 型エイリアスは削除、関数型シグネチャで代替。
