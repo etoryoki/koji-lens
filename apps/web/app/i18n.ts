@@ -78,7 +78,7 @@ const ja: Record<string, string> = {
   "budget.utilization_label": "使用率",
   "budget.days_elapsed": "{n} / {total} 日経過",
   "budget.no_budget_set": "予算未設定",
-  "budget.set_budget_hint": "URL に ?budget=200 を追加すると予算管理が有効になります（例: $200 を月予算として設定）",
+  "budget.set_budget_hint": "予算を設定するには 2 通り: (1) `.env.local` に `KOJI_LENS_BUDGET=200` を追加して dev server 再起動 (永続化、推奨) / (2) URL に `?budget=200` を追加 (一時設定、env 値を上書き可能)",
   "budget.alert_section_pro": "予算アラート",
   "budget.alert_locked_title": "Pro 機能: 予算アラート通知",
   "budget.alert_locked_body":
@@ -157,7 +157,7 @@ const en: Record<string, string> = {
   "budget.days_elapsed": "Day {n} of {total}",
   "budget.no_budget_set": "No budget set",
   "budget.set_budget_hint":
-    "Add ?budget=200 to the URL to enable budget tracking (e.g., $200 as a monthly budget).",
+    "Two ways to set a budget: (1) add `KOJI_LENS_BUDGET=200` to `.env.local` and restart dev server (persistent, recommended), or (2) append `?budget=200` to the URL (temporary, overrides env).",
   "budget.alert_section_pro": "Budget alerts",
   "budget.alert_locked_title": "Pro feature: Budget alert notifications",
   "budget.alert_locked_body":

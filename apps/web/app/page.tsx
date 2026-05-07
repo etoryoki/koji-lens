@@ -223,7 +223,7 @@ export default async function Page({
   });
 
   const budgetUsd = (() => {
-    const raw = params.budget;
+    const raw = params.budget ?? process.env.KOJI_LENS_BUDGET;
     if (!raw) return 0;
     const n = Number(raw);
     return Number.isFinite(n) && n > 0 ? n : 0;
