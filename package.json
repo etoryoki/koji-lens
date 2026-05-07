@@ -14,9 +14,6 @@
     "typecheck": "pnpm -r typecheck",
     "test": "pnpm -r --if-present test"
   },
-  "dependencies": {
-    "string-width": ""
-  },
   "workspaces": [
     "apps/*",
     "packages/*"
