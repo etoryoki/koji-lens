@@ -236,9 +236,9 @@ export default async function Page({
     const search = new URLSearchParams();
     if (selectedProject) search.set("project", selectedProject);
     if (selectedPeriod !== DEFAULT_PERIOD) search.set("period", selectedPeriod);
-    if (target !== DEFAULT_LANG) search.set("lang", target);
-    const qs = search.toString();
-    return qs ? `/?${qs}` : "/";
+    search.set("lang", target);
+    if (params.budget) search.set("budget", params.budget);
+    return `/?${search.toString()}`;
   };
 
   return (
@@ -464,7 +464,7 @@ export default async function Page({
                 {_("filter.filtering")}{" "}
                 ·{" "}
                 <a
-                  href={lang === DEFAULT_LANG ? "/" : `/?lang=${lang}`}
+                  href={buildHref({ lang, budget: params.budget })}
                   className="text-blue-400 hover:underline"
                 >
                   {_("filter.reset")}
@@ -476,6 +476,7 @@ export default async function Page({
             selected={selectedPeriod}
             project={selectedProject}
             lang={lang}
+            budget={params.budget}
             t={_}
           />
           <ProjectFilter
@@ -484,6 +485,7 @@ export default async function Page({
             counts={projectCounts}
             period={selectedPeriod}
             lang={lang}
+            budget={params.budget}
             t={_}
           />
           <SessionTable sessions={aggs} t={_} />
@@ -779,6 +781,7 @@ function buildHref(params: {
   project?: string;
   period?: PeriodKey;
   lang?: Lang;
+  budget?: string;
 }): string {
   const search = new URLSearchParams();
   if (params.project) search.set("project", params.project);
@@ -788,6 +791,7 @@ function buildHref(params: {
   if (params.lang && params.lang !== DEFAULT_LANG) {
     search.set("lang", params.lang);
   }
+  if (params.budget) search.set("budget", params.budget);
   const qs = search.toString();
   return qs ? `/?${qs}` : "/";
 }
@@ -796,11 +800,13 @@ function PeriodFilter({
   selected,
   project,
   lang,
+  budget,
   t,
 }: {
   selected: PeriodKey;
   project: string | undefined;
   lang: Lang;
+  budget: string | undefined;
   t: TFn;
 }) {
   const periods: PeriodKey[] = ["24h", "7d", "30d", "all"];
@@ -814,7 +820,7 @@ function PeriodFilter({
         return (
           <a
             key={p}
-            href={buildHref({ project, period: p, lang })}
+            href={buildHref({ project, period: p, lang, budget })}
             className={`rounded-md px-2.5 py-1 text-xs ${
               isActive
                 ? "bg-blue-500/20 text-blue-200 ring-1 ring-blue-500/40"
@@ -835,6 +841,7 @@ function ProjectFilter({
   counts,
   period,
   lang,
+  budget,
   t,
 }: {
   projectKeys: string[];
@@ -842,6 +849,7 @@ function ProjectFilter({
   counts: Map<string, number>;
   period: PeriodKey;
   lang: Lang;
+  budget: string | undefined;
   t: TFn;
 }) {
   return (
@@ -850,7 +858,7 @@ function ProjectFilter({
         {t("filter.project")}
       </span>
       <a
-        href={buildHref({ period, lang })}
+        href={buildHref({ period, lang, budget })}
         className={`rounded-md px-2.5 py-1 text-xs ${
           !selected
             ? "bg-blue-500/20 text-blue-200 ring-1 ring-blue-500/40"
@@ -865,7 +873,7 @@ function ProjectFilter({
         return (
           <a
             key={key}
-            href={buildHref({ project: key, period, lang })}
+            href={buildHref({ project: key, period, lang, budget })}
             title={key}
             className={`rounded-md px-2.5 py-1 text-xs ${
               isActive
