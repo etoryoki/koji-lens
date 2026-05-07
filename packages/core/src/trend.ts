@@ -135,14 +135,16 @@ export function detectTrendRegressions(
       regressions.push({
         type: "cache_drop",
         severity: "critical",
-        message: "Cache hit rate dropped > 50% vs prior weeks",
+        message:
+          "Cache hit rate dropped > 50% vs prior weeks (possible vendor regression OR user-side usage scaling)",
         details: `latest=${latest.cacheHitRatePct.toFixed(1)}%, avg prev=${avgPrevCache.toFixed(1)}%`,
       });
     } else if (dropPct <= -25) {
       regressions.push({
         type: "cache_drop",
         severity: "warning",
-        message: "Cache hit rate dropped > 25% vs prior weeks",
+        message:
+          "Cache hit rate dropped > 25% vs prior weeks (possible vendor regression OR user-side usage scaling)",
         details: `latest=${latest.cacheHitRatePct.toFixed(1)}%, avg prev=${avgPrevCache.toFixed(1)}%`,
       });
     }
@@ -212,8 +214,11 @@ export function renderWeeklyTrendText(result: WeeklyTrendResult): string {
   }
 
   lines.push("");
-  lines.push("hint: drops in cache% or spikes in latency may indicate vendor-side regressions");
-  lines.push("       (see Anthropic postmortems 2025-08 + 2026-04 for context).");
+  lines.push("hint: cache% drops or latency spikes can reflect EITHER vendor-side regressions");
+  lines.push("       OR user-side usage scaling after rate limit changes");
+  lines.push("       (e.g., Anthropic's 2026-05-06 Higher Limits doubled Claude Code limits,");
+  lines.push("        which can temporarily lower cache hit rates as usage expands).");
+  lines.push("       (see Anthropic postmortems 2025-08 + 2026-04 for vendor-side context.)");
   return lines.join("\n");
 }
 
