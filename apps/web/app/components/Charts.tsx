@@ -109,6 +109,71 @@ const FALLBACK_COLORS = [
   "#94a3b8", // slate-400
 ];
 
+export function WeeklyTrendChart({
+  data,
+  cacheLabel,
+  latencyLabel,
+}: {
+  data: Array<{
+    week: string;
+    cacheHitRatePct: number;
+    latencyP95Ms: number;
+  }>;
+  cacheLabel: string;
+  latencyLabel: string;
+}) {
+  return (
+    <ResponsiveContainer width="100%" height={220}>
+      <LineChart data={data} margin={{ top: 12, right: 50, left: 8, bottom: 16 }}>
+        <CartesianGrid strokeDasharray="3 3" stroke="#1f2937" />
+        <XAxis dataKey="week" stroke="#9ca3af" tick={{ fontSize: 11 }} />
+        <YAxis
+          yAxisId="cache"
+          orientation="left"
+          stroke="#60a5fa"
+          tick={{ fontSize: 11 }}
+          tickFormatter={(v) => `${Math.round(Number(v))}%`}
+          domain={[0, 100]}
+        />
+        <YAxis
+          yAxisId="latency"
+          orientation="right"
+          stroke="#fbbf24"
+          tick={{ fontSize: 11 }}
+          tickFormatter={(v) => `${Math.round(Number(v))}ms`}
+        />
+        <Tooltip
+          contentStyle={TOOLTIP_STYLE}
+          formatter={(v, name) => {
+            const num = Number(v);
+            if (name === cacheLabel) return [`${num.toFixed(1)}%`, name];
+            return [`${Math.round(num)}ms`, name];
+          }}
+        />
+        <Legend wrapperStyle={{ color: "#e5e7eb", fontSize: 12 }} />
+        <Line
+          yAxisId="cache"
+          type="monotone"
+          dataKey="cacheHitRatePct"
+          stroke="#60a5fa"
+          strokeWidth={2}
+          dot={{ r: 3, fill: "#60a5fa" }}
+          name={cacheLabel}
+        />
+        <Line
+          yAxisId="latency"
+          type="monotone"
+          dataKey="latencyP95Ms"
+          stroke="#fbbf24"
+          strokeWidth={2}
+          dot={{ r: 3, fill: "#fbbf24" }}
+          name={latencyLabel}
+        />
+      </LineChart>
+    </ResponsiveContainer>
+  );
+}
+
 export function ModelCostStackedArea({
   data,
   keys,

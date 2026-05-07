@@ -10,6 +10,7 @@ import { configCommand } from "./commands/config.js";
 import { compareCommand } from "./commands/compare.js";
 import { statuslineCommand } from "./commands/statusline.js";
 import { trendCommand } from "./commands/trend.js";
+import { budgetCommand } from "./commands/budget.js";
 
 const pkgPath = fileURLToPath(new URL("../package.json", import.meta.url));
 const pkg = JSON.parse(readFileSync(pkgPath, "utf8")) as { version: string };
@@ -121,6 +122,31 @@ program
   .action(async (opts) => {
     try {
       await trendCommand(opts);
+    } catch (err) {
+      console.error(err instanceof Error ? err.message : err);
+      process.exit(1);
+    }
+  });
+
+program
+  .command("budget")
+  .description(
+    "Show month-to-date cost vs monthly budget + linear forecast to month-end",
+  )
+  .requiredOption(
+    "--budget <usd>",
+    "Monthly budget in USD (e.g., 200 for $200/month)",
+  )
+  .option("--format <format>", "Output format: text | json", "text")
+  .option("--dir <path>", "Claude Code log directory")
+  .option("--no-cache", "Disable SQLite cache (~/.koji-lens/cache.db)")
+  .option(
+    "--with-alerts",
+    "[Pro] Show budget alerts when forecast >= 80% (warning) or >= 100% (critical) — requires KOJI_LENS_PRO=1 in dev mode",
+  )
+  .action(async (opts) => {
+    try {
+      await budgetCommand(opts);
     } catch (err) {
       console.error(err instanceof Error ? err.message : err);
       process.exit(1);

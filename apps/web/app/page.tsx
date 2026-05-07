@@ -16,7 +16,12 @@ import {
 } from "@kojihq/core";
 import { analyzeDirectoryCached, openCacheDb } from "@kojihq/core-sqlite";
 import { AttributionBadge } from "./components/AttributionBadge";
-import { CostLineChart, ModelCostStackedArea, ToolPie } from "./components/Charts";
+import {
+  CostLineChart,
+  ModelCostStackedArea,
+  ToolPie,
+  WeeklyTrendChart,
+} from "./components/Charts";
 import { KojiMark } from "./components/KojiMark";
 import { detectLang, DEFAULT_LANG, t, type Lang } from "./i18n";
 
@@ -395,6 +400,18 @@ export default async function Page({
               </span>
             }
           >
+            <div className="mb-4">
+              <WeeklyTrendChart
+                data={weeklyTrend.weeks.map((w) => ({
+                  week: w.weekStartIso,
+                  cacheHitRatePct: w.cacheHitRatePct,
+                  latencyP95Ms: w.latencyP95Ms,
+                }))}
+                cacheLabel={_("trend.cache_hit_label")}
+                latencyLabel={_("trend.p95_label")}
+              />
+            </div>
+
             <TrendTable trend={weeklyTrend} t={_} />
 
             {trendRegressions.length === 0 ? (
