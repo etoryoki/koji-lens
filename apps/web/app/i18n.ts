@@ -85,6 +85,12 @@ const ja: Record<string, string> = {
     "月末予測が予算 80% (warning) / 100% (critical) 到達時に通知。Slack / メール送信は Phase A 完成後の Resend 統合で実装、dev mode では UI 表示のみ。",
   "budget.alert_severity_critical": "critical",
   "budget.alert_severity_warning": "warning",
+  "budget.alert_message_critical_current":
+    "予算超過: {currentCost} / {budgetUsd}（現在の累計）",
+  "budget.alert_message_critical_forecast":
+    "月末予測が予算超過: {forecastCost} / {budgetUsd}",
+  "budget.alert_message_warning_forecast":
+    "月末予測が予算 80%+ 到達: {forecastCost} / {budgetUsd}",
 };
 
 const en: Record<string, string> = {
@@ -158,6 +164,12 @@ const en: Record<string, string> = {
     "Notifies when forecast hits 80% (warning) or 100% (critical) of budget. Slack / email delivery via Resend after Phase A completion; dev mode shows UI only.",
   "budget.alert_severity_critical": "critical",
   "budget.alert_severity_warning": "warning",
+  "budget.alert_message_critical_current":
+    "Budget exceeded: {currentCost} / {budgetUsd} (current)",
+  "budget.alert_message_critical_forecast":
+    "Forecast to exceed budget: {forecastCost} / {budgetUsd} by month-end",
+  "budget.alert_message_warning_forecast":
+    "Forecast at 80%+: {forecastCost} / {budgetUsd} by month-end",
 };
 
 const dict: Record<Lang, Record<string, string>> = { ja, en };

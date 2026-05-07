@@ -669,7 +669,14 @@ function BudgetView({
                       : t("budget.alert_severity_warning")}
                   </div>
                   <div className="mt-1 text-xs leading-relaxed">
-                    {alert.message}
+                    {t(
+                      `budget.alert_message_${alert.level}_${alert.trigger}`,
+                      {
+                        currentCost: formatUsd(forecast.currentCostUsd),
+                        forecastCost: formatUsd(forecast.forecastCostUsd),
+                        budgetUsd: formatUsd(forecast.budgetUsd),
+                      },
+                    )}
                   </div>
                 </div>
               </div>
