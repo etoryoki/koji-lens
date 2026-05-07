@@ -1,7 +1,7 @@
 import { eq } from "drizzle-orm";
 import type { BetterSQLite3Database } from "drizzle-orm/better-sqlite3";
 import type { SessionAggregate } from "@kojihq/core";
-import { sessions } from "./schema.js";
+import { sessions, type SessionRow } from "./schema.js";
 
 export interface CachedSessionAggregate extends SessionAggregate {
   mtimeMs: number;
@@ -92,8 +92,6 @@ export function clearSessionCache(db: BetterSQLite3Database): number {
   const result = db.delete(sessions).run();
   return Number(result.changes ?? 0);
 }
-
-type SessionRow = typeof sessions.$inferSelect;
 
 function rowToCachedAggregate(row: SessionRow): CachedSessionAggregate {
   return {

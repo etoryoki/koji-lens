@@ -1,4 +1,5 @@
 import { sqliteTable, text, integer, real } from "drizzle-orm/sqlite-core";
+import type { SessionAggregate } from "@kojihq/core";
 
 export const CURRENT_SCHEMA_VERSION = 3;
 
@@ -52,3 +53,10 @@ CREATE TABLE IF NOT EXISTS sessions (
 );
 CREATE INDEX IF NOT EXISTS idx_sessions_ended_at ON sessions(ended_at);
 `;
+
+export type SessionRow = typeof sessions.$inferSelect;
+
+// SessionRow → SessionAggregate 変換が型互換であることの assert (設計 v0.2 §2.4)
+// rowToCachedAggregate (cache.ts) の型シグネチャ保証用、compile time チェック
+declare const _assertSqliteRowConvertible: (row: SessionRow) => SessionAggregate;
+void _assertSqliteRowConvertible;

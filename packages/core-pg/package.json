@@ -1,0 +1,54 @@
+{
+  "name": "@kojihq/core-pg",
+  "version": "0.1.0-beta.4",
+  "type": "module",
+  "description": "Postgres cache adapter for @kojihq/core (Pro cloud sync, Neon)",
+  "license": "MIT",
+  "author": "株式会社クインクエ (Koji) <support@kojihq.com>",
+  "homepage": "https://lens.kojihq.com",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/etoryoki/koji-lens.git",
+    "directory": "packages/core-pg"
+  },
+  "bugs": {
+    "url": "https://github.com/etoryoki/koji-lens/issues"
+  },
+  "keywords": [
+    "claude-code",
+    "postgres",
+    "cache",
+    "koji-lens"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "dev": "tsc -p tsconfig.json --watch",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@kojihq/core": "workspace:*",
+    "drizzle-orm": "^0.36.0"
+  },
+  "devDependencies": {
+    "@electric-sql/pglite": "^0.2.0",
+    "@types/node": "^22.0.0",
+    "typescript": "^6.0.3",
+    "vitest": "^2.1.0"
+  }
+}
