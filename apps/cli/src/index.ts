@@ -11,6 +11,7 @@ import { compareCommand } from "./commands/compare.js";
 import { statuslineCommand } from "./commands/statusline.js";
 import { trendCommand } from "./commands/trend.js";
 import { budgetCommand } from "./commands/budget.js";
+import { exportCommand } from "./commands/export.js";
 
 const pkgPath = fileURLToPath(new URL("../package.json", import.meta.url));
 const pkg = JSON.parse(readFileSync(pkgPath, "utf8")) as { version: string };
@@ -155,6 +156,32 @@ program
   .action(async (opts) => {
     try {
       await budgetCommand(opts);
+    } catch (err) {
+      console.error(err instanceof Error ? err.message : err);
+      process.exit(1);
+    }
+  });
+
+program
+  .command("export")
+  .description(
+    "Export session aggregates as CSV or JSON for external analysis (data ownership)",
+  )
+  .option(
+    "--since <expr>",
+    'Period start: "Nh" / "Nd" / "Nw" or ISO date (default: 30 days)',
+    "30d",
+  )
+  .option("--format <format>", "Output format: csv | json", "csv")
+  .option("--dir <path>", "Claude Code log directory")
+  .option("--no-cache", "Disable SQLite cache (~/.koji-lens/cache.db)")
+  .option(
+    "--output <file>",
+    "Write to file instead of stdout (e.g., --output sessions.csv)",
+  )
+  .action(async (opts) => {
+    try {
+      await exportCommand(opts);
     } catch (err) {
       console.error(err instanceof Error ? err.message : err);
       process.exit(1);
