@@ -101,6 +101,15 @@ const ja: Record<string, string> = {
   "budget.projects_locked_title": "Pro 機能: プロジェクト別予算管理",
   "budget.projects_locked_body":
     "プロジェクトごとに個別予算を設定し、project filter 切替で連動表示。dev mode では env KOJI_LENS_PRO=1 で動作確認可能。",
+  "heatmap.section_title": "時間帯別コスト分布",
+  "heatmap.day_sun": "日",
+  "heatmap.day_mon": "月",
+  "heatmap.day_tue": "火",
+  "heatmap.day_wed": "水",
+  "heatmap.day_thu": "木",
+  "heatmap.day_fri": "金",
+  "heatmap.day_sat": "土",
+  "heatmap.legend": "色濃度 = $ 量（0 - 期間内最大値）",
 };
 
 const en: Record<string, string> = {
@@ -191,6 +200,15 @@ const en: Record<string, string> = {
   "budget.projects_locked_title": "Pro feature: Per-project budget management",
   "budget.projects_locked_body":
     "Set individual budgets per project; project filter switches the active budget. Dev mode: KOJI_LENS_PRO=1 to enable.",
+  "heatmap.section_title": "Cost by hour-of-day × day-of-week",
+  "heatmap.day_sun": "Sun",
+  "heatmap.day_mon": "Mon",
+  "heatmap.day_tue": "Tue",
+  "heatmap.day_wed": "Wed",
+  "heatmap.day_thu": "Thu",
+  "heatmap.day_fri": "Fri",
+  "heatmap.day_sat": "Sat",
+  "heatmap.legend": "Color density = $ amount (0 → max in period)",
 };
 
 const dict: Record<Lang, Record<string, string>> = { ja, en };

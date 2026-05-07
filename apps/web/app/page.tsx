@@ -28,6 +28,7 @@ import {
   ToolPie,
   WeeklyTrendChart,
 } from "./components/Charts";
+import { HeatmapGrid } from "./components/HeatmapGrid";
 import { KojiMark } from "./components/KojiMark";
 import { detectLang, DEFAULT_LANG, t, type Lang } from "./i18n";
 
@@ -228,6 +229,23 @@ export default async function Page({
     .map(([name, value]) => ({ name, value }));
 
   const isPro = process.env.KOJI_LENS_PRO === "1";
+
+  // Heatmap data: 7 (day) × 24 (hour) のコスト分布 (filteredAll ベース)
+  const heatmapData: number[][] = Array.from({ length: 7 }, () =>
+    new Array<number>(24).fill(0),
+  );
+  for (const a of filteredAll) {
+    const ts = a.endedAt ?? a.startedAt;
+    if (!ts) continue;
+    const d = new Date(ts);
+    if (Number.isNaN(d.getTime())) continue;
+    const day = d.getDay();
+    const hour = d.getHours();
+    if (day >= 0 && day <= 6 && hour >= 0 && hour <= 23) {
+      heatmapData[day][hour] += a.costUsd;
+    }
+  }
+
   const weeklyTrend = computeWeeklyTrend(filteredAll, 4);
   const trendRegressions = detectTrendRegressionsWithAttribution(weeklyTrend, {
     enableAttribution: isPro,
@@ -387,6 +405,15 @@ export default async function Page({
             }
           >
             <ModelCostStackedArea data={modelCostChart} keys={modelKeys} />
+          </Panel>
+        </section>
+
+        <section>
+          <Panel title={_("heatmap.section_title")}>
+            <HeatmapGrid data={heatmapData} t={_} />
+            <p className="mt-2 text-[10px] text-slate-500">
+              {_("heatmap.legend")}
+            </p>
           </Panel>
         </section>
 
