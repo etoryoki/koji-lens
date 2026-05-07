@@ -97,9 +97,11 @@ export {
 
 export {
   computeBudgetForecast,
+  computeDailyBudgetTrend,
   checkBudgetAlert,
   type BudgetForecast,
   type BudgetAlert,
+  type DailyBudgetPoint,
 } from "./budget.js";
 
 export {

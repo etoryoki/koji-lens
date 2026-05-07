@@ -10,6 +10,7 @@ import {
   LineChart,
   Pie,
   PieChart,
+  ReferenceLine,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -108,6 +109,77 @@ const FALLBACK_COLORS = [
   "#f472b6", // pink-400
   "#94a3b8", // slate-400
 ];
+
+export function BudgetTrendChart({
+  data,
+  budgetUsd,
+  cumulativeLabel,
+  forecastLabel,
+  budgetLabel,
+}: {
+  data: Array<{
+    date: string;
+    cumulativeCostUsd: number;
+    forecastCostUsd: number;
+  }>;
+  budgetUsd: number;
+  cumulativeLabel: string;
+  forecastLabel: string;
+  budgetLabel: string;
+}) {
+  const shortDate = (iso: string): string => iso.slice(5);
+  const chartData = data.map((p) => ({
+    label: shortDate(p.date),
+    cumulative: Number(p.cumulativeCostUsd.toFixed(2)),
+    forecast: Number(p.forecastCostUsd.toFixed(2)),
+  }));
+  return (
+    <ResponsiveContainer width="100%" height={220}>
+      <LineChart data={chartData} margin={{ top: 12, right: 16, left: 8, bottom: 16 }}>
+        <CartesianGrid strokeDasharray="3 3" stroke="#1f2937" />
+        <XAxis dataKey="label" stroke="#9ca3af" tick={{ fontSize: 11 }} />
+        <YAxis
+          stroke="#9ca3af"
+          tick={{ fontSize: 11 }}
+          tickFormatter={(v) => `$${Number(v).toFixed(0)}`}
+        />
+        <Tooltip
+          contentStyle={TOOLTIP_STYLE}
+          formatter={(v) => `$${Number(v).toFixed(2)}`}
+        />
+        <Legend wrapperStyle={{ color: "#e5e7eb", fontSize: 12 }} />
+        <ReferenceLine
+          y={budgetUsd}
+          stroke="#fbbf24"
+          strokeDasharray="4 2"
+          label={{
+            value: `${budgetLabel} $${budgetUsd}`,
+            position: "right",
+            fill: "#fbbf24",
+            fontSize: 10,
+          }}
+        />
+        <Line
+          type="monotone"
+          dataKey="cumulative"
+          stroke="#60a5fa"
+          strokeWidth={2}
+          dot={{ r: 3, fill: "#60a5fa" }}
+          name={cumulativeLabel}
+        />
+        <Line
+          type="monotone"
+          dataKey="forecast"
+          stroke="#34d399"
+          strokeWidth={1.5}
+          strokeDasharray="3 3"
+          dot={false}
+          name={forecastLabel}
+        />
+      </LineChart>
+    </ResponsiveContainer>
+  );
+}
 
 export function WeeklyTrendChart({
   data,

@@ -91,6 +91,10 @@ const ja: Record<string, string> = {
     "月末予測が予算超過: {forecastCost} / {budgetUsd}",
   "budget.alert_message_warning_forecast":
     "月末予測が予算 80%+ 到達: {forecastCost} / {budgetUsd}",
+  "budget.trend_chart_title": "日次推移",
+  "budget.trend_cumulative_label": "累計コスト",
+  "budget.trend_forecast_label": "月末予測（線形）",
+  "budget.trend_budget_label": "予算",
 };
 
 const en: Record<string, string> = {
@@ -170,6 +174,10 @@ const en: Record<string, string> = {
     "Forecast to exceed budget: {forecastCost} / {budgetUsd} by month-end",
   "budget.alert_message_warning_forecast":
     "Forecast at 80%+: {forecastCost} / {budgetUsd} by month-end",
+  "budget.trend_chart_title": "Daily trend",
+  "budget.trend_cumulative_label": "Cumulative cost",
+  "budget.trend_forecast_label": "Forecast (linear)",
+  "budget.trend_budget_label": "Budget",
 };
 
 const dict: Record<Lang, Record<string, string>> = { ja, en };

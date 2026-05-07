@@ -1,5 +1,12 @@
 import type { SessionAggregate } from "./aggregate.js";
 
+export interface DailyBudgetPoint {
+  date: string;
+  dailyCostUsd: number;
+  cumulativeCostUsd: number;
+  forecastCostUsd: number;
+}
+
 export interface BudgetForecast {
   budgetUsd: number;
   monthStartIso: string;
@@ -54,6 +61,47 @@ export function computeBudgetForecast(
     forecastUtilizationPct:
       budgetUsd > 0 ? (forecastCost / budgetUsd) * 100 : 0,
   };
+}
+
+export function computeDailyBudgetTrend(
+  aggs: SessionAggregate[],
+  now: Date = new Date(),
+): DailyBudgetPoint[] {
+  const year = now.getUTCFullYear();
+  const month = now.getUTCMonth();
+  const monthStart = new Date(Date.UTC(year, month, 1));
+  const daysInMonth = new Date(Date.UTC(year, month + 1, 0)).getUTCDate();
+  const daysElapsed = now.getUTCDate();
+
+  const dailyCosts: number[] = new Array(daysElapsed).fill(0);
+
+  for (const a of aggs) {
+    const ts = a.endedAt ?? a.startedAt;
+    if (!ts) continue;
+    const d = new Date(ts);
+    if (Number.isNaN(d.getTime())) continue;
+    if (d.getTime() < monthStart.getTime()) continue;
+    const day = d.getUTCDate();
+    if (day < 1 || day > daysElapsed) continue;
+    dailyCosts[day - 1] += a.costUsd;
+  }
+
+  let cumulative = 0;
+  const points: DailyBudgetPoint[] = [];
+  for (let i = 0; i < daysElapsed; i++) {
+    cumulative += dailyCosts[i];
+    const dateObj = new Date(Date.UTC(year, month, i + 1));
+    const day = i + 1;
+    const dailyAvgSoFar = day > 0 ? cumulative / day : 0;
+    points.push({
+      date: dateObj.toISOString().slice(0, 10),
+      dailyCostUsd: dailyCosts[i],
+      cumulativeCostUsd: cumulative,
+      forecastCostUsd: dailyAvgSoFar * daysInMonth,
+    });
+  }
+
+  return points;
 }
 
 export function checkBudgetAlert(

@@ -2,6 +2,7 @@ import { headers } from "next/headers";
 import {
   checkBudgetAlert,
   computeBudgetForecast,
+  computeDailyBudgetTrend,
   computeWeeklyTrend,
   defaultClaudeLogDir,
   detectTrendRegressionsWithAttribution,
@@ -11,12 +12,14 @@ import {
   rollupSubagents,
   type BudgetAlert,
   type BudgetForecast,
+  type DailyBudgetPoint,
   type SessionAggregate,
   type SessionAggregateWithChildren,
 } from "@kojihq/core";
 import { analyzeDirectoryCached, openCacheDb } from "@kojihq/core-sqlite";
 import { AttributionBadge } from "./components/AttributionBadge";
 import {
+  BudgetTrendChart,
   CostLineChart,
   ModelCostStackedArea,
   ToolPie,
@@ -236,6 +239,8 @@ export default async function Page({
   const budgetForecast =
     budgetUsd > 0 ? computeBudgetForecast(rolled, budgetUsd) : null;
   const budgetAlert = budgetForecast ? checkBudgetAlert(budgetForecast) : null;
+  const budgetTrend: DailyBudgetPoint[] =
+    budgetUsd > 0 ? computeDailyBudgetTrend(rolled) : [];
 
   const langSwitchHref = (target: Lang) => {
     const search = new URLSearchParams();
@@ -377,6 +382,7 @@ export default async function Page({
             <BudgetView
               forecast={budgetForecast}
               alert={budgetAlert}
+              trend={budgetTrend}
               isPro={isPro}
               t={_}
             />
@@ -577,11 +583,13 @@ function Panel({
 function BudgetView({
   forecast,
   alert,
+  trend,
   isPro,
   t,
 }: {
   forecast: BudgetForecast | null;
   alert: BudgetAlert | null;
+  trend: DailyBudgetPoint[];
   isPro: boolean;
   t: TFn;
 }) {
@@ -628,6 +636,21 @@ function BudgetView({
           highlight={forecastPct >= 80}
         />
       </div>
+
+      {trend.length > 0 ? (
+        <div>
+          <div className="mb-2 text-[10px] uppercase tracking-widest text-slate-500">
+            {t("budget.trend_chart_title")}
+          </div>
+          <BudgetTrendChart
+            data={trend}
+            budgetUsd={forecast.budgetUsd}
+            cumulativeLabel={t("budget.trend_cumulative_label")}
+            forecastLabel={t("budget.trend_forecast_label")}
+            budgetLabel={t("budget.trend_budget_label")}
+          />
+        </div>
+      ) : null}
 
       <div>
         <div className="mb-1 flex items-center justify-between text-[10px] uppercase tracking-widest text-slate-500">
