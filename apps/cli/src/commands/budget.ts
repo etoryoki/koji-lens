@@ -10,7 +10,7 @@ import {
 import { analyzeDirectoryCached, openCacheDb } from "@kojihq/core-sqlite";
 
 export interface BudgetOptions {
-  budget: string;
+  budget?: string;
   format: string;
   dir?: string;
   cache: boolean;
@@ -27,12 +27,32 @@ export async function budgetCommand(opts: BudgetOptions): Promise<void> {
   const cfg = loadConfig();
   const dir = opts.dir ?? cfg.logDir ?? defaultClaudeLogDir();
 
-  const budgetUsd = Number(opts.budget);
-  if (!Number.isFinite(budgetUsd) || budgetUsd <= 0) {
+  // Budget 解決優先順: --budget <usd> > KOJI_LENS_BUDGET env > config.budgetUsd
+  const budgetUsd = (() => {
+    if (opts.budget !== undefined) {
+      const n = Number(opts.budget);
+      if (!Number.isFinite(n) || n <= 0) {
+        throw new Error(
+          `Invalid --budget value: "${opts.budget}". Expected positive number (e.g., 200).`,
+        );
+      }
+      return n;
+    }
+    const envRaw = process.env.KOJI_LENS_BUDGET;
+    if (envRaw) {
+      const n = Number(envRaw);
+      if (Number.isFinite(n) && n > 0) return n;
+    }
+    if (cfg.budgetUsd && Number.isFinite(cfg.budgetUsd) && cfg.budgetUsd > 0) {
+      return cfg.budgetUsd;
+    }
     throw new Error(
-      `Invalid --budget value: "${opts.budget}". Expected positive number (e.g., 200).`,
+      "Budget not set. Use one of:\n" +
+        "  - `koji-lens budget --budget 200`\n" +
+        "  - `koji-lens config set budgetUsd 200` (persistent)\n" +
+        "  - export KOJI_LENS_BUDGET=200",
     );
-  }
+  })();
 
   // Pro feature gate (Phase A 拡張: budget alerts は Pro 通知機能)
   // dev mode: KOJI_LENS_PRO=1 でバイパス

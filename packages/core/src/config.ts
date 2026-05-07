@@ -10,9 +10,10 @@ import { join } from "node:path";
 export interface KojiLensConfig {
   logDir?: string;
   usdJpy?: number;
+  budgetUsd?: number;
 }
 
-const KNOWN_KEYS: Array<keyof KojiLensConfig> = ["logDir", "usdJpy"];
+const KNOWN_KEYS: Array<keyof KojiLensConfig> = ["logDir", "usdJpy", "budgetUsd"];
 
 export function configFilePath(): string {
   return join(homedir(), ".koji-lens", "config.json");
@@ -58,6 +59,12 @@ export function setConfigValue(key: string, value: string): KojiLensConfig {
       throw new Error(`usdJpy must be a positive number, got: ${value}`);
     }
     cfg.usdJpy = num;
+  } else if (key === "budgetUsd") {
+    const num = Number(value);
+    if (Number.isNaN(num) || num <= 0) {
+      throw new Error(`budgetUsd must be a positive number, got: ${value}`);
+    }
+    cfg.budgetUsd = num;
   } else if (key === "logDir") {
     cfg.logDir = value;
   }

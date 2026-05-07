@@ -133,9 +133,9 @@ program
   .description(
     "Show month-to-date cost vs monthly budget + linear forecast to month-end",
   )
-  .requiredOption(
+  .option(
     "--budget <usd>",
-    "Monthly budget in USD (e.g., 200 for $200/month)",
+    "Monthly budget in USD (e.g., 200). Overrides KOJI_LENS_BUDGET env / config.budgetUsd",
   )
   .option("--format <format>", "Output format: text | json", "text")
   .option("--dir <path>", "Claude Code log directory")

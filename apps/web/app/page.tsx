@@ -9,6 +9,7 @@ import {
   formatDuration,
   formatJpy,
   formatUsd,
+  loadConfig,
   rollupSubagents,
   type BudgetAlert,
   type BudgetForecast,
@@ -230,11 +231,18 @@ export default async function Page({
     enableAttribution: isPro,
   });
 
+  // Budget 解決優先順: URL ?budget=X > env KOJI_LENS_BUDGET > ~/.koji-lens/config.json budgetUsd
   const budgetUsd = (() => {
     const raw = params.budget ?? process.env.KOJI_LENS_BUDGET;
-    if (!raw) return 0;
-    const n = Number(raw);
-    return Number.isFinite(n) && n > 0 ? n : 0;
+    if (raw) {
+      const n = Number(raw);
+      if (Number.isFinite(n) && n > 0) return n;
+    }
+    const cfg = loadConfig();
+    if (cfg.budgetUsd && Number.isFinite(cfg.budgetUsd) && cfg.budgetUsd > 0) {
+      return cfg.budgetUsd;
+    }
+    return 0;
   })();
   const budgetForecast =
     budgetUsd > 0 ? computeBudgetForecast(rolled, budgetUsd) : null;
