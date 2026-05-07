@@ -44,8 +44,6 @@ jobs:
         run: pnpm --filter @kojihq/web build
       - name: Build @kojihq/lens (CLI + bundle web-standalone)
         run: pnpm --filter @kojihq/lens build
-      - name: Build @kojihq/lp
-        run: pnpm --filter @kojihq/lp build
       - name: Smoke check CLI
         run: |
           node apps/cli/dist/index.js --version
