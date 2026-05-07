@@ -144,6 +144,14 @@ program
     "--with-alerts",
     "[Pro] Show budget alerts when forecast >= 80% (warning) or >= 100% (critical) — requires KOJI_LENS_PRO=1 in dev mode",
   )
+  .option(
+    "--project <key>",
+    "[Pro] Filter sessions to a specific project key + use config.budgets[<key>] (Pro v0.2 §6.1)",
+  )
+  .option(
+    "--list",
+    "Show all configured budgets (default + per-project) without computing forecast",
+  )
   .action(async (opts) => {
     try {
       await budgetCommand(opts);

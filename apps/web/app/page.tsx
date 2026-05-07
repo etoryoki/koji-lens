@@ -9,7 +9,9 @@ import {
   formatDuration,
   formatJpy,
   formatUsd,
+  listProjectBudgets,
   loadConfig,
+  resolveBudgetForProject,
   rollupSubagents,
   type BudgetAlert,
   type BudgetForecast,
@@ -231,19 +233,22 @@ export default async function Page({
     enableAttribution: isPro,
   });
 
-  // Budget 解決優先順: URL ?budget=X > env KOJI_LENS_BUDGET > ~/.koji-lens/config.json budgetUsd
+  // Budget 解決優先順:
+  //   1. URL ?budget=X (一時上書き)
+  //   2. KOJI_LENS_BUDGET env
+  //   3. config.budgets[selectedProject] (個別プロジェクト予算、Pro v0.2 §6.1)
+  //   4. config.budgets._default (全プロジェクト共通)
+  //   5. config.budgetUsd (旧フィールド後方互換)
+  const cfg = loadConfig();
   const budgetUsd = (() => {
     const raw = params.budget ?? process.env.KOJI_LENS_BUDGET;
     if (raw) {
       const n = Number(raw);
       if (Number.isFinite(n) && n > 0) return n;
     }
-    const cfg = loadConfig();
-    if (cfg.budgetUsd && Number.isFinite(cfg.budgetUsd) && cfg.budgetUsd > 0) {
-      return cfg.budgetUsd;
-    }
-    return 0;
+    return resolveBudgetForProject(selectedProject, cfg);
   })();
+  const projectBudgets = listProjectBudgets(cfg);
   const budgetForecast =
     budgetUsd > 0 ? computeBudgetForecast(rolled, budgetUsd) : null;
   const budgetAlert = budgetForecast ? checkBudgetAlert(budgetForecast) : null;
@@ -391,6 +396,8 @@ export default async function Page({
               forecast={budgetForecast}
               alert={budgetAlert}
               trend={budgetTrend}
+              projectBudgets={projectBudgets}
+              selectedProject={selectedProject}
               isPro={isPro}
               t={_}
             />
@@ -592,12 +599,16 @@ function BudgetView({
   forecast,
   alert,
   trend,
+  projectBudgets,
+  selectedProject,
   isPro,
   t,
 }: {
   forecast: BudgetForecast | null;
   alert: BudgetAlert | null;
   trend: DailyBudgetPoint[];
+  projectBudgets: Record<string, number>;
+  selectedProject: string | undefined;
   isPro: boolean;
   t: TFn;
 }) {
@@ -745,6 +756,71 @@ function BudgetView({
               ? "—"
               : t("budget.alert_severity_warning")}
           </p>
+        )}
+      </div>
+
+      <div className="border-t border-slate-800 pt-4">
+        <div className="mb-2 flex items-center gap-2 text-xs font-medium uppercase tracking-widest text-slate-400">
+          <span>{t("budget.projects_section_title")}</span>
+          <span
+            className={`rounded px-1.5 py-0.5 text-[10px] font-bold ${
+              isPro
+                ? "bg-amber-500/20 text-amber-200 ring-1 ring-amber-500/40"
+                : "bg-slate-700/40 text-slate-400 ring-1 ring-slate-600/40"
+            }`}
+          >
+            {t("trend.pro_badge")}
+          </span>
+        </div>
+
+        {!isPro ? (
+          <div className="rounded-md border border-amber-500/30 bg-amber-500/5 p-3">
+            <div className="text-xs font-medium text-amber-200">
+              🔒 {t("budget.projects_locked_title")}
+            </div>
+            <div className="mt-1 text-xs leading-relaxed text-slate-400">
+              {t("budget.projects_locked_body")}
+            </div>
+          </div>
+        ) : Object.keys(projectBudgets).length === 0 ? (
+          <p className="text-xs text-slate-500">
+            {t("budget.projects_no_budgets")}
+          </p>
+        ) : (
+          <div className="space-y-1">
+            {Object.entries(projectBudgets)
+              .sort((a, b) => a[0].localeCompare(b[0]))
+              .map(([key, usd]) => {
+                const isDefault = key === "_default";
+                const isSelected = key === selectedProject;
+                const label = isDefault
+                  ? t("budget.projects_default_label")
+                  : key;
+                return (
+                  <div
+                    key={key}
+                    className={`flex items-center justify-between rounded-md px-3 py-1.5 text-xs ${
+                      isSelected
+                        ? "bg-blue-500/10 ring-1 ring-blue-500/30"
+                        : "bg-slate-900/40"
+                    }`}
+                  >
+                    <span
+                      className={
+                        isDefault
+                          ? "italic text-slate-400"
+                          : "font-mono text-slate-200"
+                      }
+                    >
+                      {label}
+                    </span>
+                    <span className="font-mono tabular-nums text-slate-200">
+                      ${usd.toFixed(0)}
+                    </span>
+                  </div>
+                );
+              })}
+          </div>
         )}
       </div>
     </div>

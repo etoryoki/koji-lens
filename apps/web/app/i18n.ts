@@ -95,6 +95,12 @@ const ja: Record<string, string> = {
   "budget.trend_cumulative_label": "累計コスト",
   "budget.trend_forecast_label": "月末予測（線形）",
   "budget.trend_budget_label": "予算",
+  "budget.projects_section_title": "プロジェクト別予算",
+  "budget.projects_default_label": "（デフォルト）",
+  "budget.projects_no_budgets": "プロジェクト別予算は未設定です。`koji-lens budget set --project <key> <usd>` で設定できます。",
+  "budget.projects_locked_title": "Pro 機能: プロジェクト別予算管理",
+  "budget.projects_locked_body":
+    "プロジェクトごとに個別予算を設定し、project filter 切替で連動表示。dev mode では env KOJI_LENS_PRO=1 で動作確認可能。",
 };
 
 const en: Record<string, string> = {
@@ -178,6 +184,13 @@ const en: Record<string, string> = {
   "budget.trend_cumulative_label": "Cumulative cost",
   "budget.trend_forecast_label": "Forecast (linear)",
   "budget.trend_budget_label": "Budget",
+  "budget.projects_section_title": "Per-project budgets",
+  "budget.projects_default_label": "(default)",
+  "budget.projects_no_budgets":
+    "No per-project budgets set. Use `koji-lens budget set --project <key> <usd>` to configure.",
+  "budget.projects_locked_title": "Pro feature: Per-project budget management",
+  "budget.projects_locked_body":
+    "Set individual budgets per project; project filter switches the active budget. Dev mode: KOJI_LENS_PRO=1 to enable.",
 };
 
 const dict: Record<Lang, Record<string, string>> = { ja, en };

@@ -4,7 +4,9 @@ import {
   computeBudgetForecast,
   defaultClaudeLogDir,
   formatUsd,
+  listProjectBudgets,
   loadConfig,
+  resolveBudgetForProject,
   type SessionAggregate,
 } from "@kojihq/core";
 import { analyzeDirectoryCached, openCacheDb } from "@kojihq/core-sqlite";
@@ -15,6 +17,13 @@ export interface BudgetOptions {
   dir?: string;
   cache: boolean;
   withAlerts?: boolean;
+  project?: string;
+  list?: boolean;
+}
+
+function extractProjectKey(filePath: string): string {
+  const m = filePath.match(/[\\/]projects[\\/]([^\\/]+)[\\/]/);
+  return m ? m[1] : "(unknown)";
 }
 
 function pad(s: string, width: number, rightAlign = false): string {
@@ -27,7 +36,38 @@ export async function budgetCommand(opts: BudgetOptions): Promise<void> {
   const cfg = loadConfig();
   const dir = opts.dir ?? cfg.logDir ?? defaultClaudeLogDir();
 
-  // Budget 解決優先順: --budget <usd> > KOJI_LENS_BUDGET env > config.budgetUsd
+  // --list: 全 project budgets 一覧表示 (Pro v0.2 §6.1)
+  if (opts.list === true) {
+    const projectBudgets = listProjectBudgets(cfg);
+    const lines: string[] = [];
+    lines.push("koji-lens — configured budgets");
+    lines.push("=".repeat(40));
+    if (cfg.budgetUsd && cfg.budgetUsd > 0) {
+      lines.push(`(legacy)        ${formatUsd(cfg.budgetUsd)}`);
+    }
+    if (Object.keys(projectBudgets).length === 0) {
+      if (!cfg.budgetUsd) {
+        lines.push("(no budgets configured)");
+      }
+    } else {
+      const sorted = Object.entries(projectBudgets).sort((a, b) =>
+        a[0].localeCompare(b[0]),
+      );
+      for (const [key, usd] of sorted) {
+        const label = key === "_default" ? "(default)" : key;
+        lines.push(`${label.padEnd(16)}${formatUsd(usd)}`);
+      }
+    }
+    process.stdout.write(lines.join("\n") + "\n");
+    return;
+  }
+
+  // Budget 解決優先順:
+  //   1. --budget <usd> (一時上書き)
+  //   2. KOJI_LENS_BUDGET env
+  //   3. config.budgets[--project] (個別プロジェクト予算、Pro v0.2 §6.1)
+  //   4. config.budgets._default (全プロジェクト共通)
+  //   5. config.budgetUsd (旧フィールド後方互換)
   const budgetUsd = (() => {
     if (opts.budget !== undefined) {
       const n = Number(opts.budget);
@@ -43,13 +83,13 @@ export async function budgetCommand(opts: BudgetOptions): Promise<void> {
       const n = Number(envRaw);
       if (Number.isFinite(n) && n > 0) return n;
     }
-    if (cfg.budgetUsd && Number.isFinite(cfg.budgetUsd) && cfg.budgetUsd > 0) {
-      return cfg.budgetUsd;
-    }
+    const resolved = resolveBudgetForProject(opts.project, cfg);
+    if (resolved > 0) return resolved;
     throw new Error(
       "Budget not set. Use one of:\n" +
         "  - `koji-lens budget --budget 200`\n" +
-        "  - `koji-lens config set budgetUsd 200` (persistent)\n" +
+        "  - `koji-lens config set budgetUsd 200` (persistent default)\n" +
+        "  - Edit ~/.koji-lens/config.json budgets.<project> = 100\n" +
         "  - export KOJI_LENS_BUDGET=200",
     );
   })();
@@ -77,7 +117,12 @@ export async function budgetCommand(opts: BudgetOptions): Promise<void> {
     }
   }
 
-  const forecast = computeBudgetForecast(all, budgetUsd);
+  // --project filter: 該当 project の sessions のみで予算計算
+  const filtered = opts.project
+    ? all.filter((s) => extractProjectKey(s.filePath) === opts.project)
+    : all;
+
+  const forecast = computeBudgetForecast(filtered, budgetUsd);
   const alert =
     opts.withAlerts && isPro ? checkBudgetAlert(forecast) : null;
 
@@ -98,7 +143,8 @@ export async function budgetCommand(opts: BudgetOptions): Promise<void> {
 
   // text 出力
   const lines: string[] = [];
-  lines.push("koji-lens — budget tracking");
+  const headerSuffix = opts.project ? ` [project: ${opts.project}]` : "";
+  lines.push(`koji-lens — budget tracking${headerSuffix}`);
   lines.push("=".repeat(40));
   lines.push(
     `${pad("month-to-date:", 18)}${pad(formatUsd(forecast.currentCostUsd), 12, true)} / ${pad(formatUsd(forecast.budgetUsd), 10, true)}  (${forecast.utilizationPct.toFixed(1)}%)`,

@@ -64,6 +64,10 @@ export {
   setConfigValue,
   unsetConfigValue,
   listKnownConfigKeys,
+  setProjectBudget,
+  unsetProjectBudget,
+  listProjectBudgets,
+  resolveBudgetForProject,
   type KojiLensConfig,
 } from "./config.js";
 
