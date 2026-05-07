@@ -8,10 +8,23 @@ import {
   readAgentState,
   renderStatusline,
   analyzeDirectory,
+  type BuddyType,
   type SessionAggregate,
   type StatuslineMode,
 } from "@kojihq/core";
 import { analyzeDirectoryCached, openCacheDb } from "@kojihq/core-sqlite";
+
+const VALID_BUDDY_TYPES: ReadonlyArray<BuddyType> = ["koji", "owl", "cat"];
+
+function parseBuddyType(input: string | undefined): BuddyType {
+  const candidate = input ?? "koji";
+  if ((VALID_BUDDY_TYPES as ReadonlyArray<string>).includes(candidate)) {
+    return candidate as BuddyType;
+  }
+  throw new Error(
+    `Invalid --buddy-type: "${input}". Expected: ${VALID_BUDDY_TYPES.join(", ")}`,
+  );
+}
 
 export interface StatuslineOptions {
   format: string;
@@ -21,6 +34,9 @@ export interface StatuslineOptions {
   state: boolean;
   cacheRate: boolean;
   cache: boolean;
+  buddy?: boolean;
+  buddySpeech?: boolean;
+  buddyType?: string;
 }
 
 const VALID_MODES: ReadonlyArray<StatuslineMode> = [
@@ -93,6 +109,11 @@ export async function statuslineCommand(
   const cacheRate =
     opts.cacheRate === false ? null : computeCacheRate(afterAggs);
 
+  // 起案 v0.4 §3 楽しさ別チャネル化整合: --buddy で opt-in、env KOJI_LENS_BUDDY=1 で永続化
+  const buddyEnabled =
+    opts.buddy === true || process.env.KOJI_LENS_BUDDY === "1";
+  const buddyType = parseBuddyType(opts.buddyType);
+
   if (opts.format === "json") {
     process.stdout.write(
       JSON.stringify(
@@ -117,6 +138,14 @@ export async function statuslineCommand(
           statusline: renderStatusline(result, mode, {
             stateIcon: stateRead.icon,
             cacheRate,
+            buddy: buddyEnabled
+              ? {
+                  enabled: true,
+                  type: buddyType,
+                  speech: opts.buddySpeech === true,
+                  agentState: stateRead.state,
+                }
+              : undefined,
           }),
         },
         null,
@@ -130,6 +159,14 @@ export async function statuslineCommand(
     renderStatusline(result, mode, {
       stateIcon: stateRead.icon,
       cacheRate,
+      buddy: buddyEnabled
+        ? {
+            enabled: true,
+            type: buddyType,
+            speech: opts.buddySpeech === true,
+            agentState: stateRead.state,
+          }
+        : undefined,
     }) + "\n",
   );
 }

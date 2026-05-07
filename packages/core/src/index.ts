@@ -126,6 +126,18 @@ export {
 } from "./state.js";
 
 export {
+  computeBuddyLevel,
+  computeBuddyState,
+  renderBuddy,
+  renderBuddyDecoration,
+  renderBuddySaying,
+  type BuddyType,
+  type BuddyState,
+  type BuddyLevel,
+  type BuddyRender,
+} from "./buddy.js";
+
+export {
   rollupSubagents,
   type SessionAggregateWithChildren,
 } from "./rollup.js";

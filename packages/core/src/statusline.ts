@@ -1,9 +1,23 @@
 import type { CacheRateResult } from "./cache-rate.js";
 import type { CompareResult } from "./compare.js";
+import {
+  computeBuddyLevel,
+  computeBuddyState,
+  renderBuddyDecoration,
+  renderBuddySaying,
+  type BuddyType,
+} from "./buddy.js";
+import type { AgentState } from "./state.js";
 
 export interface RenderOptions {
   stateIcon?: string | null;
   cacheRate?: CacheRateResult | null;
+  buddy?: {
+    enabled: boolean;
+    type?: BuddyType;
+    speech?: boolean;
+    agentState?: AgentState | null;
+  };
 }
 
 export interface MonthRanges {
@@ -37,12 +51,28 @@ export function renderStatusline(
   const base = renderSpendSignal(result, mode);
   const cacheSuffix = renderCacheSuffix(options.cacheRate, mode);
   const stateIcon = options.stateIcon;
+  const buddyPrefix = renderBuddyPrefix(result, options);
 
   const spendAndCache = cacheSuffix ? `${base}${cacheSuffix}` : base;
+  const withState = stateIcon ? `${stateIcon} ${spendAndCache}` : spendAndCache;
+  return buddyPrefix ? `${buddyPrefix} ${withState}` : withState;
+}
 
-  if (!stateIcon) return spendAndCache;
-
-  return `${stateIcon} ${spendAndCache}`;
+function renderBuddyPrefix(
+  result: CompareResult,
+  options: RenderOptions,
+): string {
+  const buddy = options.buddy;
+  if (!buddy || !buddy.enabled) return "";
+  const type: BuddyType = buddy.type ?? "koji";
+  const state = computeBuddyState(result, buddy.agentState ?? null);
+  const level = computeBuddyLevel(result.after.sessionsCount);
+  const decoration = renderBuddyDecoration(state, level, type);
+  if (buddy.speech) {
+    const saying = renderBuddySaying(state, level, type);
+    return `${decoration} "${saying}"`;
+  }
+  return decoration;
 }
 
 function renderCacheSuffix(

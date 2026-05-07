@@ -172,6 +172,19 @@ program
   .option("--no-state", "Skip agent-state lookup (suppress ⚡/💤/🛑 icon)")
   .option("--no-cache-rate", "Suppress cache hit rate signal (💎 X%)")
   .option("--no-cache", "Disable SQLite cache (~/.koji-lens/cache.db)")
+  .option(
+    "--buddy",
+    "Enable koji-buddy decoration prefix (🍙·/+/✦/★/★★ for Lv1-5). Persistent: set KOJI_LENS_BUDDY=1 in env",
+  )
+  .option(
+    "--buddy-speech",
+    "Show buddy saying inline (e.g., 🍙· \"いい発酵中…\")",
+  )
+  .option(
+    "--buddy-type <type>",
+    "Buddy character: koji (default, Phase α) | owl (Phase β) | cat (Phase β)",
+    "koji",
+  )
   .action(async (opts) => {
     try {
       await statuslineCommand(opts);

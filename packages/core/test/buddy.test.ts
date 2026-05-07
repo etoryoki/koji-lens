@@ -1,0 +1,142 @@
+import { describe, expect, it } from "vitest";
+import {
+  computeBuddyLevel,
+  computeBuddyState,
+  renderBuddy,
+  renderBuddyDecoration,
+  renderBuddySaying,
+} from "../src/buddy.js";
+import type { CompareResult } from "../src/compare.js";
+
+function makeResult(
+  before: number,
+  after: number,
+  sessionsBefore = 1,
+  sessionsAfter = 1,
+): CompareResult {
+  return {
+    before: {
+      from: "2026-04-01T00:00:00Z",
+      to: "2026-04-30T23:59:59Z",
+      costUsd: before,
+      sessionsCount: sessionsBefore,
+      assistantTurns: 10,
+      cacheHitRatePct: 80,
+      latencyP50Ms: 1000,
+      latencyP95Ms: 3000,
+    },
+    after: {
+      from: "2026-05-01T00:00:00Z",
+      to: "2026-05-31T23:59:59Z",
+      costUsd: after,
+      sessionsCount: sessionsAfter,
+      assistantTurns: 10,
+      cacheHitRatePct: 80,
+      latencyP50Ms: 1000,
+      latencyP95Ms: 3000,
+    },
+    delta: {
+      costUsd: after - before,
+      costUsdPct: before > 0 ? ((after - before) / before) * 100 : 0,
+      sessionsCount: sessionsAfter - sessionsBefore,
+    },
+  };
+}
+
+describe("computeBuddyLevel", () => {
+  it("Lv1 for 0-29 sessions", () => {
+    expect(computeBuddyLevel(0)).toBe(1);
+    expect(computeBuddyLevel(29)).toBe(1);
+  });
+  it("Lv2 for 30-99 sessions", () => {
+    expect(computeBuddyLevel(30)).toBe(2);
+    expect(computeBuddyLevel(99)).toBe(2);
+  });
+  it("Lv3 for 100-299 sessions", () => {
+    expect(computeBuddyLevel(100)).toBe(3);
+    expect(computeBuddyLevel(299)).toBe(3);
+  });
+  it("Lv4 for 300-999 sessions", () => {
+    expect(computeBuddyLevel(300)).toBe(4);
+    expect(computeBuddyLevel(999)).toBe(4);
+  });
+  it("Lv5 for 1000+ sessions", () => {
+    expect(computeBuddyLevel(1000)).toBe(5);
+    expect(computeBuddyLevel(10000)).toBe(5);
+  });
+});
+
+describe("computeBuddyState", () => {
+  it("awaiting when agentState is awaiting_approval", () => {
+    const result = makeResult(100, 100);
+    expect(computeBuddyState(result, "awaiting_approval")).toBe("awaiting");
+  });
+
+  it("resting when agentState is idle", () => {
+    const result = makeResult(100, 100);
+    expect(computeBuddyState(result, "idle")).toBe("resting");
+  });
+
+  it("healthy when cost change is small", () => {
+    const result = makeResult(100, 110); // +10%
+    expect(computeBuddyState(result, "running")).toBe("healthy");
+  });
+
+  it("overfed when cost change >= 20%", () => {
+    const result = makeResult(100, 130); // +30%
+    expect(computeBuddyState(result, "running")).toBe("overfed");
+  });
+
+  it("sick when cost change >= 50%", () => {
+    const result = makeResult(100, 200); // +100%
+    expect(computeBuddyState(result, "running")).toBe("sick");
+  });
+
+  it("resting when no sessions in either period", () => {
+    const result = makeResult(0, 0, 0, 0);
+    expect(computeBuddyState(result, null)).toBe("resting");
+  });
+});
+
+describe("renderBuddy (koji 25 sayings)", () => {
+  it("returns decoration with rice ball icon", () => {
+    const r = renderBuddy("healthy", 1, "koji");
+    expect(r.decoration).toBe("🍙·");
+  });
+
+  it("Lv5 uses double star", () => {
+    const r = renderBuddy("healthy", 5, "koji");
+    expect(r.decoration).toBe("🍙★★");
+  });
+
+  it("returns Phase α 25 sayings (matrix coverage)", () => {
+    const states = ["healthy", "overfed", "resting", "awaiting", "sick"] as const;
+    const levels = [1, 2, 3, 4, 5] as const;
+    for (const state of states) {
+      for (const level of levels) {
+        const saying = renderBuddySaying(state, level, "koji");
+        expect(saying.length).toBeGreaterThan(0);
+        expect(saying).not.toContain("Coming soon");
+      }
+    }
+  });
+
+  it("returns 'Coming soon' for Phase β types (owl / cat)", () => {
+    expect(renderBuddySaying("healthy", 1, "owl")).toContain("Coming soon");
+    expect(renderBuddySaying("healthy", 1, "cat")).toContain("Coming soon");
+  });
+
+  it("flagship Lv5 sick saying = Ferment Small symbol", () => {
+    expect(renderBuddySaying("sick", 5, "koji")).toContain(
+      "分解が始まってます…でも、再生できます…",
+    );
+  });
+});
+
+describe("renderBuddyDecoration", () => {
+  it("returns icon + decoration without saying", () => {
+    expect(renderBuddyDecoration("healthy", 3, "koji")).toBe("🍙✦");
+    expect(renderBuddyDecoration("sick", 5, "owl")).toBe("🦉★★");
+    expect(renderBuddyDecoration("resting", 2, "cat")).toBe("🐈+");
+  });
+});
