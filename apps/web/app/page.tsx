@@ -1,5 +1,7 @@
 import { headers } from "next/headers";
 import {
+  checkBudgetAlert,
+  computeBudgetForecast,
   computeWeeklyTrend,
   defaultClaudeLogDir,
   detectTrendRegressionsWithAttribution,
@@ -7,6 +9,8 @@ import {
   formatJpy,
   formatUsd,
   rollupSubagents,
+  type BudgetAlert,
+  type BudgetForecast,
   type SessionAggregate,
   type SessionAggregateWithChildren,
 } from "@kojihq/core";
@@ -71,6 +75,7 @@ export default async function Page({
     project?: string;
     period?: string;
     lang?: string;
+    budget?: string;
   }>;
 }) {
   const params = (await searchParams) ?? {};
@@ -217,6 +222,16 @@ export default async function Page({
     enableAttribution: isPro,
   });
 
+  const budgetUsd = (() => {
+    const raw = params.budget;
+    if (!raw) return 0;
+    const n = Number(raw);
+    return Number.isFinite(n) && n > 0 ? n : 0;
+  })();
+  const budgetForecast =
+    budgetUsd > 0 ? computeBudgetForecast(rolled, budgetUsd) : null;
+  const budgetAlert = budgetForecast ? checkBudgetAlert(budgetForecast) : null;
+
   const langSwitchHref = (target: Lang) => {
     const search = new URLSearchParams();
     if (selectedProject) search.set("project", selectedProject);
@@ -349,6 +364,17 @@ export default async function Page({
             }
           >
             <ModelCostStackedArea data={modelCostChart} keys={modelKeys} />
+          </Panel>
+        </section>
+
+        <section>
+          <Panel title={_("budget.section_title")}>
+            <BudgetView
+              forecast={budgetForecast}
+              alert={budgetAlert}
+              isPro={isPro}
+              t={_}
+            />
           </Panel>
         </section>
 
@@ -525,6 +551,175 @@ function Panel({
     >
       <div className="mb-3 text-sm font-medium text-slate-200">{title}</div>
       {children}
+    </div>
+  );
+}
+
+function BudgetView({
+  forecast,
+  alert,
+  isPro,
+  t,
+}: {
+  forecast: BudgetForecast | null;
+  alert: BudgetAlert | null;
+  isPro: boolean;
+  t: TFn;
+}) {
+  if (!forecast) {
+    return (
+      <div className="rounded-md border border-slate-700/50 bg-slate-800/30 p-3 text-xs text-slate-400">
+        <div className="font-medium text-slate-300">
+          {t("budget.no_budget_set")}
+        </div>
+        <div className="mt-1 leading-relaxed">{t("budget.set_budget_hint")}</div>
+      </div>
+    );
+  }
+
+  const usagePct = Math.min(forecast.utilizationPct, 100);
+  const forecastPct = Math.min(forecast.forecastUtilizationPct, 200);
+  const barColor =
+    forecastPct >= 100
+      ? "bg-red-500"
+      : forecastPct >= 80
+        ? "bg-amber-500"
+        : "bg-emerald-500";
+
+  return (
+    <div className="space-y-4">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+        <BudgetCard
+          label={t("budget.budget_label")}
+          value={formatUsd(forecast.budgetUsd)}
+          sub={t("budget.days_elapsed", {
+            n: forecast.daysElapsed,
+            total: forecast.daysInMonth,
+          })}
+        />
+        <BudgetCard
+          label={t("budget.current_label")}
+          value={formatUsd(forecast.currentCostUsd)}
+          sub={`${forecast.utilizationPct.toFixed(0)}%`}
+        />
+        <BudgetCard
+          label={t("budget.forecast_label")}
+          value={formatUsd(forecast.forecastCostUsd)}
+          sub={`${forecast.forecastUtilizationPct.toFixed(0)}%`}
+          highlight={forecastPct >= 80}
+        />
+      </div>
+
+      <div>
+        <div className="mb-1 flex items-center justify-between text-[10px] uppercase tracking-widest text-slate-500">
+          <span>{t("budget.utilization_label")}</span>
+          <span className="tabular-nums">
+            {forecast.utilizationPct.toFixed(0)}% / forecast{" "}
+            {forecast.forecastUtilizationPct.toFixed(0)}%
+          </span>
+        </div>
+        <div className="relative h-2 w-full overflow-hidden rounded-full bg-slate-800">
+          <div
+            className="absolute inset-y-0 left-0 bg-slate-600/60"
+            style={{ width: `${Math.min(forecastPct / 2, 100)}%` }}
+          />
+          <div
+            className={`absolute inset-y-0 left-0 ${barColor}`}
+            style={{ width: `${usagePct / 2}%` }}
+          />
+          <div
+            className="absolute inset-y-0 w-0.5 bg-slate-300"
+            style={{ left: "50%" }}
+            title="100% budget"
+          />
+        </div>
+      </div>
+
+      <div className="border-t border-slate-800 pt-4">
+        <div className="mb-2 flex items-center gap-2 text-xs font-medium uppercase tracking-widest text-slate-400">
+          <span>{t("budget.alert_section_pro")}</span>
+          <span
+            className={`rounded px-1.5 py-0.5 text-[10px] font-bold ${
+              isPro
+                ? "bg-amber-500/20 text-amber-200 ring-1 ring-amber-500/40"
+                : "bg-slate-700/40 text-slate-400 ring-1 ring-slate-600/40"
+            }`}
+          >
+            {t("trend.pro_badge")}
+          </span>
+        </div>
+
+        {alert ? (
+          isPro ? (
+            <div
+              className={`rounded-md p-3 text-sm ${
+                alert.level === "critical"
+                  ? "border border-red-500/30 bg-red-500/10 text-red-200"
+                  : "border border-amber-500/30 bg-amber-500/10 text-amber-200"
+              }`}
+            >
+              <div className="flex items-start gap-2">
+                <span>{alert.level === "critical" ? "🚨" : "⚠️"}</span>
+                <div className="flex-1">
+                  <div className="font-medium">
+                    {alert.level === "critical"
+                      ? t("budget.alert_severity_critical")
+                      : t("budget.alert_severity_warning")}
+                  </div>
+                  <div className="mt-1 text-xs leading-relaxed">
+                    {alert.message}
+                  </div>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="rounded-md border border-amber-500/30 bg-amber-500/5 p-3">
+              <div className="text-xs font-medium text-amber-200">
+                🔒 {t("budget.alert_locked_title")}
+              </div>
+              <div className="mt-1 text-xs leading-relaxed text-slate-400">
+                {t("budget.alert_locked_body")}
+              </div>
+            </div>
+          )
+        ) : (
+          <p className="text-xs text-slate-500">
+            {forecast.forecastUtilizationPct < 80
+              ? "—"
+              : t("budget.alert_severity_warning")}
+          </p>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function BudgetCard({
+  label,
+  value,
+  sub,
+  highlight,
+}: {
+  label: string;
+  value: string;
+  sub?: string;
+  highlight?: boolean;
+}) {
+  return (
+    <div
+      className={`rounded-lg border p-3 ${
+        highlight
+          ? "border-amber-500/40 bg-amber-500/5"
+          : "border-slate-800 bg-slate-900/40"
+      }`}
+    >
+      <div className="text-[10px] uppercase tracking-widest text-slate-500">
+        {label}
+      </div>
+      <div className="mt-1 font-mono text-lg font-semibold tabular-nums text-white">
+        {value}
+      </div>
+      {sub ? <div className="text-xs text-slate-400">{sub}</div> : null}
     </div>
   );
 }

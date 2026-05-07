@@ -96,6 +96,13 @@ export {
 } from "./attribution.js";
 
 export {
+  computeBudgetForecast,
+  checkBudgetAlert,
+  type BudgetForecast,
+  type BudgetAlert,
+} from "./budget.js";
+
+export {
   computeCacheRate,
   type CacheRateResult,
 } from "./cache-rate.js";

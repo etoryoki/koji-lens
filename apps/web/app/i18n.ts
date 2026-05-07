@@ -71,6 +71,20 @@ const ja: Record<string, string> = {
   "trend.cache_hit_label": "cache%",
   "trend.p95_label": "p95",
   "trend.sessions_label": "セッション",
+  "budget.section_title": "予算と月末予測",
+  "budget.budget_label": "月予算",
+  "budget.current_label": "今月の累計",
+  "budget.forecast_label": "月末予測",
+  "budget.utilization_label": "使用率",
+  "budget.days_elapsed": "{n} / {total} 日経過",
+  "budget.no_budget_set": "予算未設定",
+  "budget.set_budget_hint": "URL に ?budget=200 を追加すると予算管理が有効になります（例: $200 を月予算として設定）",
+  "budget.alert_section_pro": "予算アラート",
+  "budget.alert_locked_title": "Pro 機能: 予算アラート通知",
+  "budget.alert_locked_body":
+    "月末予測が予算 80% (warning) / 100% (critical) 到達時に通知。Slack / メール送信は Phase A 完成後の Resend 統合で実装、dev mode では UI 表示のみ。",
+  "budget.alert_severity_critical": "critical",
+  "budget.alert_severity_warning": "warning",
 };
 
 const en: Record<string, string> = {
@@ -129,6 +143,21 @@ const en: Record<string, string> = {
   "trend.cache_hit_label": "cache%",
   "trend.p95_label": "p95",
   "trend.sessions_label": "sessions",
+  "budget.section_title": "Budget & month-end forecast",
+  "budget.budget_label": "Monthly budget",
+  "budget.current_label": "Month-to-date",
+  "budget.forecast_label": "Forecast",
+  "budget.utilization_label": "Utilization",
+  "budget.days_elapsed": "Day {n} of {total}",
+  "budget.no_budget_set": "No budget set",
+  "budget.set_budget_hint":
+    "Add ?budget=200 to the URL to enable budget tracking (e.g., $200 as a monthly budget).",
+  "budget.alert_section_pro": "Budget alerts",
+  "budget.alert_locked_title": "Pro feature: Budget alert notifications",
+  "budget.alert_locked_body":
+    "Notifies when forecast hits 80% (warning) or 100% (critical) of budget. Slack / email delivery via Resend after Phase A completion; dev mode shows UI only.",
+  "budget.alert_severity_critical": "critical",
+  "budget.alert_severity_warning": "warning",
 };
 
 const dict: Record<Lang, Record<string, string>> = { ja, en };
