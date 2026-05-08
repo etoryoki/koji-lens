@@ -141,6 +141,27 @@ The cache signal shows this month's prompt-cache hit rate (cache read / (cache r
 
 **Mode selection guide**: `minimal` when you run alongside another statusline (e.g. ccusage) and want the smallest possible footprint / `normal` for standalone use / `detailed` when statusline is your only spend dashboard.
 
+#### Optional: koji-buddy (🍙)
+
+Append a small fermentation companion to the right of the signals. Opt-in via `--buddy`, with optional sayings via `--buddy-speech`.
+
+```bash
+koji-lens statusline --mode minimal --buddy                    # 💚 💎 🍙·            (decoration only)
+koji-lens statusline --mode minimal --buddy --buddy-speech     # 💚 💎 🍙· < ぽつぽつ…?  (with saying)
+```
+
+**Lv evolution by total session count** (~3 years to Max for heavy users):
+
+| Lv | Decoration | Threshold | Lv | Decoration | Threshold |
+|---|---|---|---|---|---|
+| 1 | `🍙·` | < 30 | 6 | `🍙★★★` | 3,000 |
+| 2 | `🍙+` | 30 | 7 | `🍙❀` | 10,000 |
+| 3 | `🍙✦` | 100 | 8 | `🍙✿` | 30,000 |
+| 4 | `🍙★` | 300 | 9 | `🍙❋` | 60,000 |
+| 5 | `🍙★★` | 1,000 | 10 | `🍙❀❀` | 100,000 (Max) |
+
+Saying state (sick / overfed / healthy / resting / awaiting) is computed from cost trend + agent state. 50 sayings total (5 states × 10 levels), inspired by Japanese fermentation philosophy. Persist with `KOJI_LENS_BUDDY=1` env var.
+
 #### Optional: agent state icon (⚡ / 💤 / 🛑)
 
 If you write Claude Code's current state to `~/.koji-lens/state.json` from hooks, koji-lens appends an icon: ⚡ running / 💤 idle / 🛑 awaiting approval. The icon disappears automatically after 60 seconds of staleness (so a crashed session doesn't leave a permanent ⚡).
