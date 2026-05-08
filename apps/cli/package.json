@@ -1,6 +1,6 @@
 {
   "name": "@kojihq/lens",
-  "version": "0.1.0-beta.5",
+  "version": "0.1.0-beta.6",
   "type": "module",
   "description": "Claude Code local usage analyzer CLI — koji-lens",
   "license": "MIT",
@@ -43,11 +43,12 @@
     "dev": "tsc -p tsconfig.json --watch",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "start": "node ./dist/index.js",
-    "pack:dry": "npm pack --dry-run"
+    "pack:dry": "npm pack --dry-run",
+    "prepublishOnly": "pnpm build"
   },
   "dependencies": {
-    "@kojihq/core": "workspace:^0.1.0-beta.5",
-    "@kojihq/core-sqlite": "workspace:^0.1.0-beta.5",
+    "@kojihq/core": "workspace:^0.1.0-beta.6",
+    "@kojihq/core-sqlite": "workspace:^0.1.0-beta.6",
     "commander": "^13.0.0"
   },
   "devDependencies": {

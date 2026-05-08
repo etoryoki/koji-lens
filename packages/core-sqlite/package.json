@@ -1,6 +1,6 @@
 {
   "name": "@kojihq/core-sqlite",
-  "version": "0.1.0-beta.5",
+  "version": "0.1.0-beta.6",
   "type": "module",
   "description": "SQLite cache adapter for @kojihq/core (CLI use only, native dep)",
   "license": "MIT",
@@ -39,7 +39,8 @@
     "build": "tsc -p tsconfig.json",
     "dev": "tsc -p tsconfig.json --watch",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "prepublishOnly": "pnpm build"
   },
   "dependencies": {
     "@kojihq/core": "workspace:*",

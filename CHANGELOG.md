@@ -4,6 +4,20 @@ All notable changes to this project are documented in this file.
 
 For detailed release notes, see [GitHub Releases](https://github.com/etoryoki/koji-lens/releases).
 
+## [0.1.0-beta.6] — 2026-05-08
+
+### Fixed
+
+- **buddy position not actually applied in `beta.5` (build hook missing)**: The `c19f087` commit changed `renderBuddyPrefix` → `renderBuddySuffix` and reordered concatenation to put buddy at the tail of statusline, but `pnpm publish` doesn't run `prepublish` / `prepublishOnly` hooks (no script defined in `packages/core/package.json` or `apps/cli/package.json`), so the published `dist/` was the old prefix-position build. `beta.6` fixes this with a fresh build before publish. Memory `feedback_inherited_factual_error_in_documents.md` case 8 candidate ("implementation completion vs build completion vs publish completion vs user-reachability completion" 5-stage decomposition).
+
+### Changed
+
+- **buddy speech format**: `🍙+ "順調…"` → `🍙+ <順調…` (open-bracket style for speech-bubble feel, owner request 2026-05-08). Removes double-quotes for cleaner inline display in statusline.
+
+### Internal
+
+- **`prepublishOnly` hook added to all 4 publishable packages** (`@kojihq/lens`, `@kojihq/core`, `@kojihq/core-sqlite`, `@kojihq/core-pg`): `"prepublishOnly": "pnpm build"` ensures `pnpm publish` always runs a fresh build before publishing, preventing the `beta.5` recurrence (where `c19f087` source change was not reflected in the published `dist/`). 5-stage completion concept now structurally enforced: 1) design → 2) implementation → 3) **build** → 4) publish → 5) user-reachability.
+
 ## [0.1.0-beta.5] — 2026-05-08
 
 ### Fixed
