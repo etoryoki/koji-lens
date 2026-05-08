@@ -4,6 +4,50 @@ All notable changes to this project are documented in this file.
 
 For detailed release notes, see [GitHub Releases](https://github.com/etoryoki/koji-lens/releases).
 
+## [0.1.0-beta.5] — 2026-05-08
+
+### Fixed
+
+- **statusline runtime error** (`be1db13`): `_AssertSqliteRowConvertible is not defined` runtime error caused empty `koji-lens statusline` output and PowerShell wrapper fallback `⚪ koji-lens err` mojibake on Windows cp932. Removed `export type _Assert*` aliases from `packages/core-sqlite/src/schema.ts` + `packages/core-pg/src/schema.ts`; function signature `function rowToCachedAggregate(row: SessionRow): CachedSessionAggregate` ensures type safety.
+- **Language switch ineffective in `accept-language=ja` environment** (`be61c39`): `langSwitchHref` now always adds `lang=` parameter explicitly so URL-based language switching works regardless of browser locale.
+
+### Added — CLI
+
+- **🍙 koji-buddy Phase α** (`678280c`): Companion character in statusline with 25 production-quality lines (5 states × 5 levels) for the koji character (麹 = Japanese fermentation starter, Ferment Small symbol).
+  - Decorative icons: `🍙·` (Lv1) / `🍙+` (Lv2) / `🍙✦` (Lv3) / `🍙★` (Lv4) / `🍙★★` (Lv5), all fixed 3 cells (no jitter on `refreshInterval=1`).
+  - Position: appended to statusline tail — `⚡ 💚 💎 🍙+` (decoration) / `⚡ 💚 💎 🍙+ "順調…"` (with speech).
+  - Flags: `--buddy` (enable) / `--buddy-speech` (allow random speech every 2h) / `--buddy-type <koji>` / `--no-buddy`.
+  - Env: `KOJI_LENS_BUDDY=1` for persistence.
+  - 17 tests pass.
+- **`koji-lens compare`**: Savings dashboard Step 1-3 with `compare.ts` + `insights.ts` core logic, period delta + rule-based insights output (45 tests pass).
+- **`koji-lens trend --with-attribution`** (`60ffc22`): Pro feature gate with vendor/user attribution for trend regressions.
+- **`koji-lens budget`** (`6667041`): Budget tracking with `--budget` (required) + `--with-alerts` (Pro flag), CLI header + table format.
+- **`koji-lens export`** (`2b1d4e2`): Data ownership with CSV / JSON formats + `--since` filter + stdout / file output (88 sessions verified).
+- **Multi-project budget** (`abe7803`, Pro): `KojiLensConfig.budgets?: Record<string, number>` + 5-tier resolution (URL > env > `config.budgets[<project>]` > `config.budgets._default` > `config.budgetUsd`) + `budget --project <key>` / `--list` options.
+
+### Added — Web Dashboard
+
+- **Hourly cost heatmap** (`a5228f1`): 24 (hour) × 7 (day) HTML grid with CSS opacity intensity (lightweight, no Recharts).
+- **Budget trend chart** (`0e10ed4`): `BudgetTrendChart` with cumulative blue line + linear forecast (emerald dashed) + budget reference line (amber horizontal). `computeDailyBudgetTrend` + `DailyBudgetPoint` type added to `packages/core/src/budget.ts`.
+- **Weekly trend chart** (`6667041`): `WeeklyTrendChart` dual-axis line chart (cache% blue left axis + p95 latency amber right axis), integrated above `TrendTable` in Pro Trend section.
+
+### Added — Internal
+
+- **drizzle schema Step 1-3** (`53660d3`): `packages/core-pg/` new package (Postgres cache adapter for Pro cloud sync via Neon), pgTable schema with 21 columns, `aggregateToRow` / `rowToCachedAggregate` helpers, `@electric-sql/pglite` devDependency for roundtrip testing.
+- **drizzle Step 4 pglite roundtrip test** (`19a97e8`): Caught and fixed PostgreSQL INTEGER 32-bit overflow Critical issue; `mtime_ms` / `cached_at` changed to `bigint` mode `"number"`. New tests: 5 pass.
+- **300-session fixture benchmark** (`aad2a50`): 100 sessions = `upsert 48ms` / `list 3ms`; 300 sessions = `upsert 156ms` / `list 2ms`; `isCacheFresh × 300` = `9ms` total.
+- **`insights.ts` policy change date constants** (`5b9ba14`): `POLICY_CHANGE_DATES = ["2026-05-06"]` + `rangeCrossesPolicyChange` helper; warning message prepended outside `MAX_INSIGHTS` slot when comparison period crosses policy change date.
+- **Budget config persistence** (`ee72486`): `config.json` + `KojiLensConfig.budgetUsd` field with 3-tier resolution (URL > env > config).
+- **Turbopack SSR ReferenceError fix**: Changed `declare const _assertX + void` to `export type _AssertX` type aliases.
+
+### Changed
+
+- **better-sqlite3 dependency separation finalized**: `packages/core-sqlite/` separates SQLite-native code from `@kojihq/core`, unblocking Pro Web dashboard (`lens.kojihq.com/app`) to use `@kojihq/core-pg` (Neon) without native module conflicts on Vercel deployment.
+
+### npm publish structure fix
+
+- **`latest` dist-tag** updated from `0.1.0-beta.2` (4/22 bug-fix release) to `0.1.0-beta.5`. Previously `pnpm publish --tag beta` only updated the `beta` dist-tag, leaving `latest` stale at `beta.2` for ~16 days. Users running `npm install @kojihq/lens` (without `@beta` suffix) were receiving the bug-fix-only `beta.2` build instead of the latest pre-release. From `beta.5` onwards, both `latest` and `beta` dist-tags will be updated together until `1.0.0` GA.
+
 ## [0.1.0-beta.4] — 2026-05-02
 
 ### Added — CLI
