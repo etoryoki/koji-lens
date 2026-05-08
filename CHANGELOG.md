@@ -4,6 +4,21 @@ All notable changes to this project are documented in this file.
 
 For detailed release notes, see [GitHub Releases](https://github.com/etoryoki/koji-lens/releases).
 
+## [0.1.0-beta.8] — 2026-05-08
+
+### Fixed
+
+- **`--combined` flag hang in Claude Code session** (CRITICAL): `koji-lens statusline --combined` froze the Claude Code statusline because the parent process didn't exit after writing output. Root cause: `process.stdin` event listeners and the `ccusage` child process were left in the Node.js event loop, so the process never reached natural exit. Fixed in three layers:
+  1. `readStdinIfAvailable`: explicit `removeAllListeners` + `pause()` + `unref()` after stdin read completes (or 500ms timeout)
+  2. `runCcusageStatusline`: `child.unref()` after spawn so the parent doesn't wait on the child explicitly
+  3. `statuslineCommand`: explicit `process.exit(0)` after stdout write when `--combined` is active (drain + setImmediate fallback)
+
+  Memory `feedback_inherited_factual_error_in_documents.md` case 8 confirmed: "implementation completion + test pass + typecheck pass" ≠ "real-environment completion (Claude Code session, stdin pipe, 1-second refreshInterval)". Unit-level verification passed in beta.7 but the actual Claude Code statusline froze. Tests pass in isolation because `renderStatusline` is pure; the bug lived in the I/O wiring around it.
+
+### Verification (beta.8 only)
+
+The fix is exit-correctness. After this release, owners should re-test `--combined` in a real Claude Code session (`refreshInterval: 1`, settings.json `command: "koji-lens statusline --combined --buddy --buddy-speech"`) to confirm the statusline updates every second without freezing.
+
 ## [0.1.0-beta.7] — 2026-05-08
 
 Owner request 2026-05-08 (post-beta.6): "set-state.ps1 isn't distributed and is PowerShell-only" + "can --buddy-speech be English-aware?" + "simplify ccusage co-display". This release addresses all three with built-in CLI commands, removing the need for OS-specific scripts.

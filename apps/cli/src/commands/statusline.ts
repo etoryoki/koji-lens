@@ -43,6 +43,7 @@ function parseBuddyLocale(input: string | undefined): BuddyLocale {
 
 // ccusage statusline output 取得 (--combined フラグ用、cross-platform、graceful fallback)
 // ccusage 未インストール / 失敗時は null 返却 = koji-lens 出力のみ表示
+// v0.7.1 (2026-05-08) hang fix: child unref + listener 完全解除で event loop から離脱、kill 確実化
 async function runCcusageStatusline(stdinBuf: string): Promise<string | null> {
   return new Promise<string | null>((resolve) => {
     let resolved = false;
@@ -56,6 +57,8 @@ async function runCcusageStatusline(stdinBuf: string): Promise<string | null> {
         stdio: ["pipe", "pipe", "ignore"],
         shell: process.platform === "win32",
       });
+      // child を event loop から外す = 親 process が child を待たずに exit 可能
+      child.unref?.();
       let buf = "";
       child.stdout?.on("data", (d: Buffer) => {
         buf += d.toString();
@@ -65,6 +68,7 @@ async function runCcusageStatusline(stdinBuf: string): Promise<string | null> {
       });
       child.on("error", () => finish(null)); // ccusage not installed
       // 1.5 秒タイムアウト (statusline は high-frequency = ハング不可、即 fallback)
+      // Windows では shell 経由起動で child.kill() が cmd.exe のみ kill する可能性 → finish 後の listener 解除で event loop 離脱
       setTimeout(() => {
         try {
           child.kill();
@@ -73,8 +77,12 @@ async function runCcusageStatusline(stdinBuf: string): Promise<string | null> {
         }
         finish(null);
       }, 1500);
-      child.stdin?.write(stdinBuf);
-      child.stdin?.end();
+      try {
+        child.stdin?.write(stdinBuf);
+        child.stdin?.end();
+      } catch {
+        finish(null);
+      }
     } catch {
       finish(null);
     }
@@ -87,14 +95,31 @@ async function readStdinIfAvailable(): Promise<string> {
   if (process.stdin.isTTY) return "";
   return new Promise<string>((resolve) => {
     let buf = "";
+    let resolved = false;
+    const done = (val: string): void => {
+      if (resolved) return;
+      resolved = true;
+      // v0.7.1 (2026-05-08) hang fix: listener 完全解除 + stdin pause + unref で event loop から離脱
+      // これがないと Claude Code 1 秒 refresh 経由で statusline 起動時、親 process が exit せず固まる
+      try {
+        process.stdin.removeAllListeners("data");
+        process.stdin.removeAllListeners("end");
+        process.stdin.removeAllListeners("error");
+        process.stdin.pause();
+        process.stdin.unref?.();
+      } catch {
+        /* ignore */
+      }
+      resolve(val);
+    };
     process.stdin.setEncoding("utf8");
     process.stdin.on("data", (chunk: string) => {
       buf += chunk;
     });
-    process.stdin.on("end", () => resolve(buf));
-    process.stdin.on("error", () => resolve(""));
+    process.stdin.on("end", () => done(buf));
+    process.stdin.on("error", () => done(""));
     // 500ms タイムアウト (Claude Code 経由の場合は即時データ受信、TTY 誤判定時の fallback)
-    setTimeout(() => resolve(buf), 500);
+    setTimeout(() => done(buf), 500);
   });
 }
 
@@ -275,4 +300,12 @@ export async function statuslineCommand(
     : kojiOutput;
 
   process.stdout.write(finalOutput + "\n");
+
+  // v0.7.1 (2026-05-08) hang fix: --combined で stdin / spawn の event loop が残ると process exit せず Claude Code 側が固まる
+  // 明示的に exit して確実に process 終了 (stdout flush 後)
+  if (combinedEnabled) {
+    process.stdout.once("drain", () => process.exit(0));
+    // drain が即時起こる場合のフォールバック (next tick で exit)
+    setImmediate(() => process.exit(0));
+  }
 }
