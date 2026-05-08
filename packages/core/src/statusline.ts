@@ -70,7 +70,7 @@ function renderBuddySuffix(
   const decoration = renderBuddyDecoration(state, level, type);
   if (buddy.speech) {
     const saying = renderBuddySaying(state, level, type);
-    return `${decoration} <${saying}`;
+    return `${decoration} < ${saying}`;
   }
   return decoration;
 }
