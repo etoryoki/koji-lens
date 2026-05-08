@@ -5,6 +5,7 @@ import {
   computeBuddyState,
   renderBuddyDecoration,
   renderBuddySaying,
+  type BuddyLocale,
   type BuddyType,
 } from "./buddy.js";
 import type { AgentState } from "./state.js";
@@ -16,6 +17,7 @@ export interface RenderOptions {
     enabled: boolean;
     type?: BuddyType;
     speech?: boolean;
+    locale?: BuddyLocale;
     agentState?: AgentState | null;
   };
 }
@@ -65,11 +67,12 @@ function renderBuddySuffix(
   const buddy = options.buddy;
   if (!buddy || !buddy.enabled) return "";
   const type: BuddyType = buddy.type ?? "koji";
+  const locale: BuddyLocale = buddy.locale ?? "ja";
   const state = computeBuddyState(result, buddy.agentState ?? null);
   const level = computeBuddyLevel(result.after.sessionsCount);
   const decoration = renderBuddyDecoration(state, level, type);
   if (buddy.speech) {
-    const saying = renderBuddySaying(state, level, type);
+    const saying = renderBuddySaying(state, level, type, locale);
     return `${decoration} < ${saying}`;
   }
   return decoration;

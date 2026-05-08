@@ -138,6 +138,7 @@ export {
   type BuddyType,
   type BuddyState,
   type BuddyLevel,
+  type BuddyLocale,
   type BuddyRender,
 } from "./buddy.js";
 

@@ -8,13 +8,16 @@ import {
   readAgentState,
   renderStatusline,
   analyzeDirectory,
+  type BuddyLocale,
   type BuddyType,
   type SessionAggregate,
   type StatuslineMode,
 } from "@kojihq/core";
 import { analyzeDirectoryCached, openCacheDb } from "@kojihq/core-sqlite";
+import { spawn } from "node:child_process";
 
 const VALID_BUDDY_TYPES: ReadonlyArray<BuddyType> = ["koji", "owl", "cat"];
+const VALID_BUDDY_LOCALES: ReadonlyArray<BuddyLocale> = ["ja", "en"];
 
 function parseBuddyType(input: string | undefined): BuddyType {
   const candidate = input ?? "koji";
@@ -24,6 +27,75 @@ function parseBuddyType(input: string | undefined): BuddyType {
   throw new Error(
     `Invalid --buddy-type: "${input}". Expected: ${VALID_BUDDY_TYPES.join(", ")}`,
   );
+}
+
+function parseBuddyLocale(input: string | undefined): BuddyLocale {
+  // env override: KOJI_LENS_BUDDY_LOCALE が設定されていればそちらを優先
+  const fromEnv = process.env.KOJI_LENS_BUDDY_LOCALE;
+  const candidate = input ?? fromEnv ?? "ja";
+  if ((VALID_BUDDY_LOCALES as ReadonlyArray<string>).includes(candidate)) {
+    return candidate as BuddyLocale;
+  }
+  throw new Error(
+    `Invalid --buddy-locale: "${candidate}". Expected: ${VALID_BUDDY_LOCALES.join(", ")}`,
+  );
+}
+
+// ccusage statusline output 取得 (--combined フラグ用、cross-platform、graceful fallback)
+// ccusage 未インストール / 失敗時は null 返却 = koji-lens 出力のみ表示
+async function runCcusageStatusline(stdinBuf: string): Promise<string | null> {
+  return new Promise<string | null>((resolve) => {
+    let resolved = false;
+    const finish = (val: string | null): void => {
+      if (resolved) return;
+      resolved = true;
+      resolve(val);
+    };
+    try {
+      const child = spawn("ccusage", ["statusline"], {
+        stdio: ["pipe", "pipe", "ignore"],
+        shell: process.platform === "win32",
+      });
+      let buf = "";
+      child.stdout?.on("data", (d: Buffer) => {
+        buf += d.toString();
+      });
+      child.on("close", (code: number | null) => {
+        finish(code === 0 ? buf.trim() : null);
+      });
+      child.on("error", () => finish(null)); // ccusage not installed
+      // 1.5 秒タイムアウト (statusline は high-frequency = ハング不可、即 fallback)
+      setTimeout(() => {
+        try {
+          child.kill();
+        } catch {
+          /* ignore */
+        }
+        finish(null);
+      }, 1500);
+      child.stdin?.write(stdinBuf);
+      child.stdin?.end();
+    } catch {
+      finish(null);
+    }
+  });
+}
+
+async function readStdinIfAvailable(): Promise<string> {
+  // Claude Code は statusline コマンドに JSON context を stdin で渡す
+  // TTY 環境 (手動実行時) は stdin なし = 空文字列で OK
+  if (process.stdin.isTTY) return "";
+  return new Promise<string>((resolve) => {
+    let buf = "";
+    process.stdin.setEncoding("utf8");
+    process.stdin.on("data", (chunk: string) => {
+      buf += chunk;
+    });
+    process.stdin.on("end", () => resolve(buf));
+    process.stdin.on("error", () => resolve(""));
+    // 500ms タイムアウト (Claude Code 経由の場合は即時データ受信、TTY 誤判定時の fallback)
+    setTimeout(() => resolve(buf), 500);
+  });
 }
 
 export interface StatuslineOptions {
@@ -37,6 +109,8 @@ export interface StatuslineOptions {
   buddy?: boolean;
   buddySpeech?: boolean;
   buddyType?: string;
+  buddyLocale?: string;
+  combined?: boolean;
 }
 
 const VALID_MODES: ReadonlyArray<StatuslineMode> = [
@@ -113,6 +187,15 @@ export async function statuslineCommand(
   const buddyEnabled =
     opts.buddy === true || process.env.KOJI_LENS_BUDDY === "1";
   const buddyType = parseBuddyType(opts.buddyType);
+  const buddyLocale = parseBuddyLocale(opts.buddyLocale);
+
+  // v0.7 (2026-05-08) --combined: ccusage 同時表示の簡易化
+  // ccusage 未インストール時は graceful fallback で koji-lens のみ表示、cross-platform 対応
+  const combinedEnabled = opts.combined === true;
+  const stdinBuf = combinedEnabled ? await readStdinIfAvailable() : "";
+  const ccusagePrefix = combinedEnabled
+    ? await runCcusageStatusline(stdinBuf)
+    : null;
 
   if (opts.format === "json") {
     process.stdout.write(
@@ -143,10 +226,12 @@ export async function statuslineCommand(
                   enabled: true,
                   type: buddyType,
                   speech: opts.buddySpeech === true,
+                  locale: buddyLocale,
                   agentState: stateRead.state,
                 }
               : undefined,
           }),
+          ccusagePrefix: combinedEnabled ? ccusagePrefix : undefined,
         },
         null,
         2,
@@ -155,18 +240,24 @@ export async function statuslineCommand(
     return;
   }
 
-  process.stdout.write(
-    renderStatusline(result, mode, {
-      stateIcon: stateRead.icon,
-      cacheRate,
-      buddy: buddyEnabled
-        ? {
-            enabled: true,
-            type: buddyType,
-            speech: opts.buddySpeech === true,
-            agentState: stateRead.state,
-          }
-        : undefined,
-    }) + "\n",
-  );
+  const kojiOutput = renderStatusline(result, mode, {
+    stateIcon: stateRead.icon,
+    cacheRate,
+    buddy: buddyEnabled
+      ? {
+          enabled: true,
+          type: buddyType,
+          speech: opts.buddySpeech === true,
+          locale: buddyLocale,
+          agentState: stateRead.state,
+        }
+      : undefined,
+  });
+
+  // v0.7 --combined: ccusage 出力を前置、graceful fallback (ccusage 未インストール時は koji-lens のみ)
+  const finalOutput = ccusagePrefix
+    ? `${ccusagePrefix}  ${kojiOutput}`
+    : kojiOutput;
+
+  process.stdout.write(finalOutput + "\n");
 }

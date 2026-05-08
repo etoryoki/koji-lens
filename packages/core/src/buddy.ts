@@ -20,6 +20,9 @@ const DECORATIONS: Record<BuddyLevel, string> = {
 // 起案 v0.4 §8 種類 (Phase α は麹のみ、フクロウ + 猫は Phase β)
 export type BuddyType = "koji" | "owl" | "cat";
 
+// v0.7 (2026-05-08) ロケール (default ja、HN 英語ユーザーは --buddy-locale en で切替)
+export type BuddyLocale = "ja" | "en";
+
 const BUDDY_ICONS: Record<BuddyType, string> = {
   koji: "🍙",
   owl: "🦉",
@@ -39,8 +42,9 @@ export type BuddyLevel = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10;
 
 // 起案 v0.4 §9 麹 25 セリフ完全品質版 (白川 v0.1 採用 + CEO 採用)
 // v0.6 (2026-05-08): Lv6-10 セリフ追加で 50 セリフ化、CEO 単独起案
-// (白川 Designer 諮問発注予定、結果反映で v1.0 化)
-const SAYINGS_KOJI: Record<BuddyState, Record<BuddyLevel, string>> = {
+// v0.7 (2026-05-08): ja → ja + en 二言語化、SAYINGS_KOJI_JA に rename + SAYINGS_KOJI_EN 新規
+// (白川 Designer Critical 1+2 採用済 + Warning + Nit + EN セリフ peer review は v0.7.1 反映)
+const SAYINGS_KOJI_JA: Record<BuddyState, Record<BuddyLevel, string>> = {
   healthy: {
     1: "いい発酵中…",
     2: "順調…",
@@ -103,6 +107,72 @@ const SAYINGS_KOJI: Record<BuddyState, Record<BuddyLevel, string>> = {
   },
 };
 
+// v0.7 (2026-05-08) 麹 50 セリフ英訳版 (CEO 起案、白川 Designer EN peer review 発注予定)
+// 翻訳指針: 直訳ではなく koji 発酵モチーフ + Ferment Small 哲学を保持
+// Lv5 sick + Lv10 healthy のフラグシップは品質基準線維持
+const SAYINGS_KOJI_EN: Record<BuddyState, Record<BuddyLevel, string>> = {
+  healthy: {
+    1: "Fermenting nicely...",
+    2: "Going well...",
+    3: "Flavor's coming through...",
+    4: "Depth is showing...",
+    5: "Carefully nurtured... slow is fine...",
+    6: "Aging beautifully...",
+    7: "Layers are forming...",
+    8: "Mastery realm...",
+    9: "Aged-sake quality...",
+    10: "Simply, here...",
+  },
+  overfed: {
+    1: "A bit too ripe?",
+    2: "Maybe overspending...",
+    3: "Pace adjustment needed...",
+    4: "Acidity showing... careful...",
+    5: "Decay and depth are razor-thin... careful...",
+    6: "Over-ripening's edge...",
+    7: "Oxidation in progress...",
+    8: "Decay starting to peek...",
+    9: "Footsteps of decay...",
+    10: "Peak excess... you can return from here...",
+  },
+  resting: {
+    1: "Floating... zzz",
+    2: "Resting...",
+    3: "Quietly fermenting...",
+    4: "Sleep is work too...",
+    5: "Resting is part of fermentation... too...",
+    6: "Deep slumber...",
+    7: "State of nothingness...",
+    8: "Zen state...",
+    9: "Eternal silence...",
+    10: "Becoming nothing...",
+  },
+  awaiting: {
+    1: "Drip... drop...?",
+    2: "Standing by...",
+    3: "Your call...",
+    4: "Ready to go...",
+    5: "I can wait... fermentation can't be rushed...",
+    6: "Quietly waiting...",
+    7: "Awaiting your decision...",
+    8: "Watching your move...",
+    9: "Resolved to wait for all...",
+    10: "Accepting everything...",
+  },
+  sick: {
+    1: "Decay warning...",
+    2: "Danger signal...",
+    3: "Action needed...",
+    4: "Decay in progress...",
+    5: "Decay has begun... but rebirth is possible...",
+    6: "Anomaly detected...",
+    7: "Severe anomaly...",
+    8: "Critical state...",
+    9: "Final stage of decay...",
+    10: "Ultimate trial... cross it, and rebirth is possible...",
+  },
+};
+
 // 累計セッション数 → Lv 換算 (v0.6 で Lv1-10 拡張、3 年級で Max 想定)
 // オーナー指示 2026-05-08: 「数年使っても max に行かない」「3 年で Max」
 // 想定: ヘビーユーザー (88 sess/日) で 3 年 ~= 100,000 sessions = Lv10
@@ -148,11 +218,20 @@ export function renderBuddy(
   state: BuddyState,
   level: BuddyLevel,
   type: BuddyType = "koji",
+  locale: BuddyLocale = "ja",
 ): BuddyRender {
   const icon = BUDDY_ICONS[type];
   const decoration = `${icon}${DECORATIONS[level]}`;
   // Phase α は麹のみ実装、フクロウ + 猫は "Coming soon" フォールバック
-  const saying = type === "koji" ? SAYINGS_KOJI[state][level] : "(Coming soon)";
+  // v0.7 (2026-05-08) ja/en 二言語対応、locale 引数で切替 (default ja)
+  let saying: string;
+  if (type !== "koji") {
+    saying = "(Coming soon)";
+  } else {
+    saying = locale === "en"
+      ? SAYINGS_KOJI_EN[state][level]
+      : SAYINGS_KOJI_JA[state][level];
+  }
   return { decoration, saying, level, state };
 }
 
@@ -169,6 +248,7 @@ export function renderBuddySaying(
   state: BuddyState,
   level: BuddyLevel,
   type: BuddyType = "koji",
+  locale: BuddyLocale = "ja",
 ): string {
-  return renderBuddy(state, level, type).saying;
+  return renderBuddy(state, level, type, locale).saying;
 }

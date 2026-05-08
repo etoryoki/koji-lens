@@ -12,6 +12,7 @@ import { statuslineCommand } from "./commands/statusline.js";
 import { trendCommand } from "./commands/trend.js";
 import { budgetCommand } from "./commands/budget.js";
 import { exportCommand } from "./commands/export.js";
+import { hookCommand } from "./commands/hook.js";
 
 const pkgPath = fileURLToPath(new URL("../package.json", import.meta.url));
 const pkg = JSON.parse(readFileSync(pkgPath, "utf8")) as { version: string };
@@ -220,9 +221,31 @@ program
     "Buddy character: koji (default, Phase α) | owl (Phase β) | cat (Phase β)",
     "koji",
   )
+  .option(
+    "--buddy-locale <locale>",
+    "Buddy speech locale: ja (default) | en. Persistent: set KOJI_LENS_BUDDY_LOCALE in env",
+  )
+  .option(
+    "--combined",
+    "Concatenate ccusage statusline output before koji-lens output (cross-platform alternative to PowerShell wrapper). Falls back to koji-lens-only if ccusage is not installed.",
+  )
   .action(async (opts) => {
     try {
       await statuslineCommand(opts);
+    } catch (err) {
+      console.error(err instanceof Error ? err.message : err);
+      process.exit(1);
+    }
+  });
+
+program
+  .command("hook <state>")
+  .description(
+    "Update agent state for statusline icon (use in Claude Code hooks). Cross-platform replacement for set-state.ps1 / set-state.sh.",
+  )
+  .action(async (state: string) => {
+    try {
+      await hookCommand(state);
     } catch (err) {
       console.error(err instanceof Error ? err.message : err);
       process.exit(1);

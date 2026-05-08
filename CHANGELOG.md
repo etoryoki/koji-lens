@@ -4,6 +4,87 @@ All notable changes to this project are documented in this file.
 
 For detailed release notes, see [GitHub Releases](https://github.com/etoryoki/koji-lens/releases).
 
+## [0.1.0-beta.7] — 2026-05-08
+
+Owner request 2026-05-08 (post-beta.6): "set-state.ps1 isn't distributed and is PowerShell-only" + "can --buddy-speech be English-aware?" + "simplify ccusage co-display". This release addresses all three with built-in CLI commands, removing the need for OS-specific scripts.
+
+### Added — `koji-lens hook <state>` (cross-platform replacement for set-state.ps1)
+
+New built-in command that writes `~/.koji-lens/state.json` for the agent state icon (⚡/💤/🛑). Use it directly in Claude Code hooks — no per-OS shell script needed:
+
+```json
+{
+  "hooks": {
+    "UserPromptSubmit": [{ "hooks": [{ "type": "command", "command": "koji-lens hook thinking" }] }],
+    "PreToolUse":       [{ "matcher": "*", "hooks": [{ "type": "command", "command": "koji-lens hook running" }] }],
+    "PostToolUse":      [{ "matcher": "*", "hooks": [{ "type": "command", "command": "koji-lens hook thinking" }] }],
+    "Notification":     [{ "hooks": [{ "type": "command", "command": "koji-lens hook awaiting_approval" }] }],
+    "Stop":             [{ "hooks": [{ "type": "command", "command": "koji-lens hook idle" }] }]
+  }
+}
+```
+
+States: `thinking` | `running` | `idle` | `awaiting_approval`. Memory `feedback_inherited_factual_error_in_documents.md` case 8 ("user-reachability completion vs cross-platform completion") deferred follow-up.
+
+### Added — `--buddy-locale <ja|en>` (50 English sayings)
+
+50 new English sayings for the koji buddy (5 states × 10 levels), CEO-drafted, Shirakawa Designer EN peer review pending in v0.7.1. Default locale stays `ja` (brand integrity per memory `feedback_brand_product_hierarchy.md`: Koji = 麹 = company soul). English users opt-in:
+
+```bash
+koji-lens statusline --buddy --buddy-speech --buddy-locale en
+# 🍙· < Drip... drop...?
+
+# Or persist via env var
+export KOJI_LENS_BUDDY_LOCALE=en
+koji-lens statusline --buddy --buddy-speech
+```
+
+Lv5 sick flagship (EN): "Decay has begun... but rebirth is possible..." mirrors the JA Ferment Small symbol "分解が始まってます…でも、再生できます…".
+
+Lv10 healthy flagship (EN): "Simply, here..." mirrors the JA "ただ、在る…" silent-presence design (Shirakawa v0.6 Critical 1).
+
+### Added — `--combined` (built-in ccusage co-display)
+
+`koji-lens statusline --combined` spawns `ccusage statusline` internally and prepends its output, eliminating the need for a custom PowerShell wrapper. Cross-platform (Node.js `child_process.spawn` with `shell: true` on Windows). 1.5s timeout for high-frequency statusline rendering. Graceful fallback to koji-lens-only if ccusage is not installed or fails.
+
+```bash
+koji-lens statusline --mode minimal --combined --buddy --buddy-speech
+# 🤖 Sonnet | 💰 $0.23 | 🔥 $0.12/hr  💚 💎 🍙· < ぽつぽつ…?
+# (ccusage output)                       (koji-lens output)
+```
+
+Replaces the 5/02 `~/.koji-lens/statusline-combined.ps1` wrapper pattern. PowerShell wrapper still works (no breaking change), but the built-in flag is the recommended approach for new installs.
+
+### Recommended `~/.claude/settings.json` (replaces 5/02 PowerShell-based example)
+
+```json
+{
+  "statusLine": {
+    "type": "command",
+    "command": "koji-lens statusline --mode minimal --combined --buddy --buddy-speech",
+    "padding": 0,
+    "refreshInterval": 1
+  },
+  "hooks": {
+    "UserPromptSubmit": [{ "hooks": [{ "type": "command", "command": "koji-lens hook thinking" }] }],
+    "PreToolUse":       [{ "matcher": "*", "hooks": [{ "type": "command", "command": "koji-lens hook running" }] }],
+    "PostToolUse":      [{ "matcher": "*", "hooks": [{ "type": "command", "command": "koji-lens hook thinking" }] }],
+    "Notification":     [{ "hooks": [{ "type": "command", "command": "koji-lens hook awaiting_approval" }] }],
+    "Stop":             [{ "hooks": [{ "type": "command", "command": "koji-lens hook idle" }] }]
+  }
+}
+```
+
+PowerShell wrapper + `set-state.ps1` no longer needed. Cross-platform out of the box (Windows / macOS / Linux).
+
+### Internal
+
+- `BuddyLocale` type added to `@kojihq/core` exports
+- `renderBuddy` / `renderBuddySaying` accept optional `locale` parameter (default `ja`, no breaking change for existing callers)
+- `RenderOptions.buddy.locale` added for `renderStatusline` integration
+- `apps/cli/src/commands/hook.ts` new file (cross-platform state.json writer)
+- `apps/cli/src/commands/statusline.ts` adds `--combined` (ccusage spawn) + `--buddy-locale` plumbing
+
 ## [0.1.0-beta.6] — 2026-05-08
 
 ### Fixed
