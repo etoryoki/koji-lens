@@ -4,6 +4,41 @@ All notable changes to this project are documented in this file.
 
 For detailed release notes, see [GitHub Releases](https://github.com/etoryoki/koji-lens/releases).
 
+## [0.1.0-beta.7] — 2026-05-08
+
+### Changed
+
+- **buddy speech format**: Add space around `<` for visual readability — `🍙· <ぽつぽつ…?` → `🍙· < ぽつぽつ…?` (owner request 2026-05-08).
+
+### Added — koji-buddy Lv expansion (5 → 10, 3-year Max design)
+
+Owner request 2026-05-08: "Lv level should not max out even after years of use, ~3 years for Max". Previous design (Lv5 at 1,000 sessions) was reachable in ~12 days for heavy users.
+
+**New Lv thresholds** (`computeBuddyLevel`):
+
+| Lv | Decoration | Sessions threshold | Heavy user (88/day) | Light user (10/day) |
+|----|------------|---|---|---|
+| 1 | `🍙·` | < 30 | ~ 8 hours | ~ 3 days |
+| 2 | `🍙+` | 30 | ~ 1 day | ~ 1 month |
+| 3 | `🍙✦` | 100 | ~ 3 days | ~ 1.5 months |
+| 4 | `🍙★` | 300 | ~ 1 week | ~ 3 months |
+| 5 | `🍙★★` | 1,000 | ~ 12 days | ~ 1 year |
+| 6 (new) | `🍙★★★` | 3,000 | ~ 1 month | ~ 3 years |
+| 7 (new) | `🍙❀` | 10,000 | ~ 4 months | ~ 10 years |
+| 8 (new) | `🍙✿` | 30,000 | ~ 1 year | ~ 30 years |
+| 9 (new) | `🍙❋` | 60,000 | ~ 2 years | ~ 60 years |
+| 10 (new) | `🍙Φ` | 100,000 | **~ 3 years (Max)** | ~ 100 years |
+
+**New decorations** (Lv6-10): Triple star → florette → rotated florette → blackletter florette → Phi (麹発酵深化モチーフ + ASCII-leaning for cross-platform stability per fukamachi Warning 3).
+
+**New 25 sayings** (5 states × 5 new levels = 50 sayings total, was 25): CEO standalone draft (Shirakawa Designer consultation pending, will refine in v0.6.1 → v1.0).
+
+**Flagship Lv10 healthy saying** (Ferment Small symbol for the new max tier): "究極の発酵…これが koji-lens の真髄…"
+
+### Tests
+
+- 16 new tests added (Lv6-10 thresholds + Lv10 decoration + Lv10 flagship saying), buddy matrix coverage updated from 25 to 50 sayings.
+
 ## [0.1.0-beta.6] — 2026-05-08
 
 ### Fixed

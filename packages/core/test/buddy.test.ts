@@ -44,7 +44,7 @@ function makeResult(
   };
 }
 
-describe("computeBuddyLevel", () => {
+describe("computeBuddyLevel (v0.6 Lv1-10, 3-year Max design)", () => {
   it("Lv1 for 0-29 sessions", () => {
     expect(computeBuddyLevel(0)).toBe(1);
     expect(computeBuddyLevel(29)).toBe(1);
@@ -61,9 +61,29 @@ describe("computeBuddyLevel", () => {
     expect(computeBuddyLevel(300)).toBe(4);
     expect(computeBuddyLevel(999)).toBe(4);
   });
-  it("Lv5 for 1000+ sessions", () => {
+  it("Lv5 for 1000-2999 sessions", () => {
     expect(computeBuddyLevel(1000)).toBe(5);
-    expect(computeBuddyLevel(10000)).toBe(5);
+    expect(computeBuddyLevel(2999)).toBe(5);
+  });
+  it("Lv6 for 3000-9999 sessions", () => {
+    expect(computeBuddyLevel(3000)).toBe(6);
+    expect(computeBuddyLevel(9999)).toBe(6);
+  });
+  it("Lv7 for 10000-29999 sessions", () => {
+    expect(computeBuddyLevel(10000)).toBe(7);
+    expect(computeBuddyLevel(29999)).toBe(7);
+  });
+  it("Lv8 for 30000-59999 sessions", () => {
+    expect(computeBuddyLevel(30000)).toBe(8);
+    expect(computeBuddyLevel(59999)).toBe(8);
+  });
+  it("Lv9 for 60000-99999 sessions", () => {
+    expect(computeBuddyLevel(60000)).toBe(9);
+    expect(computeBuddyLevel(99999)).toBe(9);
+  });
+  it("Lv10 for 100000+ sessions (Max, ~3 years for heavy users)", () => {
+    expect(computeBuddyLevel(100000)).toBe(10);
+    expect(computeBuddyLevel(1000000)).toBe(10);
   });
 });
 
@@ -99,7 +119,7 @@ describe("computeBuddyState", () => {
   });
 });
 
-describe("renderBuddy (koji 25 sayings)", () => {
+describe("renderBuddy (koji 50 sayings, Lv1-10 v0.6)", () => {
   it("returns decoration with rice ball icon", () => {
     const r = renderBuddy("healthy", 1, "koji");
     expect(r.decoration).toBe("🍙·");
@@ -110,9 +130,14 @@ describe("renderBuddy (koji 25 sayings)", () => {
     expect(r.decoration).toBe("🍙★★");
   });
 
-  it("returns Phase α 25 sayings (matrix coverage)", () => {
+  it("Lv10 uses Phi (Φ, ultimate fermentation symbol)", () => {
+    const r = renderBuddy("healthy", 10, "koji");
+    expect(r.decoration).toBe("🍙Φ");
+  });
+
+  it("returns 50 sayings (5 states × 10 levels matrix coverage)", () => {
     const states = ["healthy", "overfed", "resting", "awaiting", "sick"] as const;
-    const levels = [1, 2, 3, 4, 5] as const;
+    const levels = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] as const;
     for (const state of states) {
       for (const level of levels) {
         const saying = renderBuddySaying(state, level, "koji");
@@ -127,9 +152,15 @@ describe("renderBuddy (koji 25 sayings)", () => {
     expect(renderBuddySaying("healthy", 1, "cat")).toContain("Coming soon");
   });
 
-  it("flagship Lv5 sick saying = Ferment Small symbol", () => {
+  it("flagship Lv5 sick saying = Ferment Small symbol (Phase α)", () => {
     expect(renderBuddySaying("sick", 5, "koji")).toContain(
       "分解が始まってます…でも、再生できます…",
+    );
+  });
+
+  it("flagship Lv10 healthy saying = ultimate fermentation (v0.6)", () => {
+    expect(renderBuddySaying("healthy", 10, "koji")).toContain(
+      "究極の発酵",
     );
   });
 });
