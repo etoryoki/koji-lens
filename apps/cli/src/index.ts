@@ -209,7 +209,7 @@ program
   .option("--no-cache", "Disable SQLite cache (~/.koji-lens/cache.db)")
   .option(
     "--buddy",
-    "Enable koji-buddy decoration prefix (🍙·/+/✦/★/★★ for Lv1-5). Persistent: set KOJI_LENS_BUDDY=1 in env",
+    "Enable koji-buddy decoration suffix (🍙·/+/✦/★/★★ for Lv1-5, appended to statusline tail). Persistent: set KOJI_LENS_BUDDY=1 in env",
   )
   .option(
     "--buddy-speech",
