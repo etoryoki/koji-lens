@@ -114,6 +114,68 @@ koji-lens session 9b1f92a5-8f67-4f2a-91d3-f930adeb0c5f
 koji-lens session <id> --format json
 ```
 
+### `compare`
+
+Compare two periods (e.g., before vs. after switching from Opus to Sonnet) and surface cost / token / model distribution deltas with rule-based insights.
+
+```bash
+koji-lens compare --before 30d --after 7d
+koji-lens compare --before 2026-04-01..2026-04-30 --after 2026-05-01..2026-05-31
+koji-lens compare --before 30d --after 7d --format json
+```
+
+Options: `--before <range>`, `--after <range>` (both required), `--format text|json`, `--dir <path>`, `--usd-jpy <rate>`, `--no-cache`.
+
+### `trend`
+
+Weekly trend view of cache efficiency, p95 response time, and other time-series metrics over the last N weeks.
+
+```bash
+koji-lens trend                       # default = last 4 weeks
+koji-lens trend --weeks 12
+koji-lens trend --with-attribution    # Pro: vendor/user attribution
+```
+
+Options: `--weeks <num>` (1-52, default 4), `--with-attribution` (Pro), `--format text|json`, `--dir <path>`, `--no-cache`.
+
+### `budget`
+
+Monthly budget tracker. Shows month-to-date cumulative cost, linear forecast, and an over-budget warning.
+
+```bash
+koji-lens budget --budget 200
+koji-lens budget --budget 200 --with-alerts          # Pro
+koji-lens budget --budget 200 --project frontend     # Pro: per-project
+koji-lens budget --list                              # Pro: all per-project budgets
+```
+
+Options: `--budget <usd>` (required), `--with-alerts` / `--project <key>` / `--list` (Pro), `--format text|json`, `--dir <path>`, `--no-cache`.
+
+### `export`
+
+Export usage data as CSV or JSON for spreadsheets / pipelines. Stays local — no transmission.
+
+```bash
+koji-lens export --since 30d                            # CSV to stdout
+koji-lens export --since 30d --format json
+koji-lens export --since 30d --format csv --out usage.csv
+```
+
+Options: `--since <expr>` (required), `--format csv|json` (default csv), `--out <path>` (stdout if omitted), `--dir <path>`, `--no-cache`.
+
+### `hook <state>`
+
+Cross-platform helper that updates `~/.koji-lens/state.json` so the statusline can show the agent state icon (⚡/💤/🛑). Designed to be called from Claude Code hooks — no per-OS shell script needed (no `set-state.ps1` / `set-state.sh`).
+
+```bash
+koji-lens hook thinking
+koji-lens hook running
+koji-lens hook idle
+koji-lens hook awaiting_approval
+```
+
+States: `thinking` | `running` | `idle` | `awaiting_approval`. Writes silently (no stdout). See the statusline section below for a complete `~/.claude/settings.json` example.
+
 ### `serve`
 
 Starts a local web dashboard (Next.js, no external requests).
@@ -133,21 +195,34 @@ Prints a one-glance savings signal comparing this month vs. last month. Designed
 koji-lens statusline                       # 💚 -40% 💎 78%                              (default = normal)
 koji-lens statusline --mode minimal        # 💚 💎                                       (icons only, max compact)
 koji-lens statusline --mode detailed       # 💚 -40% vs last month | $40 saved | 💎 78% cache
-koji-lens statusline --no-cache-rate       # 💚 -40%                                     (suppress cache signal)
+koji-lens statusline --no-state            # suppress state icon (⚡/💤/🛑)
+koji-lens statusline --no-spend            # suppress spend trend (💚/💛/🚨/⚪)
+koji-lens statusline --no-cache-rate       # suppress cache signal (💎)
 koji-lens statusline --format json         # full CompareResult + cache rate for scripting
+koji-lens statusline --combined            # prepend ccusage statusline (cross-platform)
 ```
 
 The cache signal shows this month's prompt-cache hit rate (cache read / (cache read + new input tokens)). Higher = more cache reuse = lower cost per turn. Icon shifts with the rate so you can read the state at a glance without checking the number: 💎 ≥ 70% (excellent) / 🧊 30–70% (cool) / 💧 < 30% (low). koji-lens's independent axis from spend trend.
 
 **Mode selection guide**: `minimal` when you run alongside another statusline (e.g. ccusage) and want the smallest possible footprint / `normal` for standalone use / `detailed` when statusline is your only spend dashboard.
 
-#### Optional: koji-buddy (🍙)
-
-Append a small fermentation companion to the right of the signals. Opt-in via `--buddy`, with optional sayings via `--buddy-speech`.
+**Co-display with ccusage** (`--combined`): Pass `--combined` to spawn `ccusage statusline` internally and prepend its output. Cross-platform (no PowerShell wrapper needed), graceful fallback to koji-lens-only if `ccusage` is not installed.
 
 ```bash
-koji-lens statusline --mode minimal --buddy                    # 💚 💎 🍙·            (decoration only)
-koji-lens statusline --mode minimal --buddy --buddy-speech     # 💚 💎 🍙· < ぽつぽつ…?  (with saying)
+koji-lens statusline --mode minimal --combined --buddy --buddy-speech
+# 🤖 Sonnet | 💰 $0.23 | 🔥 $0.12/hr  💚 💎 🍙· < ぽつぽつ…?
+# (ccusage output)                       (koji-lens output)
+```
+
+#### Optional: koji-buddy (🍙)
+
+Append a small fermentation mascot to the right of the signals. Opt-in via `--buddy`, with optional sayings via `--buddy-speech`.
+
+```bash
+koji-lens statusline --mode minimal --buddy                          # 💚 💎 🍙·            (decoration only)
+koji-lens statusline --mode minimal --buddy --buddy-speech           # 💚 💎 🍙· < ぽつぽつ…?  (with JA saying, default)
+koji-lens statusline --mode minimal --buddy --buddy-speech --buddy-locale en  # 💚 💎 🍙· < Drip... drop...?  (EN saying)
+koji-lens statusline --buddy-only                                    # 🍙· < ぽつぽつ…?      (buddy only, suppresses spend/cache/state)
 ```
 
 **Lv evolution by total session count** (~3 years to Max for heavy users):
@@ -160,7 +235,9 @@ koji-lens statusline --mode minimal --buddy --buddy-speech     # 💚 💎 🍙�
 | 4 | `🍙★` | 300 | 9 | `🍙❋` | 60,000 |
 | 5 | `🍙★★` | 1,000 | 10 | `🍙❀❀` | 100,000 (Max) |
 
-Saying state (sick / overfed / healthy / resting / awaiting) is computed from cost trend + agent state. 50 sayings total (5 states × 10 levels), inspired by Japanese fermentation philosophy. Persist with `KOJI_LENS_BUDDY=1` env var.
+Saying state (sick / overfed / healthy / resting / awaiting) is computed from cost trend + agent state. **50 sayings total** (5 states × 10 levels), inspired by Japanese fermentation philosophy. Available in **JA (default) / EN** via `--buddy-locale`. Persist enable/disable + locale with `KOJI_LENS_BUDDY=1` / `KOJI_LENS_BUDDY_LOCALE=en` env vars.
+
+**Flags**: `--buddy` (enable) / `--buddy-speech` (sayings) / `--buddy-type <koji|owl|cat>` (default `koji`; owl/cat coming later) / `--buddy-locale <ja|en>` (default `ja`) / `--buddy-only` (buddy-only display, suppresses spend/cache/state).
 
 #### Optional: agent state icon (⚡ / 💤 / 🛑)
 
@@ -172,33 +249,43 @@ State file schema:
 { "state": "thinking" | "running" | "idle" | "awaiting_approval", "since": 1714680000000, "tool": "Bash" }
 ```
 
-Example `~/.claude/settings.json` hooks (Windows / PowerShell):
-
-```json
-{
-  "hooks": {
-    "UserPromptSubmit": [{ "hooks": [{ "type": "command", "command": "powershell -NoProfile -ExecutionPolicy Bypass -File C:/Users/<you>/.koji-lens/set-state.ps1 -State thinking" }] }],
-    "PreToolUse":       [{ "matcher": "*", "hooks": [{ "type": "command", "command": "powershell -NoProfile -ExecutionPolicy Bypass -File C:/Users/<you>/.koji-lens/set-state.ps1 -State running" }] }],
-    "PostToolUse":      [{ "matcher": "*", "hooks": [{ "type": "command", "command": "powershell -NoProfile -ExecutionPolicy Bypass -File C:/Users/<you>/.koji-lens/set-state.ps1 -State thinking" }] }],
-    "Notification":     [{ "hooks": [{ "type": "command", "command": "powershell -NoProfile -ExecutionPolicy Bypass -File C:/Users/<you>/.koji-lens/set-state.ps1 -State awaiting_approval" }] }],
-    "Stop":             [{ "hooks": [{ "type": "command", "command": "powershell -NoProfile -ExecutionPolicy Bypass -File C:/Users/<you>/.koji-lens/set-state.ps1 -State idle" }] }]
-  }
-}
-```
-
-macOS / Linux equivalent (replace `set-state.ps1` invocation with a one-line `bash` `printf` or a `set-state.sh` helper that writes the same JSON schema). Pass `--no-state` to `koji-lens statusline` to opt out of the icon entirely.
-
-To wire it into Claude Code, add to `~/.claude/settings.json`:
+Example `~/.claude/settings.json` (cross-platform, recommended — uses the built-in `koji-lens hook` command):
 
 ```json
 {
   "statusLine": {
     "type": "command",
-    "command": "koji-lens statusline",
-    "padding": 0
+    "command": "koji-lens statusline --mode minimal --combined --buddy --buddy-speech",
+    "padding": 0,
+    "refreshInterval": 1
+  },
+  "hooks": {
+    "UserPromptSubmit": [{ "hooks": [{ "type": "command", "command": "koji-lens hook thinking" }] }],
+    "PreToolUse":       [{ "matcher": "*", "hooks": [{ "type": "command", "command": "koji-lens hook running" }] }],
+    "PostToolUse":      [{ "matcher": "*", "hooks": [{ "type": "command", "command": "koji-lens hook thinking" }] }],
+    "Notification":     [{ "hooks": [{ "type": "command", "command": "koji-lens hook awaiting_approval" }] }],
+    "Stop":             [{ "hooks": [{ "type": "command", "command": "koji-lens hook idle" }] }]
   }
 }
 ```
+
+This single-tool config works on Windows / macOS / Linux (no per-OS shell scripts needed). Pass `--no-state` to `koji-lens statusline` to opt out of the icon entirely.
+
+<details>
+<summary>Legacy: PowerShell-wrapper example (pre-beta.7, kept for reference)</summary>
+
+```json
+{
+  "hooks": {
+    "UserPromptSubmit": [{ "hooks": [{ "type": "command", "command": "powershell -NoProfile -ExecutionPolicy Bypass -File C:/Users/<you>/.koji-lens/set-state.ps1 -State thinking" }] }],
+    "PreToolUse":       [{ "matcher": "*", "hooks": [{ "type": "command", "command": "powershell -NoProfile -ExecutionPolicy Bypass -File C:/Users/<you>/.koji-lens/set-state.ps1 -State running" }] }]
+  }
+}
+```
+
+The `set-state.ps1` script was Windows-only and never bundled with the CLI; users had to write their own. The `koji-lens hook <state>` command (beta.7+) replaces this entirely.
+
+</details>
 
 Emoji legend: 💚 cost dropped > 10% / 💛 within ±10% / 🚨 cost rose > 10% / ⚪ no last-month data.
 
@@ -258,17 +345,20 @@ This is a pnpm monorepo. Contributions welcome — file an issue first for non-t
 ```
 koji-lens/
 ├── apps/
-│   ├── cli/          @kojihq/lens   (commander-based CLI)
-│   └── web/          @kojihq/web    (Next.js 16, App Router, Tailwind v4, Recharts)
+│   ├── cli/             @kojihq/lens         (commander-based CLI, public)
+│   └── web/             @kojihq/web          (Next.js 16, App Router, Tailwind v4, Recharts; private internal app)
 └── packages/
-    └── core/         @kojihq/core   (zod schema, aggregator, pricing, SQLite cache)
+    ├── core/            @kojihq/core         (zod schema, aggregator, pricing, public)
+    ├── core-sqlite/     @kojihq/core-sqlite  (SQLite cache adapter for CLI use, public)
+    ├── core-pg/         @kojihq/core-pg      (Postgres adapter for Pro cloud sync, public)
+    └── ccsg-poc/        @kojihq/ccsg-poc     (Claude Code Security Gateway PoC, private)
 ```
 
 ```bash
 pnpm install
 pnpm -r build
 pnpm -r typecheck
-pnpm test            # vitest, 25 tests in @kojihq/core
+pnpm --filter @kojihq/core test    # vitest, 146 tests
 ```
 
 Run locally without installing globally:
