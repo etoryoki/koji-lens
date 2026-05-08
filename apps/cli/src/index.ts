@@ -206,6 +206,7 @@ program
     "Path to agent-state JSON written by Claude Code hooks (default: ~/.koji-lens/state.json)",
   )
   .option("--no-state", "Skip agent-state lookup (suppress ⚡/💤/🛑 icon)")
+  .option("--no-spend", "Suppress spend trend signal (💚/💛/🚨/⚪ + percentage)")
   .option("--no-cache-rate", "Suppress cache hit rate signal (💎 X%)")
   .option("--no-cache", "Disable SQLite cache (~/.koji-lens/cache.db)")
   .option(
@@ -226,8 +227,12 @@ program
     "Buddy speech locale: ja (default) | en. Persistent: set KOJI_LENS_BUDDY_LOCALE in env",
   )
   .option(
+    "--buddy-only",
+    "Show only the buddy (suppresses spend/cache/state signals). Implies --buddy --buddy-speech. Outputs e.g. \"🍙· < ぽつぽつ…?\"",
+  )
+  .option(
     "--combined",
-    "Concatenate ccusage statusline output before koji-lens output (cross-platform alternative to PowerShell wrapper). Falls back to koji-lens-only if ccusage is not installed.",
+    "Concatenate ccusage statusline output before koji-lens output (cross-platform alternative to PowerShell wrapper). Falls back to koji-lens-only if ccusage is not installed. Ignored when --buddy-only is set.",
   )
   .action(async (opts) => {
     try {

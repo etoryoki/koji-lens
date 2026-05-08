@@ -20,6 +20,9 @@ export interface RenderOptions {
     locale?: BuddyLocale;
     agentState?: AgentState | null;
   };
+  // v0.7 (2026-05-08): false で spend signal (💚/💛/🚨/⚪) を非表示
+  // --no-spend フラグ + --buddy-only mode 両方で利用
+  spendVisible?: boolean;
 }
 
 export interface MonthRanges {
@@ -50,14 +53,41 @@ export function renderStatusline(
   mode: StatuslineMode = "normal",
   options: RenderOptions = {},
 ): string {
-  const base = renderSpendSignal(result, mode);
-  const cacheSuffix = renderCacheSuffix(options.cacheRate, mode);
-  const stateIcon = options.stateIcon;
   const buddySuffix = renderBuddySuffix(result, options);
 
-  const spendAndCache = cacheSuffix ? `${base}${cacheSuffix}` : base;
-  const withState = stateIcon ? `${stateIcon} ${spendAndCache}` : spendAndCache;
-  return buddySuffix ? `${withState} ${buddySuffix}` : withState;
+  // v0.7 (2026-05-08): per-signal 表示制御
+  // --no-spend / --no-cache-rate / --no-state は CLI 側で個別 opt-out
+  // --buddy-only は CLI 側で 3 つすべて opt-out + buddy 強制有効の shortcut
+  const spendVisible = options.spendVisible !== false; // default: true
+  const cacheVisible = options.cacheRate != null; // null/undefined で非表示
+  const stateVisible = options.stateIcon != null;
+
+  const parts: string[] = [];
+
+  if (stateVisible && options.stateIcon) {
+    parts.push(options.stateIcon);
+  }
+
+  if (spendVisible) {
+    const base = renderSpendSignal(result, mode);
+    const cacheSuffix = cacheVisible
+      ? renderCacheSuffix(options.cacheRate, mode)
+      : "";
+    parts.push(cacheSuffix ? `${base}${cacheSuffix}` : base);
+  } else if (cacheVisible) {
+    // spend 非表示でも cache rate のみ表示は妥当
+    const cacheSuffix = renderCacheSuffix(options.cacheRate, mode);
+    if (cacheSuffix) {
+      // " 💎 78%" の先頭スペース除去
+      parts.push(cacheSuffix.startsWith(" ") ? cacheSuffix.slice(1) : cacheSuffix);
+    }
+  }
+
+  if (buddySuffix) {
+    parts.push(buddySuffix);
+  }
+
+  return parts.join(" ");
 }
 
 function renderBuddySuffix(

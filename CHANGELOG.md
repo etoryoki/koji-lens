@@ -43,6 +43,31 @@ Lv5 sick flagship (EN): "Decay has begun... but rebirth is possible..." mirrors 
 
 Lv10 healthy flagship (EN): "Simply, here..." mirrors the JA "ただ、在る…" silent-presence design (Shirakawa v0.6 Critical 1).
 
+### Added — `--no-spend` (suppress spend trend signal)
+
+Owner request 2026-05-08 (post-`--buddy-only` design): completes the per-signal opt-out trio (`--no-state` / `--no-spend` / `--no-cache-rate`). Useful for users who want to hide the cost trend (e.g., during demos, screen recordings, or when the metric isn't relevant to the current workflow).
+
+```bash
+koji-lens statusline --no-spend                   # 🛑 💎 100%        (no spend signal)
+koji-lens statusline --no-spend --no-cache-rate   # 🛑                 (state only)
+```
+
+`--buddy-only` is now an alias that internally activates all three (`--no-state --no-spend --no-cache-rate` + `--buddy --buddy-speech`).
+
+### Added — `--buddy-only` (buddy-only display mode)
+
+Owner request 2026-05-08 (post-beta.7-commit, pre-publish): a 1-flag option to show only the buddy and suppress all other signals. Implies `--buddy --buddy-speech`, also suppresses `--combined` (ccusage prefix) since buddy-only is meant to be visually pure.
+
+```bash
+koji-lens statusline --buddy-only
+# 🍙· < ぽつぽつ…?
+
+koji-lens statusline --buddy-only --buddy-locale en
+# 🍙· < Drip... drop...?
+```
+
+Useful for users who want the buddy as a passive presence in their statusline alongside another tool (e.g., ccusage in a separate `statusLine` slot if Claude Code ever supports multiple, or as a minimalist standalone signal). RenderOptions gains `spendOnly?: boolean` plumbing — set to `false` to suppress spend/cache/state.
+
 ### Added — `--combined` (built-in ccusage co-display)
 
 `koji-lens statusline --combined` spawns `ccusage statusline` internally and prepends its output, eliminating the need for a custom PowerShell wrapper. Cross-platform (Node.js `child_process.spawn` with `shell: true` on Windows). 1.5s timeout for high-frequency statusline rendering. Graceful fallback to koji-lens-only if ccusage is not installed or fails.

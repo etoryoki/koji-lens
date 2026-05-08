@@ -104,12 +104,14 @@ export interface StatuslineOptions {
   dir?: string;
   stateFile?: string;
   state: boolean;
+  spend: boolean;
   cacheRate: boolean;
   cache: boolean;
   buddy?: boolean;
   buddySpeech?: boolean;
   buddyType?: string;
   buddyLocale?: string;
+  buddyOnly?: boolean;
   combined?: boolean;
 }
 
@@ -184,18 +186,29 @@ export async function statuslineCommand(
     opts.cacheRate === false ? null : computeCacheRate(afterAggs);
 
   // 起案 v0.4 §3 楽しさ別チャネル化整合: --buddy で opt-in、env KOJI_LENS_BUDDY=1 で永続化
+  // v0.7 (2026-05-08) --buddy-only: buddy + speech 強制有効 + 他 signal すべて非表示の 1 フラグ
+  const buddyOnly = opts.buddyOnly === true;
   const buddyEnabled =
-    opts.buddy === true || process.env.KOJI_LENS_BUDDY === "1";
+    buddyOnly ||
+    opts.buddy === true ||
+    process.env.KOJI_LENS_BUDDY === "1";
   const buddyType = parseBuddyType(opts.buddyType);
   const buddyLocale = parseBuddyLocale(opts.buddyLocale);
+  const buddySpeechEnabled = buddyOnly || opts.buddySpeech === true;
 
   // v0.7 (2026-05-08) --combined: ccusage 同時表示の簡易化
   // ccusage 未インストール時は graceful fallback で koji-lens のみ表示、cross-platform 対応
-  const combinedEnabled = opts.combined === true;
+  // buddy-only mode 時は ccusage も非表示 (純粋に buddy のみ)
+  const combinedEnabled = opts.combined === true && !buddyOnly;
   const stdinBuf = combinedEnabled ? await readStdinIfAvailable() : "";
   const ccusagePrefix = combinedEnabled
     ? await runCcusageStatusline(stdinBuf)
     : null;
+
+  // per-signal opt-out (--no-state / --no-spend / --no-cache-rate) + --buddy-only shortcut
+  const showState = !buddyOnly && opts.state !== false;
+  const showSpend = !buddyOnly && opts.spend !== false;
+  const showCache = !buddyOnly && opts.cacheRate !== false;
 
   if (opts.format === "json") {
     process.stdout.write(
@@ -219,13 +232,14 @@ export async function statuslineCommand(
           agentState: stateRead,
           cacheRate,
           statusline: renderStatusline(result, mode, {
-            stateIcon: stateRead.icon,
-            cacheRate,
+            stateIcon: showState ? stateRead.icon : null,
+            cacheRate: showCache ? cacheRate : null,
+            spendVisible: showSpend,
             buddy: buddyEnabled
               ? {
                   enabled: true,
                   type: buddyType,
-                  speech: opts.buddySpeech === true,
+                  speech: buddySpeechEnabled,
                   locale: buddyLocale,
                   agentState: stateRead.state,
                 }
@@ -241,13 +255,14 @@ export async function statuslineCommand(
   }
 
   const kojiOutput = renderStatusline(result, mode, {
-    stateIcon: stateRead.icon,
-    cacheRate,
+    stateIcon: showState ? stateRead.icon : null,
+    cacheRate: showCache ? cacheRate : null,
+    spendVisible: showSpend,
     buddy: buddyEnabled
       ? {
           enabled: true,
           type: buddyType,
-          speech: opts.buddySpeech === true,
+          speech: buddySpeechEnabled,
           locale: buddyLocale,
           agentState: stateRead.state,
         }
