@@ -1,6 +1,6 @@
 {
   "name": "@kojihq/core-pg",
-  "version": "0.1.0-beta.7",
+  "version": "0.1.0-beta.6",
   "type": "module",
   "description": "Postgres cache adapter for @kojihq/core (Pro cloud sync, Neon)",
   "license": "MIT",

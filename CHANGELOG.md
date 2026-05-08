@@ -4,11 +4,15 @@ All notable changes to this project are documented in this file.
 
 For detailed release notes, see [GitHub Releases](https://github.com/etoryoki/koji-lens/releases).
 
-## [0.1.0-beta.7] — 2026-05-08
+## [0.1.0-beta.6] — 2026-05-08
+
+### Fixed
+
+- **buddy position not actually applied in `beta.5` (build hook missing)**: The `c19f087` commit changed `renderBuddyPrefix` → `renderBuddySuffix` and reordered concatenation to put buddy at the tail of statusline, but `pnpm publish` doesn't run `prepublish` / `prepublishOnly` hooks (no script defined in `packages/core/package.json` or `apps/cli/package.json`), so the published `dist/` was the old prefix-position build. `beta.6` fixes this with a fresh build before publish. Memory `feedback_inherited_factual_error_in_documents.md` case 8 ("implementation completion vs build completion vs publish completion vs user-reachability completion" 5-stage decomposition).
 
 ### Changed
 
-- **buddy speech format**: Add space around `<` for visual readability — `🍙· <ぽつぽつ…?` → `🍙· < ぽつぽつ…?` (owner request 2026-05-08).
+- **buddy speech format**: `🍙+ "順調…"` → `🍙+ < 順調…` (open-bracket style with surrounding spaces for speech-bubble feel, owner requests 2026-05-08). Removes double-quotes for cleaner inline display in statusline.
 
 ### Added — koji-buddy Lv expansion (5 → 10, 3-year Max design)
 
@@ -31,27 +35,19 @@ Owner request 2026-05-08: "Lv level should not max out even after years of use, 
 
 **New decorations** (Lv6-10): Triple star → florette → rotated florette → blackletter florette → double florette (麹発酵深化モチーフ、Lv7 `❀` からの自然延長、ASCII-leaning for cross-platform stability per fukamachi Warning 3).
 
-**New 25 sayings** (5 states × 5 new levels = 50 sayings total, was 25): CEO standalone draft (Shirakawa Designer consultation pending, will refine in v0.6.1 → v1.0).
+**New 25 sayings** (5 states × 5 new levels = 50 sayings total, was 25): CEO standalone draft + Shirakawa Designer Critical 1+2 採用 inline.
 
 **Flagship Lv10 healthy saying** (Ferment Small symbol for the new max tier, Shirakawa Critical 1 採用 = silent presence over self-referential): "ただ、在る…" — the koji simply *is*, no need for words at the 3-year mark.
 
-### Tests
-
-- 16 new tests added (Lv6-10 thresholds + Lv10 decoration + Lv10 flagship saying), buddy matrix coverage updated from 25 to 50 sayings.
-
-## [0.1.0-beta.6] — 2026-05-08
-
-### Fixed
-
-- **buddy position not actually applied in `beta.5` (build hook missing)**: The `c19f087` commit changed `renderBuddyPrefix` → `renderBuddySuffix` and reordered concatenation to put buddy at the tail of statusline, but `pnpm publish` doesn't run `prepublish` / `prepublishOnly` hooks (no script defined in `packages/core/package.json` or `apps/cli/package.json`), so the published `dist/` was the old prefix-position build. `beta.6` fixes this with a fresh build before publish. Memory `feedback_inherited_factual_error_in_documents.md` case 8 candidate ("implementation completion vs build completion vs publish completion vs user-reachability completion" 5-stage decomposition).
-
-### Changed
-
-- **buddy speech format**: `🍙+ "順調…"` → `🍙+ <順調…` (open-bracket style for speech-bubble feel, owner request 2026-05-08). Removes double-quotes for cleaner inline display in statusline.
+**Shirakawa Designer Warning 4 + Nit 2 (deferred to v0.6.1 / beta.7)**: Lv7 ❀ transition jump compensation, Lv6-10 saying quality round, Lv5→Lv6 ★★ family weak progression, saying design philosophy mid-tier shift, Lv7-8 threshold width reversal, Lv8-9 sayings drift away from koji-specific time concepts.
 
 ### Internal
 
 - **`prepublishOnly` hook added to all 4 publishable packages** (`@kojihq/lens`, `@kojihq/core`, `@kojihq/core-sqlite`, `@kojihq/core-pg`): `"prepublishOnly": "pnpm build"` ensures `pnpm publish` always runs a fresh build before publishing, preventing the `beta.5` recurrence (where `c19f087` source change was not reflected in the published `dist/`). 5-stage completion concept now structurally enforced: 1) design → 2) implementation → 3) **build** → 4) publish → 5) user-reachability.
+
+### Tests
+
+- **146 pass** (was 139 in beta.5, +7 new): Lv6-10 threshold tests (5), Lv10 decoration test (`🍙❀❀`), Lv10 flagship saying test ("ただ、在る…").
 
 ## [0.1.0-beta.5] — 2026-05-08
 

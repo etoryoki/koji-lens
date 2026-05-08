@@ -1,6 +1,6 @@
 {
   "name": "@kojihq/core",
-  "version": "0.1.0-beta.7",
+  "version": "0.1.0-beta.6",
   "type": "module",
   "description": "Core types and parsers for koji-lens (Claude Code local usage analyzer)",
   "license": "MIT",
