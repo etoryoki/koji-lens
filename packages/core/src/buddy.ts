@@ -14,7 +14,7 @@ const DECORATIONS: Record<BuddyLevel, string> = {
   7: "❀",
   8: "✿",
   9: "❋",
-  10: "Φ",
+  10: "❀❀",
 };
 
 // 起案 v0.4 §8 種類 (Phase α は麹のみ、フクロウ + 猫は Phase β)
@@ -51,7 +51,7 @@ const SAYINGS_KOJI: Record<BuddyState, Record<BuddyLevel, string>> = {
     7: "奥行きが出てきた…",
     8: "達人の域…",
     9: "古酒のような味わい…",
-    10: "究極の発酵…これが koji-lens の真髄…",
+    10: "ただ、在る…",
   },
   overfed: {
     1: "ちょっと熟しすぎ…?",

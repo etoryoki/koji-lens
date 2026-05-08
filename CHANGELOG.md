@@ -27,13 +27,13 @@ Owner request 2026-05-08: "Lv level should not max out even after years of use, 
 | 7 (new) | `🍙❀` | 10,000 | ~ 4 months | ~ 10 years |
 | 8 (new) | `🍙✿` | 30,000 | ~ 1 year | ~ 30 years |
 | 9 (new) | `🍙❋` | 60,000 | ~ 2 years | ~ 60 years |
-| 10 (new) | `🍙Φ` | 100,000 | **~ 3 years (Max)** | ~ 100 years |
+| 10 (new) | `🍙❀❀` | 100,000 | **~ 3 years (Max)** | ~ 100 years |
 
-**New decorations** (Lv6-10): Triple star → florette → rotated florette → blackletter florette → Phi (麹発酵深化モチーフ + ASCII-leaning for cross-platform stability per fukamachi Warning 3).
+**New decorations** (Lv6-10): Triple star → florette → rotated florette → blackletter florette → double florette (麹発酵深化モチーフ、Lv7 `❀` からの自然延長、ASCII-leaning for cross-platform stability per fukamachi Warning 3).
 
 **New 25 sayings** (5 states × 5 new levels = 50 sayings total, was 25): CEO standalone draft (Shirakawa Designer consultation pending, will refine in v0.6.1 → v1.0).
 
-**Flagship Lv10 healthy saying** (Ferment Small symbol for the new max tier): "究極の発酵…これが koji-lens の真髄…"
+**Flagship Lv10 healthy saying** (Ferment Small symbol for the new max tier, Shirakawa Critical 1 採用 = silent presence over self-referential): "ただ、在る…" — the koji simply *is*, no need for words at the 3-year mark.
 
 ### Tests
 

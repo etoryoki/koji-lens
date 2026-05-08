@@ -130,9 +130,9 @@ describe("renderBuddy (koji 50 sayings, Lv1-10 v0.6)", () => {
     expect(r.decoration).toBe("🍙★★");
   });
 
-  it("Lv10 uses Phi (Φ, ultimate fermentation symbol)", () => {
+  it("Lv10 uses double florette (❀❀, ultimate fermentation deepening)", () => {
     const r = renderBuddy("healthy", 10, "koji");
-    expect(r.decoration).toBe("🍙Φ");
+    expect(r.decoration).toBe("🍙❀❀");
   });
 
   it("returns 50 sayings (5 states × 10 levels matrix coverage)", () => {
@@ -158,9 +158,9 @@ describe("renderBuddy (koji 50 sayings, Lv1-10 v0.6)", () => {
     );
   });
 
-  it("flagship Lv10 healthy saying = ultimate fermentation (v0.6)", () => {
+  it("flagship Lv10 healthy saying = silent presence (v0.6, Shirakawa Critical 1 採用)", () => {
     expect(renderBuddySaying("healthy", 10, "koji")).toContain(
-      "究極の発酵",
+      "ただ、在る",
     );
   });
 });
