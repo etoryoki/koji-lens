@@ -51,14 +51,14 @@ export function renderStatusline(
   const base = renderSpendSignal(result, mode);
   const cacheSuffix = renderCacheSuffix(options.cacheRate, mode);
   const stateIcon = options.stateIcon;
-  const buddyPrefix = renderBuddyPrefix(result, options);
+  const buddySuffix = renderBuddySuffix(result, options);
 
   const spendAndCache = cacheSuffix ? `${base}${cacheSuffix}` : base;
   const withState = stateIcon ? `${stateIcon} ${spendAndCache}` : spendAndCache;
-  return buddyPrefix ? `${buddyPrefix} ${withState}` : withState;
+  return buddySuffix ? `${withState} ${buddySuffix}` : withState;
 }
 
-function renderBuddyPrefix(
+function renderBuddySuffix(
   result: CompareResult,
   options: RenderOptions,
 ): string {
