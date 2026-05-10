@@ -20,6 +20,10 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter @kojihq/core build
       - run: pnpm --filter @kojihq/core-sqlite build
+      # apps/cli の statusline-hang.test.ts が dist/index.js を spawn するため、test 前に web + lens build が必要
+      # (2026-05-10 Phase A 前テスト追加で必須化、深町 CTO 諮問結果採用)
+      - run: pnpm --filter @kojihq/web build
+      - run: pnpm --filter @kojihq/lens build
       - run: pnpm typecheck
       - run: pnpm test
 

@@ -303,9 +303,15 @@ export async function statuslineCommand(
 
   // v0.7.1 (2026-05-08) hang fix: --combined で stdin / spawn の event loop が残ると process exit せず Claude Code 側が固まる
   // 明示的に exit して確実に process 終了 (stdout flush 後)
+  // beta.8 idempotency (2026-05-10、深町 CTO Nit): drain と setImmediate の二重発火を排他ガード
   if (combinedEnabled) {
-    process.stdout.once("drain", () => process.exit(0));
-    // drain が即時起こる場合のフォールバック (next tick で exit)
-    setImmediate(() => process.exit(0));
+    let exited = false;
+    const safeExit = (): void => {
+      if (exited) return;
+      exited = true;
+      process.exit(0);
+    };
+    process.stdout.once("drain", safeExit);
+    setImmediate(safeExit);
   }
 }

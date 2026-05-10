@@ -43,6 +43,7 @@
     "dev": "tsc -p tsconfig.json --watch",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "start": "node ./dist/index.js",
+    "test": "vitest run",
     "pack:dry": "npm pack --dry-run",
     "prepublishOnly": "pnpm build"
   },
@@ -53,6 +54,7 @@
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
-    "typescript": "^6.0.3"
+    "typescript": "^6.0.3",
+    "vitest": "^2.1.0"
   }
 }
