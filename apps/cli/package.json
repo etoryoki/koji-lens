@@ -1,6 +1,6 @@
 {
   "name": "@kojihq/lens",
-  "version": "0.1.0-beta.9",
+  "version": "0.1.0-beta.10",
   "type": "module",
   "description": "Claude Code local usage analyzer CLI — koji-lens",
   "license": "MIT",
@@ -48,8 +48,8 @@
     "prepublishOnly": "pnpm build"
   },
   "dependencies": {
-    "@kojihq/core": "workspace:^0.1.0-beta.9",
-    "@kojihq/core-sqlite": "workspace:^0.1.0-beta.9",
+    "@kojihq/core": "workspace:^0.1.0-beta.10",
+    "@kojihq/core-sqlite": "workspace:^0.1.0-beta.10",
     "commander": "^13.0.0"
   },
   "devDependencies": {
