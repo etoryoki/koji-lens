@@ -146,3 +146,11 @@ export {
   rollupSubagents,
   type SessionAggregateWithChildren,
 } from "./rollup.js";
+
+export {
+  WEB_CACHE_VERSION,
+  defaultWebCachePath,
+  writeWebCache,
+  readWebCache,
+  type WebCachePayload,
+} from "./web-cache.js";

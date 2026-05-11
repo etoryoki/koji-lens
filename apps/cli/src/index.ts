@@ -261,8 +261,8 @@ program
   .command("serve")
   .description("Start local web UI")
   .option("--port <port>", "Port to listen", "3210")
-  .action((opts) => {
-    serveCommand(opts);
+  .action(async (opts) => {
+    await serveCommand(opts);
   });
 
 program

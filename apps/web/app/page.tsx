@@ -19,7 +19,7 @@ import {
   type SessionAggregate,
   type SessionAggregateWithChildren,
 } from "@kojihq/core";
-import { analyzeDirectoryCached, openCacheDb } from "@kojihq/core-sqlite";
+import { readWebCache } from "@kojihq/core";
 import { AttributionBadge } from "./components/AttributionBadge";
 import {
   BudgetTrendChart,
@@ -108,13 +108,12 @@ export default async function Page({
         ).toISOString();
   const byHour = selectedPeriod === "24h";
 
-  let all: SessionAggregate[];
-  const cache = openCacheDb();
-  try {
-    all = await analyzeDirectoryCached(defaultClaudeLogDir(), cache.db);
-  } finally {
-    cache.close();
-  }
+  const cachePayload = await readWebCache();
+  const all: SessionAggregate[] = cachePayload?.sessions ?? [];
+  const cacheGeneratedAt = cachePayload?.generatedAt ?? null;
+  const cacheStaleHours = cacheGeneratedAt
+    ? (Date.now() - new Date(cacheGeneratedAt).getTime()) / (1000 * 60 * 60)
+    : null;
   const rolled = rollupSubagents(all);
   const filteredByActivity = rolled.filter(
     (a) => a.assistantTurns > 0 || a.userTurns > 0,
