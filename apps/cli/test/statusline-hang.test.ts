@@ -21,7 +21,11 @@ import { fileURLToPath } from "node:url";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const CLI_PATH = path.join(__dirname, "..", "dist", "index.js");
-const TIMEOUT_MS = 3000;
+// 2026-05-09 当初 3000ms (5/09 深町 CTO 諮問結果採用)、2026-05-12 で 5000ms に緩和。
+// 理由: serve-e2e.test.ts 追加 + workspace 並列実行 (pnpm -r test) で CPU 負荷上昇、
+// 3000ms ではローカル / CI 環境で flaky になる事例検出。hang 検出目的 (実 hang は
+// 30 秒以上の事象) は 5000ms でも維持される、environmental tolerance 調整として採用。
+const TIMEOUT_MS = 5000;
 
 type RunResult = {
   exitCode: number | null;
