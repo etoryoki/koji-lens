@@ -13,6 +13,8 @@ import { trendCommand } from "./commands/trend.js";
 import { budgetCommand } from "./commands/budget.js";
 import { exportCommand } from "./commands/export.js";
 import { hookCommand } from "./commands/hook.js";
+import { loginCommand } from "./commands/login.js";
+import { syncCommand } from "./commands/sync.js";
 
 const pkgPath = fileURLToPath(new URL("../package.json", import.meta.url));
 const pkg = JSON.parse(readFileSync(pkgPath, "utf8")) as { version: string };
@@ -273,6 +275,34 @@ program
   .argument("[value]", "config value (for set)")
   .action((action: string, key?: string, value?: string) => {
     configCommand(action, key, value);
+  });
+
+program
+  .command("login")
+  .description("Log in to koji-lens Pro (cloud sync)")
+  .option("--base-url <url>", "Base URL for the Pro Web app", "https://lens.kojihq.com/app")
+  .option("--token <token>", "Token (skip browser flow, for testing)")
+  .action(async (opts) => {
+    try {
+      await loginCommand({ baseUrl: opts.baseUrl, token: opts.token });
+    } catch (err) {
+      console.error(err instanceof Error ? err.message : err);
+      process.exit(1);
+    }
+  });
+
+program
+  .command("sync")
+  .description("Sync local cache to koji-lens Pro (cloud sync, requires login)")
+  .option("--batch-size <n>", "Sessions per batch (default: 50)", (v) => parseInt(v, 10))
+  .option("--dry-run", "Show what would be sent without actually sending")
+  .action(async (opts) => {
+    try {
+      await syncCommand({ batchSize: opts.batchSize, dryRun: opts.dryRun });
+    } catch (err) {
+      console.error(err instanceof Error ? err.message : err);
+      process.exit(1);
+    }
   });
 
 program.parseAsync().catch((err) => {
