@@ -12,6 +12,10 @@ export interface CachedSessionAggregate extends SessionAggregate {
 // `clerkUserId: null` を default 設定。CLI sync コマンドで実際に POST する際に
 // サーバー側 `/api/sync` で opaque token から解決した clerk_user_id を付与する
 // (CLI 側 cache.db には clerk_user_id を保存しない、ローカル分析は引き続き全 Free)。
+//
+// 5/13 Critical bug 3 対処: Postgres bigint は整数のみで stat().mtimeMs の
+// マイクロ秒精度の少数値で syntax error 発生、整数化必須。SQLite INTEGER は
+// 型柔軟で許容するが、Postgres 互換性のため writer 段階で `Math.floor()` 適用。
 export function aggregateToRow(
   agg: SessionAggregate,
   mtimeMs: number,
@@ -21,25 +25,25 @@ export function aggregateToRow(
   return {
     sessionId: agg.sessionId,
     filePath: agg.filePath,
-    mtimeMs,
-    cachedAt,
+    mtimeMs: Math.floor(mtimeMs),
+    cachedAt: Math.floor(cachedAt),
     startedAt: agg.startedAt,
     endedAt: agg.endedAt,
-    durationMs: agg.durationMs,
-    assistantTurns: agg.assistantTurns,
-    userTurns: agg.userTurns,
-    sidechainCount: agg.sidechainCount,
-    inputTokens: agg.inputTokens,
-    outputTokens: agg.outputTokens,
-    cacheReadTokens: agg.cacheReadTokens,
-    cacheCreateTokens: agg.cacheCreateTokens,
+    durationMs: Math.floor(agg.durationMs),
+    assistantTurns: Math.floor(agg.assistantTurns),
+    userTurns: Math.floor(agg.userTurns),
+    sidechainCount: Math.floor(agg.sidechainCount),
+    inputTokens: Math.floor(agg.inputTokens),
+    outputTokens: Math.floor(agg.outputTokens),
+    cacheReadTokens: Math.floor(agg.cacheReadTokens),
+    cacheCreateTokens: Math.floor(agg.cacheCreateTokens),
     costUsd: agg.costUsd,
     modelsJson: JSON.stringify(agg.models),
     toolsJson: JSON.stringify(agg.tools),
     costsByModelJson: JSON.stringify(agg.costsByModel),
     modelChangesJson: JSON.stringify(agg.modelChanges),
-    latencyP50Ms: agg.latencyP50Ms,
-    latencyP95Ms: agg.latencyP95Ms,
+    latencyP50Ms: Math.floor(agg.latencyP50Ms),
+    latencyP95Ms: Math.floor(agg.latencyP95Ms),
     clerkUserId,
   };
 }

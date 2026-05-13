@@ -215,11 +215,25 @@ export async function syncCommand(options: SyncOptions = {}): Promise<void> {
     return;
   }
 
-  // filePath anonymize
+  // filePath anonymize + mtime_ms/cached_at 整数化 (Postgres bigint 互換性、
+  // SQLite INTEGER は型柔軟で stat().mtimeMs のマイクロ秒精度の少数値を保存可、
+  // ただし Postgres bigint は整数のみ = `Math.floor()` で整数化必須)
   const anonymize = buildAnonymizer();
   const anonymized = rows.map((r) => ({
     ...r,
     file_path: anonymize(r.file_path),
+    mtime_ms: Math.floor(r.mtime_ms),
+    cached_at: Math.floor(r.cached_at),
+    duration_ms: Math.floor(r.duration_ms),
+    assistant_turns: Math.floor(r.assistant_turns),
+    user_turns: Math.floor(r.user_turns),
+    sidechain_count: Math.floor(r.sidechain_count),
+    input_tokens: Math.floor(r.input_tokens),
+    output_tokens: Math.floor(r.output_tokens),
+    cache_read_tokens: Math.floor(r.cache_read_tokens),
+    cache_create_tokens: Math.floor(r.cache_create_tokens),
+    latency_p50_ms: Math.floor(r.latency_p50_ms),
+    latency_p95_ms: Math.floor(r.latency_p95_ms),
   }));
 
   if (options.dryRun) {
