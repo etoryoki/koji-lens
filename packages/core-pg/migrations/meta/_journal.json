@@ -8,6 +8,13 @@
       "when": 1778632641262,
       "tag": "0000_rainy_gambit",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1778635901424,
+      "tag": "0001_cute_goblin_queen",
+      "breakpoints": true
     }
   ]
 }
