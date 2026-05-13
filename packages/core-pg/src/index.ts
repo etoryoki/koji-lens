@@ -3,9 +3,11 @@ export {
   users,
   subscriptions,
   CURRENT_SCHEMA_VERSION,
+  USER_ROLES,
   type SessionRow,
   type UserRow,
   type SubscriptionRow,
+  type UserRole,
 } from "./schema.js";
 
 export {

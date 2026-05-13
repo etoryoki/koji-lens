@@ -1,3 +1,4 @@
+import { sql } from "drizzle-orm";
 import {
   pgTable,
   text,
@@ -7,6 +8,7 @@ import {
   boolean,
   index,
   uniqueIndex,
+  check,
 } from "drizzle-orm/pg-core";
 
 export const CURRENT_SCHEMA_VERSION = 3;
@@ -83,8 +85,19 @@ export const users = pgTable(
     stripeCustomerIdx: index("users_stripe_customer_idx").on(
       table.stripeCustomerId,
     ),
+    // 5/13 深町 CTO 諮問 Warning 1 採用: role 無制約は大文字小文字揺れリスク、
+    // 5/13 β 期間 Pro 無料化決裁の GA 切替時 role 一括 UPDATE リスク低減目的で
+    // migration 0002 で CHECK 制約追加。values は USER_ROLES 配列と同期。
+    roleCheck: check(
+      "users_role_check",
+      sql`${table.role} IN ('free', 'pro', 'admin')`,
+    ),
   }),
 );
+
+// pro-gate.ts と同期、role の取りうる値域
+export const USER_ROLES = ["free", "pro", "admin"] as const;
+export type UserRole = (typeof USER_ROLES)[number];
 
 export type UserRow = typeof users.$inferSelect;
 

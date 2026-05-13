@@ -154,3 +154,10 @@ export {
   readWebCache,
   type WebCachePayload,
 } from "./web-cache.js";
+
+export {
+  isProAccessGranted,
+  readIsBetaPeriod,
+  type UserRole,
+  type ProAccessOptions,
+} from "./pro-gate.js";
