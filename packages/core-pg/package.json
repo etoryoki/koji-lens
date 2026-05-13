@@ -40,6 +40,9 @@
     "dev": "tsc -p tsconfig.json --watch",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "db:studio": "drizzle-kit studio",
     "prepublishOnly": "pnpm build"
   },
   "dependencies": {
@@ -49,6 +52,7 @@
   "devDependencies": {
     "@electric-sql/pglite": "^0.2.0",
     "@types/node": "^22.0.0",
+    "drizzle-kit": "^0.31.0",
     "typescript": "^6.0.3",
     "vitest": "^2.1.0"
   }

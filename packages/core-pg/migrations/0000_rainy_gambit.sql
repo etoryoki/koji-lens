@@ -1,0 +1,23 @@
+CREATE TABLE "sessions" (
+	"session_id" text PRIMARY KEY NOT NULL,
+	"file_path" text NOT NULL,
+	"mtime_ms" bigint NOT NULL,
+	"cached_at" bigint NOT NULL,
+	"started_at" text,
+	"ended_at" text,
+	"duration_ms" integer DEFAULT 0 NOT NULL,
+	"assistant_turns" integer DEFAULT 0 NOT NULL,
+	"user_turns" integer DEFAULT 0 NOT NULL,
+	"sidechain_count" integer DEFAULT 0 NOT NULL,
+	"input_tokens" integer DEFAULT 0 NOT NULL,
+	"output_tokens" integer DEFAULT 0 NOT NULL,
+	"cache_read_tokens" integer DEFAULT 0 NOT NULL,
+	"cache_create_tokens" integer DEFAULT 0 NOT NULL,
+	"cost_usd" real DEFAULT 0 NOT NULL,
+	"models_json" text DEFAULT '{}' NOT NULL,
+	"tools_json" text DEFAULT '{}' NOT NULL,
+	"costs_by_model_json" text DEFAULT '{}' NOT NULL,
+	"model_changes_json" text DEFAULT '[]' NOT NULL,
+	"latency_p50_ms" integer DEFAULT 0 NOT NULL,
+	"latency_p95_ms" integer DEFAULT 0 NOT NULL
+);
