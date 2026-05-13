@@ -173,10 +173,15 @@ async function postBatch(
 }
 
 export async function syncCommand(options: SyncOptions = {}): Promise<void> {
-  const batchSize =
-    options.batchSize ??
-    Number(process.env.KOJI_LENS_SYNC_BATCH_SIZE) ??
-    DEFAULT_BATCH_SIZE;
+  // batchSize 決定 (NaN 回避): options.batchSize > env > default の優先順位
+  // 注意: `Number(undefined) = NaN` で `??` を fall-through しないため明示分岐
+  let batchSize = DEFAULT_BATCH_SIZE;
+  if (typeof options.batchSize === "number" && options.batchSize > 0) {
+    batchSize = options.batchSize;
+  } else if (process.env.KOJI_LENS_SYNC_BATCH_SIZE) {
+    const envVal = Number(process.env.KOJI_LENS_SYNC_BATCH_SIZE);
+    if (Number.isFinite(envVal) && envVal > 0) batchSize = envVal;
+  }
 
   const auth = loadAuth();
   const state = loadSyncState();
