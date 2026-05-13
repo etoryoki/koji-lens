@@ -12,8 +12,13 @@ apps/cli/web-standalone
 *.tgz
 
 # SNS post drafts and marketing assets — managed in ai-company (private)
-scripts/posts/
+/scripts/posts/
 
 # CEO operations scripts and internal decisions — managed in ai-company (private)
-scripts/
-decisions/
+# root level のみ gitignore (packages/*/scripts/ や apps/*/scripts/ は対象外)
+/scripts/
+/decisions/
+
+# 節約効果ダッシュボード fixture data (設計 v0.2 §6 リスク 5 整合、anonymize 済データだが
+# git commit しない方針、再生成は scripts/seed-fixture.ts 経由)
+packages/core/test/fixtures/*.json
