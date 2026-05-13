@@ -42,7 +42,8 @@ CREATE TABLE sessions (
   costs_by_model_json TEXT NOT NULL DEFAULT '{}',
   model_changes_json TEXT NOT NULL DEFAULT '[]',
   latency_p50_ms INTEGER NOT NULL DEFAULT 0,
-  latency_p95_ms INTEGER NOT NULL DEFAULT 0
+  latency_p95_ms INTEGER NOT NULL DEFAULT 0,
+  clerk_user_id TEXT
 );
 `;
 

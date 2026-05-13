@@ -25,29 +25,40 @@ export const CURRENT_SCHEMA_VERSION = 3;
 // SQLite 側は integer 無限精度のため発生しないが、Postgres は固定幅。
 // → bigint mode "number" で 2^53 未満は安全に number 扱い、JS ランタイム
 // 互換性維持。
-export const sessions = pgTable("sessions", {
-  sessionId: text("session_id").primaryKey(),
-  filePath: text("file_path").notNull(),
-  mtimeMs: bigint("mtime_ms", { mode: "number" }).notNull(),
-  cachedAt: bigint("cached_at", { mode: "number" }).notNull(),
-  startedAt: text("started_at"),
-  endedAt: text("ended_at"),
-  durationMs: integer("duration_ms").notNull().default(0),
-  assistantTurns: integer("assistant_turns").notNull().default(0),
-  userTurns: integer("user_turns").notNull().default(0),
-  sidechainCount: integer("sidechain_count").notNull().default(0),
-  inputTokens: integer("input_tokens").notNull().default(0),
-  outputTokens: integer("output_tokens").notNull().default(0),
-  cacheReadTokens: integer("cache_read_tokens").notNull().default(0),
-  cacheCreateTokens: integer("cache_create_tokens").notNull().default(0),
-  costUsd: real("cost_usd").notNull().default(0),
-  modelsJson: text("models_json").notNull().default("{}"),
-  toolsJson: text("tools_json").notNull().default("{}"),
-  costsByModelJson: text("costs_by_model_json").notNull().default("{}"),
-  modelChangesJson: text("model_changes_json").notNull().default("[]"),
-  latencyP50Ms: integer("latency_p50_ms").notNull().default(0),
-  latencyP95Ms: integer("latency_p95_ms").notNull().default(0),
-});
+export const sessions = pgTable(
+  "sessions",
+  {
+    sessionId: text("session_id").primaryKey(),
+    filePath: text("file_path").notNull(),
+    mtimeMs: bigint("mtime_ms", { mode: "number" }).notNull(),
+    cachedAt: bigint("cached_at", { mode: "number" }).notNull(),
+    startedAt: text("started_at"),
+    endedAt: text("ended_at"),
+    durationMs: integer("duration_ms").notNull().default(0),
+    assistantTurns: integer("assistant_turns").notNull().default(0),
+    userTurns: integer("user_turns").notNull().default(0),
+    sidechainCount: integer("sidechain_count").notNull().default(0),
+    inputTokens: integer("input_tokens").notNull().default(0),
+    outputTokens: integer("output_tokens").notNull().default(0),
+    cacheReadTokens: integer("cache_read_tokens").notNull().default(0),
+    cacheCreateTokens: integer("cache_create_tokens").notNull().default(0),
+    costUsd: real("cost_usd").notNull().default(0),
+    modelsJson: text("models_json").notNull().default("{}"),
+    toolsJson: text("tools_json").notNull().default("{}"),
+    costsByModelJson: text("costs_by_model_json").notNull().default("{}"),
+    modelChangesJson: text("model_changes_json").notNull().default("[]"),
+    latencyP50Ms: integer("latency_p50_ms").notNull().default(0),
+    latencyP95Ms: integer("latency_p95_ms").notNull().default(0),
+    // 5/13 クラウド同期 CLI sync 設計 v0.2 §2.2 整合: ユーザー識別フィールド追加。
+    // 深町 CTO Warning 1 採用で FK は MVP 期に張らない (Webhook 信頼性検証完了後の
+    // Phase B 安定期に migration で追加)、`clerk_user_id text + index` のみで
+    // アプリケーション層整合性担保。
+    clerkUserId: text("clerk_user_id"),
+  },
+  (table) => ({
+    clerkUserIdx: index("sessions_clerk_user_idx").on(table.clerkUserId),
+  }),
+);
 
 export type SessionRow = typeof sessions.$inferSelect;
 
@@ -131,3 +142,34 @@ export const subscriptions = pgTable(
 );
 
 export type SubscriptionRow = typeof subscriptions.$inferSelect;
+
+// ---------------------------------------------------------------------------
+// CLI 接続トークン (5/13 クラウド同期 CLI sync 設計 v0.2 §2.1 整合、深町 CTO
+// Critical 1 + 2 採用整合の opaque token 設計)
+// ---------------------------------------------------------------------------
+// 設計判断: Clerk JWT は CLI 長期保存に不適 (session token TTL 60 秒)、サーバー
+// 側で UUID v4 を発行 + DB 管理する opaque token 設計に切替 (深町諮問結果採用)。
+// CLI 側は `~/.koji-lens/auth.json` にこの opaque token のみ保存、Authorization
+// Bearer header で API Route 認証。token revocation は DB DELETE のみで即時反映。
+
+export const cliTokens = pgTable(
+  "cli_tokens",
+  {
+    // UUID v4 (server-side 生成)
+    token: text("token").primaryKey(),
+    clerkUserId: text("clerk_user_id")
+      .notNull()
+      .references(() => users.clerkUserId),
+    // 30 日後想定 (Date.now() + 30 * 24 * 60 * 60 * 1000)
+    expiresAt: bigint("expires_at", { mode: "number" }).notNull(),
+    createdAt: bigint("created_at", { mode: "number" }).notNull(),
+    // 最終 sync 時刻 (statistics + 期限延長判断材料)
+    lastUsedAt: bigint("last_used_at", { mode: "number" }),
+  },
+  (table) => ({
+    clerkUserIdx: index("cli_tokens_clerk_user_idx").on(table.clerkUserId),
+    expiresAtIdx: index("cli_tokens_expires_at_idx").on(table.expiresAt),
+  }),
+);
+
+export type CliTokenRow = typeof cliTokens.$inferSelect;

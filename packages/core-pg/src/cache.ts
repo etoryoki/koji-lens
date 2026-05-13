@@ -7,10 +7,16 @@ export interface CachedSessionAggregate extends SessionAggregate {
 }
 
 // SessionAggregate → upsert payload (writer)
+//
+// 5/13 v0.2 で sessions に clerk_user_id 追加 (NULL 許容)、aggregateToRow では
+// `clerkUserId: null` を default 設定。CLI sync コマンドで実際に POST する際に
+// サーバー側 `/api/sync` で opaque token から解決した clerk_user_id を付与する
+// (CLI 側 cache.db には clerk_user_id を保存しない、ローカル分析は引き続き全 Free)。
 export function aggregateToRow(
   agg: SessionAggregate,
   mtimeMs: number,
   cachedAt: number = Date.now(),
+  clerkUserId: string | null = null,
 ): SessionRow {
   return {
     sessionId: agg.sessionId,
@@ -34,6 +40,7 @@ export function aggregateToRow(
     modelChangesJson: JSON.stringify(agg.modelChanges),
     latencyP50Ms: agg.latencyP50Ms,
     latencyP95Ms: agg.latencyP95Ms,
+    clerkUserId,
   };
 }
 
