@@ -15,6 +15,39 @@ import {
 } from "@kojihq/core";
 import { analyzeDirectoryCached, openCacheDb } from "@kojihq/core-sqlite";
 import { spawn } from "node:child_process";
+import { existsSync, readFileSync } from "node:fs";
+import { homedir } from "node:os";
+import path from "node:path";
+
+const SYNC_STATE_FILE = path.join(homedir(), ".koji-lens", "sync-state.json");
+const SYNC_STALE_MS = 24 * 60 * 60 * 1000;
+
+/**
+ * 5/13 自動同期設計 v0.3 Step 8 (白川 Designer Warning 1 採用):
+ * 健全時は silent、24h 未同期で `☁ !` アイコンのみ (文言なし)、失敗時 `sync failed`。
+ *
+ * Tufte data-ink ratio 整合 = 常時表示は noise、問題時のみ ink を増やす。
+ */
+function readSyncSignal(): string | null {
+  if (!existsSync(SYNC_STATE_FILE)) return null;
+  try {
+    const raw = readFileSync(SYNC_STATE_FILE, "utf8");
+    const state = JSON.parse(raw) as {
+      lastSyncedAt?: number;
+      lastSyncError?: { message: string; timestamp: number } | null;
+    };
+    if (state.lastSyncError) {
+      return "sync failed";
+    }
+    const lastSyncedAt = state.lastSyncedAt ?? 0;
+    if (lastSyncedAt > 0 && Date.now() - lastSyncedAt > SYNC_STALE_MS) {
+      return "☁ !";
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
 
 const VALID_BUDDY_TYPES: ReadonlyArray<BuddyType> = ["koji", "owl", "cat"];
 const VALID_BUDDY_LOCALES: ReadonlyArray<BuddyLocale> = ["ja", "en"];
@@ -295,9 +328,15 @@ export async function statuslineCommand(
   });
 
   // v0.7 --combined: ccusage 出力を前置、graceful fallback (ccusage 未インストール時は koji-lens のみ)
-  const finalOutput = ccusagePrefix
+  let finalOutput = ccusagePrefix
     ? `${ccusagePrefix}  ${kojiOutput}`
     : kojiOutput;
+
+  // 5/13 自動同期設計 v0.3 Step 8: sync 状態 signal を末尾 append (健全時は silent)
+  const syncSignal = readSyncSignal();
+  if (syncSignal) {
+    finalOutput = `${finalOutput} │ ${syncSignal}`;
+  }
 
   process.stdout.write(finalOutput + "\n");
 

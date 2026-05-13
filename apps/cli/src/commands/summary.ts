@@ -8,6 +8,7 @@ import {
   type SessionAggregate,
 } from "@kojihq/core";
 import { analyzeDirectoryCached, openCacheDb } from "@kojihq/core-sqlite";
+import { triggerLazySync } from "../lib/lazy-sync.js";
 
 export interface SummaryOptions {
   since: string;
@@ -21,6 +22,7 @@ export interface SummaryOptions {
 const DEFAULT_USD_JPY = 155;
 
 export async function summaryCommand(opts: SummaryOptions): Promise<void> {
+  triggerLazySync();
   const cfg = loadConfig();
   const dir = opts.dir ?? cfg.logDir ?? defaultClaudeLogDir();
   const since = parseSince(opts.since);

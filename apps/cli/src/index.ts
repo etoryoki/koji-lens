@@ -15,6 +15,7 @@ import { exportCommand } from "./commands/export.js";
 import { hookCommand } from "./commands/hook.js";
 import { loginCommand } from "./commands/login.js";
 import { syncCommand } from "./commands/sync.js";
+import { statusCommand } from "./commands/status.js";
 
 const pkgPath = fileURLToPath(new URL("../package.json", import.meta.url));
 const pkg = JSON.parse(readFileSync(pkgPath, "utf8")) as { version: string };
@@ -296,9 +297,31 @@ program
   .description("Sync local cache to koji-lens Pro (cloud sync, requires login)")
   .option("--batch-size <n>", "Sessions per batch (default: 50)", (v) => parseInt(v, 10))
   .option("--dry-run", "Show what would be sent without actually sending")
+  .option(
+    "--background",
+    "Silent mode for hooks-driven automatic sync (suppress stdout, errors persisted to sync-state.json.lastSyncError)",
+  )
   .action(async (opts) => {
     try {
-      await syncCommand({ batchSize: opts.batchSize, dryRun: opts.dryRun });
+      await syncCommand({
+        batchSize: opts.batchSize,
+        dryRun: opts.dryRun,
+        background: opts.background,
+      });
+    } catch (err) {
+      console.error(err instanceof Error ? err.message : err);
+      process.exit(1);
+    }
+  });
+
+program
+  .command("status")
+  .description(
+    "Show sync status (last synced time, errors, recovery hints)",
+  )
+  .action(async () => {
+    try {
+      await statusCommand();
     } catch (err) {
       console.error(err instanceof Error ? err.message : err);
       process.exit(1);

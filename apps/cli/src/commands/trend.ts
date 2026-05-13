@@ -9,6 +9,7 @@ import {
   type TrendRegressionWithAttribution,
 } from "@kojihq/core";
 import { analyzeDirectoryCached, openCacheDb } from "@kojihq/core-sqlite";
+import { triggerLazySync } from "../lib/lazy-sync.js";
 
 export interface TrendOptions {
   weeks: string;
@@ -19,6 +20,7 @@ export interface TrendOptions {
 }
 
 export async function trendCommand(opts: TrendOptions): Promise<void> {
+  triggerLazySync();
   const cfg = loadConfig();
   const dir = opts.dir ?? cfg.logDir ?? defaultClaudeLogDir();
 

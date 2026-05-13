@@ -8,6 +8,7 @@ import {
 } from "@kojihq/core";
 import { analyzeDirectoryCached, openCacheDb } from "@kojihq/core-sqlite";
 import { analyzeDirectory } from "@kojihq/core";
+import { triggerLazySync } from "../lib/lazy-sync.js";
 
 export interface CompareOptions {
   before: string;
@@ -55,6 +56,7 @@ function filterByRange(
 }
 
 export async function compareCommand(opts: CompareOptions): Promise<void> {
+  triggerLazySync();
   const cfg = loadConfig();
   const dir = opts.dir ?? cfg.logDir ?? defaultClaudeLogDir();
   const beforeRange = parseDateRange(opts.before, "before");
