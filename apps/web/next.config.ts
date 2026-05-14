@@ -31,6 +31,10 @@ const nextConfig: NextConfig = {
       },
     ];
   },
+  // 2026-05-14 (深町 CTO 5/02 監査推奨採用): apps/web で next/image 未使用、
+  // sharp + @img (≈ 730KB) を image optimization で含めない設定。
+  // CLI 同梱の web-standalone サイズを約 700KB 削減。
+  images: { unoptimized: true },
 };
 
 export default nextConfig;
