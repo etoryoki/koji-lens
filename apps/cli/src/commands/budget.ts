@@ -95,16 +95,10 @@ export async function budgetCommand(opts: BudgetOptions): Promise<void> {
     );
   })();
 
-  // Pro feature gate (Phase A 拡張: budget alerts は Pro 通知機能)
-  // dev mode: KOJI_LENS_PRO=1 でバイパス
-  const isPro = process.env.KOJI_LENS_PRO === "1";
-  if (opts.withAlerts && !isPro) {
-    throw new Error(
-      "--with-alerts is a Pro feature.\n" +
-        "  Dev mode: set KOJI_LENS_PRO=1 to enable.\n" +
-        "  Production: Pro authentication via Stripe + Clerk (Phase A complete).",
-    );
-  }
+  // 2026-05-14 (深町 C2 採用): 予算アラート判定結果を Free 開放
+  // memory `feedback_pain_point_observation_free_principle.md` 整合
+  // 「気付き = Free」原則整合、通知配信 (email / webhook) のみ Pro (Phase B 期間中)
+  // 旧設計: `--with-alerts` は KOJI_LENS_PRO 必須 → Free 化、判定結果は誰でも見られる
 
   let all: SessionAggregate[];
   if (opts.cache === false) {
@@ -124,8 +118,7 @@ export async function budgetCommand(opts: BudgetOptions): Promise<void> {
     : all;
 
   const forecast = computeBudgetForecast(filtered, budgetUsd);
-  const alert =
-    opts.withAlerts && isPro ? checkBudgetAlert(forecast) : null;
+  const alert = opts.withAlerts ? checkBudgetAlert(forecast) : null;
 
   if (opts.format === "json") {
     process.stdout.write(
@@ -161,7 +154,7 @@ export async function budgetCommand(opts: BudgetOptions): Promise<void> {
     lines.push("");
     const icon = alert.level === "critical" ? "🚨" : "⚠️";
     lines.push(`${icon} ${alert.level}: ${alert.message}`);
-  } else if (opts.withAlerts && isPro) {
+  } else if (opts.withAlerts) {
     lines.push("");
     lines.push("✅ no alerts (forecast below 80% of budget)");
   }
@@ -169,7 +162,7 @@ export async function budgetCommand(opts: BudgetOptions): Promise<void> {
   if (!opts.withAlerts) {
     lines.push("");
     lines.push(
-      "hint: pass --with-alerts for Pro budget alert notifications (requires KOJI_LENS_PRO=1 in dev mode)",
+      "hint: pass --with-alerts for budget alert details (forecast %, warning/critical level). Free feature: notification dispatch (email / webhook) is Pro.",
     );
   }
 

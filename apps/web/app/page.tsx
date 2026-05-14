@@ -736,46 +736,39 @@ function BudgetView({
           </span>
         </div>
 
+        {/* 2026-05-14 (深町 C2 採用): 予算アラート判定結果を Free 開放 */}
+        {/* memory `feedback_pain_point_observation_free_principle.md` 整合 */}
+        {/* 「気付き = Free」原則、通知配信 (email / webhook) のみ Pro (Phase B 期間中) */}
+        {/* 旧設計: isPro 分岐で alert 詳細 vs 🔒 ロック表示 → Free 開放で常に詳細表示 */}
         {alert ? (
-          isPro ? (
-            <div
-              className={`rounded-md p-3 text-sm ${
-                alert.level === "critical"
-                  ? "border border-red-500/30 bg-red-500/10 text-red-200"
-                  : "border border-amber-500/30 bg-amber-500/10 text-amber-200"
-              }`}
-            >
-              <div className="flex items-start gap-2">
-                <span>{alert.level === "critical" ? "🚨" : "⚠️"}</span>
-                <div className="flex-1">
-                  <div className="font-medium">
-                    {alert.level === "critical"
-                      ? t("budget.alert_severity_critical")
-                      : t("budget.alert_severity_warning")}
-                  </div>
-                  <div className="mt-1 text-xs leading-relaxed">
-                    {t(
-                      `budget.alert_message_${alert.level}_${alert.trigger}`,
-                      {
-                        currentCost: formatUsd(forecast.currentCostUsd),
-                        forecastCost: formatUsd(forecast.forecastCostUsd),
-                        budgetUsd: formatUsd(forecast.budgetUsd),
-                      },
-                    )}
-                  </div>
+          <div
+            className={`rounded-md p-3 text-sm ${
+              alert.level === "critical"
+                ? "border border-red-500/30 bg-red-500/10 text-red-200"
+                : "border border-amber-500/30 bg-amber-500/10 text-amber-200"
+            }`}
+          >
+            <div className="flex items-start gap-2">
+              <span>{alert.level === "critical" ? "🚨" : "⚠️"}</span>
+              <div className="flex-1">
+                <div className="font-medium">
+                  {alert.level === "critical"
+                    ? t("budget.alert_severity_critical")
+                    : t("budget.alert_severity_warning")}
+                </div>
+                <div className="mt-1 text-xs leading-relaxed">
+                  {t(
+                    `budget.alert_message_${alert.level}_${alert.trigger}`,
+                    {
+                      currentCost: formatUsd(forecast.currentCostUsd),
+                      forecastCost: formatUsd(forecast.forecastCostUsd),
+                      budgetUsd: formatUsd(forecast.budgetUsd),
+                    },
+                  )}
                 </div>
               </div>
             </div>
-          ) : (
-            <div className="rounded-md border border-amber-500/30 bg-amber-500/5 p-3">
-              <div className="text-xs font-medium text-amber-200">
-                🔒 {t("budget.alert_locked_title")}
-              </div>
-              <div className="mt-1 text-xs leading-relaxed text-slate-400">
-                {t("budget.alert_locked_body")}
-              </div>
-            </div>
-          )
+          </div>
         ) : (
           <p className="text-xs text-slate-500">
             {forecast.forecastUtilizationPct < 80

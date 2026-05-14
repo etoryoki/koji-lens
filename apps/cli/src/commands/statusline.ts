@@ -1,4 +1,6 @@
 import {
+  checkBudgetAlert,
+  computeBudgetForecast,
   computeCacheRate,
   computeCompare,
   computeMonthRanges,
@@ -8,6 +10,7 @@ import {
   normalizeDirArg,
   readAgentState,
   renderStatusline,
+  resolveBudgetForProject,
   analyzeDirectory,
   type BuddyLocale,
   type BuddyType,
@@ -172,6 +175,9 @@ export interface StatuslineOptions {
   buddyLocale?: string;
   buddyOnly?: boolean;
   combined?: boolean;
+  // 2026-05-14 (深町 W2 採用): 予算アラート表示 (Free 開放、デフォルト ON)
+  // --no-budget で opt-out、budgetUsd 未設定時は自動非表示
+  budget?: boolean;
 }
 
 const VALID_MODES: ReadonlyArray<StatuslineMode> = [
@@ -244,6 +250,15 @@ export async function statuslineCommand(
   const cacheRate =
     opts.cacheRate === false ? null : computeCacheRate(afterAggs);
 
+  // 2026-05-14 (深町 W2 採用): 予算アラート計算 (Free 開放、最大 ROI 機能、Phase A 完結)
+  // --no-budget で opt-out + budgetUsd 未設定時は null (表示なし)
+  // statusline は project 跨ぎ集計 = projectKey なしで default budget を resolve
+  const budgetUsd = resolveBudgetForProject(undefined, cfg);
+  const budgetAlert =
+    opts.budget === false || !budgetUsd
+      ? null
+      : checkBudgetAlert(computeBudgetForecast(afterAggs, budgetUsd));
+
   // 起案 v0.4 §3 楽しさ別チャネル化整合: --buddy で opt-in、env KOJI_LENS_BUDDY=1 で永続化
   // v0.7 (2026-05-08) --buddy-only: buddy + speech 強制有効 + 他 signal すべて非表示の 1 フラグ
   const buddyOnly = opts.buddyOnly === true;
@@ -294,6 +309,7 @@ export async function statuslineCommand(
             stateIcon: showState ? stateRead.icon : null,
             cacheRate: showCache ? cacheRate : null,
             spendVisible: showSpend,
+            budgetAlert: buddyOnly ? null : budgetAlert,
             buddy: buddyEnabled
               ? {
                   enabled: true,
@@ -317,6 +333,7 @@ export async function statuslineCommand(
     stateIcon: showState ? stateRead.icon : null,
     cacheRate: showCache ? cacheRate : null,
     spendVisible: showSpend,
+    budgetAlert: buddyOnly ? null : budgetAlert,
     buddy: buddyEnabled
       ? {
           enabled: true,

@@ -147,11 +147,11 @@ program
   .option("--no-cache", "Disable SQLite cache (~/.koji-lens/cache.db)")
   .option(
     "--with-alerts",
-    "[Pro] Show budget alerts when forecast >= 80% (warning) or >= 100% (critical) — requires KOJI_LENS_PRO=1 in dev mode",
+    "Show budget alerts when forecast >= 80% (warning) or >= 100% (critical). Free feature: notification dispatch (email / webhook) is Pro.",
   )
   .option(
     "--project <key>",
-    "[Pro] Filter sessions to a specific project key + use config.budgets[<key>] (Pro v0.2 §6.1)",
+    "Filter sessions to a specific project key + use config.budgets[<key>]",
   )
   .option(
     "--list",
@@ -212,6 +212,10 @@ program
   .option("--no-spend", "Suppress spend trend signal (💚/💛/🚨/⚪ + percentage)")
   .option("--no-cache-rate", "Suppress cache hit rate signal (💎 X%)")
   .option("--no-cache", "Disable SQLite cache (~/.koji-lens/cache.db)")
+  .option(
+    "--no-budget",
+    "Suppress budget alert signal (💸 X% for warning / 🔥 X% for critical). Auto-hidden if budgetUsd is not set.",
+  )
   .option(
     "--buddy",
     "Enable koji-buddy decoration suffix (🍙·/+/✦/★/★★ for Lv1-5, appended to statusline tail). Persistent: set KOJI_LENS_BUDDY=1 in env",

@@ -1,3 +1,4 @@
+import type { BudgetAlert } from "./budget.js";
 import type { CacheRateResult } from "./cache-rate.js";
 import type { CompareResult } from "./compare.js";
 import {
@@ -23,6 +24,9 @@ export interface RenderOptions {
   // v0.7 (2026-05-08): false で spend signal (💚/💛/🚨/⚪) を非表示
   // --no-spend フラグ + --buddy-only mode 両方で利用
   spendVisible?: boolean;
+  // 2026-05-14 (深町 W2 採用): 予算アラート表示 (Free 開放、「気付き = Free」原則整合)
+  // warning (80%+) = 💸 / critical (100%+) = 🔥、null/undefined で非表示
+  budgetAlert?: BudgetAlert | null;
 }
 
 export interface MonthRanges {
@@ -66,6 +70,13 @@ export function renderStatusline(
 
   if (stateVisible && options.stateIcon) {
     parts.push(options.stateIcon);
+  }
+
+  // 2026-05-14 (深町 W2 採用): 予算アラート表示を state icon と spend signal の間に配置
+  // 警告系の視認順 (緊急度高い側を左に集約)、Free 開放で「気付き = Free」整合
+  const budgetAlertText = renderBudgetAlertSuffix(options.budgetAlert);
+  if (budgetAlertText) {
+    parts.push(budgetAlertText);
   }
 
   if (spendVisible) {
@@ -162,4 +173,16 @@ function formatPct(pct: number): string {
   if (rounded === 0) return "0%";
   const sign = rounded > 0 ? "+" : "";
   return `${sign}${rounded}%`;
+}
+
+// 2026-05-14 (深町 W2 採用): 予算アラート表示 (Free 開放、最大 ROI 機能)
+// warning (80%+ forecast) = 💸 / critical (100%+ current or forecast) = 🔥
+// spend signal の 🚨 (cost trend 軸) と区別、budget context (vs 月次予算) 専用
+function renderBudgetAlertSuffix(
+  alert: BudgetAlert | null | undefined,
+): string {
+  if (!alert) return "";
+  const icon = alert.level === "critical" ? "🔥" : "💸";
+  const pct = Math.round(alert.utilizationPct);
+  return `${icon} ${pct}%`;
 }
