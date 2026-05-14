@@ -54,7 +54,7 @@ describe("mask + unmask (round-trip)", () => {
 
   it("handles mixed content with multiple rule types", () => {
     const text = `
-      お疲れ様です。株式会社クインクエの瀬尾です。
+      お疲れ様です。株式会社サンプルの担当です。
       サーバ障害の件、user@kojihq.com まで連絡をお願いします。
       影響範囲: 192.168.1.0/24 のクライアント、約 03-1234-5678 件の問い合わせ想定。
     `.trim();

@@ -371,4 +371,4 @@ Publishing: see [`docs/publish.md`](./docs/publish.md).
 
 ## License
 
-[MIT](./LICENSE) © 2026 株式会社クインクエ (Koji)
+[MIT](./LICENSE) © 2026 Koji
