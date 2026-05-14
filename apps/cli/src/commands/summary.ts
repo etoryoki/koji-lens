@@ -67,6 +67,12 @@ export async function summaryCommand(opts: SummaryOptions): Promise<void> {
 
   if (active.length === 0) {
     console.log(`No active sessions under ${dir} since ${since.toISOString()}.`);
+    console.log(``);
+    console.log(`Next steps:`);
+    console.log(`  - Make sure Claude Code has been used in this directory recently.`);
+    console.log(`  - If your logs are elsewhere, run \`koji-lens summary --dir <path>\`.`);
+    console.log(`  - Have feedback or questions? Share at https://github.com/etoryoki/koji-lens/discussions/9`);
+    console.log(`  - Docs: https://lens.kojihq.com/docs  |  Community: https://hiroba.kojihq.com`);
     return;
   }
 

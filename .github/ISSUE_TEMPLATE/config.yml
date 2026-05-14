@@ -1,5 +1,11 @@
 blank_issues_enabled: false
 contact_links:
+  - name: 💡 Share your experience (Discussions)
+    url: https://github.com/etoryoki/koji-lens/discussions/9
+    about: Used koji-lens? Share what you found — even a single screenshot helps shape the roadmap.
+  - name: 🌐 Community (Hiroba)
+    url: https://hiroba.kojihq.com
+    about: Japanese Claude / Claude Code community hub. Articles, updates, and feedback welcome.
   - name: 💬 Bluesky
     url: https://bsky.app/profile/kojihq.com
     about: For light questions or discussions, DM us on Bluesky.
