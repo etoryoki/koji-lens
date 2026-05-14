@@ -2,6 +2,7 @@ import {
   analyzeDirectory,
   defaultClaudeLogDir,
   loadConfig,
+  normalizeDirArg,
   parseSince,
   renderSummary,
   sumAggregates,
@@ -24,7 +25,7 @@ const DEFAULT_USD_JPY = 155;
 export async function summaryCommand(opts: SummaryOptions): Promise<void> {
   triggerLazySync();
   const cfg = loadConfig();
-  const dir = opts.dir ?? cfg.logDir ?? defaultClaudeLogDir();
+  const dir = normalizeDirArg(opts.dir ?? cfg.logDir ?? defaultClaudeLogDir());
   const since = parseSince(opts.since);
 
   let all: SessionAggregate[];

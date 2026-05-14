@@ -32,6 +32,7 @@ export {
 export {
   defaultClaudeLogDir,
   findJsonlFiles,
+  normalizeDirArg,
   sessionIdFromPath,
 } from "./paths.js";
 

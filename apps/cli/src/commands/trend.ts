@@ -3,6 +3,7 @@ import {
   defaultClaudeLogDir,
   detectTrendRegressionsWithAttribution,
   loadConfig,
+  normalizeDirArg,
   renderWeeklyTrendText,
   analyzeDirectory,
   type SessionAggregate,
@@ -22,7 +23,7 @@ export interface TrendOptions {
 export async function trendCommand(opts: TrendOptions): Promise<void> {
   triggerLazySync();
   const cfg = loadConfig();
-  const dir = opts.dir ?? cfg.logDir ?? defaultClaudeLogDir();
+  const dir = normalizeDirArg(opts.dir ?? cfg.logDir ?? defaultClaudeLogDir());
 
   const weeks = Number(opts.weeks);
   if (!Number.isFinite(weeks) || weeks < 1 || weeks > 52) {

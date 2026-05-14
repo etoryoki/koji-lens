@@ -2,6 +2,7 @@ import {
   analyzeDirectory,
   defaultClaudeLogDir,
   extractParentFromPath,
+  normalizeDirArg,
   formatDuration,
   formatUsd,
   loadConfig,
@@ -19,7 +20,7 @@ export interface SessionsOptions {
 
 export async function sessionsCommand(opts: SessionsOptions): Promise<void> {
   const cfg = loadConfig();
-  const dir = opts.dir ?? cfg.logDir ?? defaultClaudeLogDir();
+  const dir = normalizeDirArg(opts.dir ?? cfg.logDir ?? defaultClaudeLogDir());
   const since = parseSince(opts.since);
 
   let all: SessionAggregate[];

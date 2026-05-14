@@ -3,6 +3,7 @@ import {
   analyzeDirectory,
   defaultClaudeLogDir,
   loadConfig,
+  normalizeDirArg,
   parseSince,
   type SessionAggregate,
 } from "@kojihq/core";
@@ -103,7 +104,7 @@ function renderJson(aggs: SessionAggregate[]): string {
 
 export async function exportCommand(opts: ExportOptions): Promise<void> {
   const cfg = loadConfig();
-  const dir = opts.dir ?? cfg.logDir ?? defaultClaudeLogDir();
+  const dir = normalizeDirArg(opts.dir ?? cfg.logDir ?? defaultClaudeLogDir());
   const format = parseFormat(opts.format);
 
   const sinceDate = parseSince(opts.since);

@@ -4,6 +4,7 @@ import {
   defaultClaudeLogDir,
   findJsonlFiles,
   loadConfig,
+  normalizeDirArg,
   renderSessionBlock,
   sessionIdFromPath,
   type SessionAggregate,
@@ -29,7 +30,7 @@ export async function sessionCommand(
   opts: SessionOptions,
 ): Promise<void> {
   const cfg = loadConfig();
-  const dir = opts.dir ?? cfg.logDir ?? defaultClaudeLogDir();
+  const dir = normalizeDirArg(opts.dir ?? cfg.logDir ?? defaultClaudeLogDir());
   const files = findJsonlFiles(dir);
   const target = files.find((f) => sessionIdFromPath(f) === id);
   if (!target) {

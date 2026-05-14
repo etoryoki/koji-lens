@@ -3,6 +3,7 @@ import {
   defaultClaudeLogDir,
   generateInsights,
   loadConfig,
+  normalizeDirArg,
   type CompareResult,
   type SessionAggregate,
 } from "@kojihq/core";
@@ -58,7 +59,7 @@ function filterByRange(
 export async function compareCommand(opts: CompareOptions): Promise<void> {
   triggerLazySync();
   const cfg = loadConfig();
-  const dir = opts.dir ?? cfg.logDir ?? defaultClaudeLogDir();
+  const dir = normalizeDirArg(opts.dir ?? cfg.logDir ?? defaultClaudeLogDir());
   const beforeRange = parseDateRange(opts.before, "before");
   const afterRange = parseDateRange(opts.after, "after");
 

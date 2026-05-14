@@ -5,6 +5,7 @@ import {
   defaultClaudeLogDir,
   defaultStateFilePath,
   loadConfig,
+  normalizeDirArg,
   readAgentState,
   renderStatusline,
   analyzeDirectory,
@@ -208,7 +209,7 @@ export async function statuslineCommand(
   opts: StatuslineOptions,
 ): Promise<void> {
   const cfg = loadConfig();
-  const dir = opts.dir ?? cfg.logDir ?? defaultClaudeLogDir();
+  const dir = normalizeDirArg(opts.dir ?? cfg.logDir ?? defaultClaudeLogDir());
   const ranges = computeMonthRanges();
 
   let all: SessionAggregate[];

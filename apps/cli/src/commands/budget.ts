@@ -6,6 +6,7 @@ import {
   formatUsd,
   listProjectBudgets,
   loadConfig,
+  normalizeDirArg,
   resolveBudgetForProject,
   type SessionAggregate,
 } from "@kojihq/core";
@@ -34,7 +35,7 @@ function pad(s: string, width: number, rightAlign = false): string {
 
 export async function budgetCommand(opts: BudgetOptions): Promise<void> {
   const cfg = loadConfig();
-  const dir = opts.dir ?? cfg.logDir ?? defaultClaudeLogDir();
+  const dir = normalizeDirArg(opts.dir ?? cfg.logDir ?? defaultClaudeLogDir());
 
   // --list: 全 project budgets 一覧表示 (Pro v0.2 §6.1)
   if (opts.list === true) {

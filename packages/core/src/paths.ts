@@ -1,9 +1,30 @@
-import { existsSync, readdirSync, statSync } from "node:fs";
+import { existsSync, readdirSync, realpathSync, statSync } from "node:fs";
 import { homedir } from "node:os";
-import { basename, join } from "node:path";
+import { basename, join, resolve } from "node:path";
 
 export function defaultClaudeLogDir(): string {
   return join(homedir(), ".claude", "projects");
+}
+
+/**
+ * --dir 引数の正規化 (path traversal 防止、深町 CTO 諮問推奨 2026-05-02)。
+ *
+ * - `path.resolve()` で相対パス → 絶対パス + `..` 解決
+ * - `realpathSync()` で symlink 解決 (存在する path のみ、存在しない時は
+ *   resolve 結果をそのまま返す = 新規ディレクトリ指定との互換性維持)
+ *
+ * koji-lens は CLI ローカル動作で `--dir` は user 自身が制御する path =
+ * 厳密な攻撃ベクトルではないが、symlink / 相対パス trick による不意の挙動を
+ * 防ぐ一次ガードとして実装。ホーム配下制限は採用しない (テスト fixture 互換性
+ * 維持、2026-05-14 CEO 判断)。
+ */
+export function normalizeDirArg(dir: string): string {
+  const absolute = resolve(dir);
+  try {
+    return realpathSync(absolute);
+  } catch {
+    return absolute;
+  }
 }
 
 export function findJsonlFiles(rootDir: string, maxDepth = 4): string[] {
