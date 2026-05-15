@@ -20,6 +20,9 @@ import { aggregateToRow, sessions } from "../src/index.js";
 // Pro Web ダッシュ Postgres 統合の lifecycle 検証完遂。実 Neon endpoint との
 // end-to-end 検証は Phase B 期間中 (5/22-26) の DATABASE_URL 設定後に別途実施。
 
+// fixture schema は src/schema.ts の sessions テーブル定義と同期維持必須。
+// 5/13 Pro 関連 schema 変更で `clerk_user_id` カラム追加 (β 期間 Pro 無料化決裁派生)、
+// 5/15 CI matrix 拡張で fixture 更新漏れが検出 → 本テスト fixture も同期。
 const CREATE_SESSIONS_SQL = `
 CREATE TABLE sessions (
   session_id TEXT PRIMARY KEY,
@@ -42,7 +45,8 @@ CREATE TABLE sessions (
   costs_by_model_json TEXT NOT NULL DEFAULT '{}',
   model_changes_json TEXT NOT NULL DEFAULT '[]',
   latency_p50_ms INTEGER NOT NULL DEFAULT 0,
-  latency_p95_ms INTEGER NOT NULL DEFAULT 0
+  latency_p95_ms INTEGER NOT NULL DEFAULT 0,
+  clerk_user_id TEXT
 );
 `;
 
