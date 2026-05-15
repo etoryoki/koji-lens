@@ -51,6 +51,18 @@ TOTAL
 
 Now you have evidence: 92% of your spend is Opus. Switch the easy turns to Sonnet, run `koji-lens summary --since 7d` again next week, and see the difference. (A built-in `compare` command lands in a future release; for now you can pipe to `--format json` and diff yourself.)
 
+### Already using ccusage? Use both.
+
+koji-lens reads the same JSONL files that [ccusage](https://ccusage.com) reads — no import, no migration. Run them side by side in your statusline:
+
+```bash
+koji-lens statusline --mode minimal --combined
+# 🤖 Sonnet | 💰 $0.23 | 🔥 $0.12/hr  💚 💎
+# └─ ccusage (current spend) ──────┘  └─ koji-lens (one signal to act on) ─┘
+```
+
+ccusage shows *what you've spent right now*. koji-lens shows *whether to act on it* (spend trend vs last month + cache health). Same logs, two complementary signals. See [Co-display with ccusage](#co-display-with-ccusage--combined) for setup.
+
 ---
 
 ## Install
