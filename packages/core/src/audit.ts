@@ -167,6 +167,81 @@ export function collectAuditEvents(
   return filterAuditEvents(events, opts);
 }
 
+/**
+ * 段階 6 異常検知: audit events から異常パターンを抽出。
+ *
+ * - 新規 MCP server: knownMcpServers に含まれない mcp__<server>__* を検出
+ * - 高頻度 exec: 24h で exec カテゴリが highFreqExecThreshold 件超過
+ * - 巨大 fs-write: target が .env / secrets / credentials を含む fs-write
+ */
+
+export interface AuditAnomalyOptions {
+  knownMcpServers?: string[];
+  highFreqExecThreshold?: number;
+}
+
+export interface AuditAnomalySignal {
+  newMcpServers: string[];
+  execCount: number;
+  highFreqExec: boolean;
+  sensitiveWrites: string[];
+  severity: "ok" | "warning" | "critical";
+}
+
+const SENSITIVE_WRITE_PATTERNS = [
+  /\.env(\.|$)/i,
+  /credentials?/i,
+  /secrets?/i,
+  /private[_-]?key/i,
+  /\.pem$/i,
+  /\.ppk$/i,
+];
+
+export function detectAuditAnomalies(
+  events: AuditEvent[],
+  opts: AuditAnomalyOptions = {},
+): AuditAnomalySignal {
+  const known = new Set(opts.knownMcpServers ?? []);
+  const threshold = opts.highFreqExecThreshold ?? 200;
+
+  const newMcpServersSet = new Set<string>();
+  let execCount = 0;
+  const sensitiveWrites: string[] = [];
+
+  for (const e of events) {
+    if (e.category === "mcp") {
+      const rest = e.toolName.slice(5);
+      const idx = rest.indexOf("__");
+      const server = idx > 0 ? rest.slice(0, idx) : rest;
+      if (!known.has(server)) newMcpServersSet.add(server);
+    } else if (e.category === "exec") {
+      execCount += 1;
+    } else if (e.category === "fs-write" && e.target) {
+      if (SENSITIVE_WRITE_PATTERNS.some((p) => p.test(e.target ?? ""))) {
+        sensitiveWrites.push(e.target);
+      }
+    }
+  }
+
+  const highFreqExec = execCount > threshold;
+  const newMcpServers = Array.from(newMcpServersSet).sort();
+
+  let severity: "ok" | "warning" | "critical" = "ok";
+  if (sensitiveWrites.length > 0) {
+    severity = "critical";
+  } else if (newMcpServers.length > 0 || highFreqExec) {
+    severity = "warning";
+  }
+
+  return {
+    newMcpServers,
+    execCount,
+    highFreqExec,
+    sensitiveWrites,
+    severity,
+  };
+}
+
 export function formatAuditEventText(e: AuditEvent): string {
   const ts = new Date(e.timestamp).toISOString();
   const cat = e.category.padEnd(8);

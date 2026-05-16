@@ -10,6 +10,7 @@ import {
   type BuddyType,
 } from "./buddy.js";
 import type { AgentState } from "./state.js";
+import type { AuditAnomalySignal } from "./audit.js";
 
 export interface RenderOptions {
   stateIcon?: string | null;
@@ -27,6 +28,10 @@ export interface RenderOptions {
   // 2026-05-14 (深町 W2 採用): 予算アラート表示 (Free 開放、「気付き = Free」原則整合)
   // warning (80%+) = 💸 / critical (100%+) = 🔥、null/undefined で非表示
   budgetAlert?: BudgetAlert | null;
+  // 2026-05-16 案 E 段階 6: audit 異常検知 signal
+  // warning = ⚠ (新規 MCP / 高頻度 exec) / critical = 🛡 (機密ファイル書き込み)
+  // null/undefined or severity=ok で非表示
+  auditSignal?: AuditAnomalySignal | null;
 }
 
 export interface MonthRanges {
@@ -77,6 +82,13 @@ export function renderStatusline(
   const budgetAlertText = renderBudgetAlertSuffix(options.budgetAlert);
   if (budgetAlertText) {
     parts.push(budgetAlertText);
+  }
+
+  // 2026-05-16 案 E 段階 6: audit 異常検知 signal を予算アラートと spend の間に配置
+  // critical (機密ファイル書き込み) = 🛡 / warning (新規 MCP / 高頻度 exec) = ⚠
+  const auditText = renderAuditSignalSuffix(options.auditSignal);
+  if (auditText) {
+    parts.push(auditText);
   }
 
   if (spendVisible) {
@@ -185,4 +197,25 @@ function renderBudgetAlertSuffix(
   const icon = alert.level === "critical" ? "🔥" : "💸";
   const pct = Math.round(alert.utilizationPct);
   return `${icon} ${pct}%`;
+}
+
+// 2026-05-16 案 E 段階 6: audit 異常検知 signal レンダリング
+// critical (機密ファイル書き込み) = 🛡 / warning (新規 MCP / 高頻度 exec) = ⚠
+// severity=ok or null/undefined で空文字 (非表示)
+function renderAuditSignalSuffix(
+  signal: AuditAnomalySignal | null | undefined,
+): string {
+  if (!signal || signal.severity === "ok") return "";
+  if (signal.severity === "critical") {
+    return `🛡 ${signal.sensitiveWrites.length}`;
+  }
+  // warning
+  const parts: string[] = [];
+  if (signal.newMcpServers.length > 0) {
+    parts.push(`+${signal.newMcpServers.length}mcp`);
+  }
+  if (signal.highFreqExec) {
+    parts.push(`exec ${signal.execCount}`);
+  }
+  return parts.length > 0 ? `⚠ ${parts.join("/")}` : "⚠";
 }

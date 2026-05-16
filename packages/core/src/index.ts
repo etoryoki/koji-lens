@@ -169,9 +169,20 @@ export {
   extractAuditEvents,
   filterAuditEvents,
   collectAuditEvents,
+  detectAuditAnomalies,
   formatAuditEventText,
   formatAuditEventsJson,
   type AuditCategory,
   type AuditEvent,
   type AuditFilterOptions,
+  type AuditAnomalyOptions,
+  type AuditAnomalySignal,
 } from "./audit.js";
+
+export {
+  defaultAuditStatePath,
+  readAuditState,
+  writeAuditState,
+  extractMcpServerName,
+  type AuditState,
+} from "./audit-state.js";

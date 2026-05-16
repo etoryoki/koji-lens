@@ -5,6 +5,8 @@ import {
   extractAuditEvents,
   filterAuditEvents,
   formatAuditEventText,
+  detectAuditAnomalies,
+  extractMcpServerName,
   type AuditEvent,
   type ClaudeCodeRecord,
 } from "../src/index.js";
@@ -248,5 +250,141 @@ describe("formatAuditEventText", () => {
     const text = formatAuditEventText(e);
     expect(text).toContain("mcp");
     expect(text).toContain("mcp__github__list_commits");
+  });
+});
+
+describe("extractMcpServerName", () => {
+  it("extracts server name from mcp__<server>__<method>", () => {
+    expect(extractMcpServerName("mcp__github__create_pull_request")).toBe("github");
+    expect(extractMcpServerName("mcp__vercel__list_deployments")).toBe("vercel");
+  });
+
+  it("returns null for non-mcp tools", () => {
+    expect(extractMcpServerName("Bash")).toBeNull();
+    expect(extractMcpServerName("")).toBeNull();
+  });
+
+  it("handles mcp__<server> without method", () => {
+    expect(extractMcpServerName("mcp__plain")).toBe("plain");
+  });
+});
+
+describe("detectAuditAnomalies", () => {
+  function mkEvent(
+    overrides: Partial<AuditEvent>,
+  ): AuditEvent {
+    return {
+      sessionId: "s1",
+      timestamp: "2026-05-16T10:00:00Z",
+      toolName: "Bash",
+      category: "exec",
+      target: "ls",
+      input: {},
+      ...overrides,
+    };
+  }
+
+  it("detects new MCP servers not in knownMcpServers", () => {
+    const events = [
+      mkEvent({
+        toolName: "mcp__github__list_commits",
+        category: "mcp",
+      }),
+      mkEvent({
+        toolName: "mcp__vercel__list_deployments",
+        category: "mcp",
+      }),
+    ];
+    const signal = detectAuditAnomalies(events, {
+      knownMcpServers: ["github"],
+    });
+    expect(signal.newMcpServers).toEqual(["vercel"]);
+    expect(signal.severity).toBe("warning");
+  });
+
+  it("returns no new MCP when all known", () => {
+    const events = [
+      mkEvent({ toolName: "mcp__github__x", category: "mcp" }),
+    ];
+    const signal = detectAuditAnomalies(events, {
+      knownMcpServers: ["github"],
+    });
+    expect(signal.newMcpServers).toEqual([]);
+    expect(signal.severity).toBe("ok");
+  });
+
+  it("detects high frequency exec", () => {
+    const events = Array.from({ length: 201 }, (_, i) =>
+      mkEvent({ timestamp: `2026-05-16T10:${String(i % 60).padStart(2, "0")}:00Z` }),
+    );
+    const signal = detectAuditAnomalies(events);
+    expect(signal.execCount).toBe(201);
+    expect(signal.highFreqExec).toBe(true);
+    expect(signal.severity).toBe("warning");
+  });
+
+  it("does not flag exec below threshold", () => {
+    const events = Array.from({ length: 100 }, () => mkEvent({}));
+    const signal = detectAuditAnomalies(events);
+    expect(signal.highFreqExec).toBe(false);
+    expect(signal.severity).toBe("ok");
+  });
+
+  it("respects custom highFreqExecThreshold", () => {
+    const events = Array.from({ length: 10 }, () => mkEvent({}));
+    const signal = detectAuditAnomalies(events, {
+      highFreqExecThreshold: 5,
+    });
+    expect(signal.highFreqExec).toBe(true);
+  });
+
+  it("detects sensitive writes (.env / credentials / etc)", () => {
+    const events = [
+      mkEvent({
+        toolName: "Write",
+        category: "fs-write",
+        target: "/path/.env.local",
+      }),
+      mkEvent({
+        toolName: "Edit",
+        category: "fs-write",
+        target: "/path/credentials.json",
+      }),
+      mkEvent({
+        toolName: "Write",
+        category: "fs-write",
+        target: "/path/private_key.pem",
+      }),
+    ];
+    const signal = detectAuditAnomalies(events);
+    expect(signal.sensitiveWrites).toHaveLength(3);
+    expect(signal.severity).toBe("critical");
+  });
+
+  it("critical severity outranks warning", () => {
+    const events = [
+      mkEvent({
+        toolName: "mcp__unknown__x",
+        category: "mcp",
+      }),
+      mkEvent({
+        toolName: "Write",
+        category: "fs-write",
+        target: "/path/.env",
+      }),
+    ];
+    const signal = detectAuditAnomalies(events);
+    expect(signal.newMcpServers).toEqual(["unknown"]);
+    expect(signal.sensitiveWrites).toHaveLength(1);
+    expect(signal.severity).toBe("critical");
+  });
+
+  it("returns ok severity with empty events", () => {
+    const signal = detectAuditAnomalies([]);
+    expect(signal.severity).toBe("ok");
+    expect(signal.newMcpServers).toEqual([]);
+    expect(signal.execCount).toBe(0);
+    expect(signal.highFreqExec).toBe(false);
+    expect(signal.sensitiveWrites).toEqual([]);
   });
 });

@@ -354,6 +354,14 @@ program
     "--out <path>",
     "Write audit log to file with atomic write (e.g., ~/.koji-lens/audit.log). Default: stdout",
   )
+  .option(
+    "--learn-mcp",
+    "Learn detected MCP servers as known (clears statusline ⚠ for those servers)",
+  )
+  .option(
+    "--sync",
+    "[Pro] Sync audit events to koji-lens Pro cloud (Phase B 6/01-6/14 で本実装、現状 stub)",
+  )
   .action(async (opts) => {
     try {
       await auditCommand(opts);
