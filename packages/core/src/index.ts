@@ -162,3 +162,16 @@ export {
   type UserRole,
   type ProAccessOptions,
 } from "./pro-gate.js";
+
+export {
+  classifyTool,
+  extractTarget,
+  extractAuditEvents,
+  filterAuditEvents,
+  collectAuditEvents,
+  formatAuditEventText,
+  formatAuditEventsJson,
+  type AuditCategory,
+  type AuditEvent,
+  type AuditFilterOptions,
+} from "./audit.js";

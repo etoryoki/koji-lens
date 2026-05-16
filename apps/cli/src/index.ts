@@ -16,6 +16,7 @@ import { hookCommand } from "./commands/hook.js";
 import { loginCommand } from "./commands/login.js";
 import { syncCommand } from "./commands/sync.js";
 import { statusCommand } from "./commands/status.js";
+import { auditCommand } from "./commands/audit.js";
 
 const pkgPath = fileURLToPath(new URL("../package.json", import.meta.url));
 const pkg = JSON.parse(readFileSync(pkgPath, "utf8")) as { version: string };
@@ -326,6 +327,36 @@ program
   .action(async () => {
     try {
       await statusCommand();
+    } catch (err) {
+      console.error(err instanceof Error ? err.message : err);
+      process.exit(1);
+    }
+  });
+
+program
+  .command("audit")
+  .description(
+    "List Claude Code tool_use audit events (fs-read / fs-write / exec / fetch / task / mcp / other)",
+  )
+  .option(
+    "--since <expr>",
+    'Period start: "Nh" / "Nd" / "Nw" or ISO date',
+    "24h",
+  )
+  .option(
+    "--category <cat>",
+    "Filter by category: fs-read | fs-write | exec | fetch | task | mcp | other",
+  )
+  .option("--tool <name>", "Filter by exact tool name (e.g., Bash, Edit)")
+  .option("--format <format>", "Output format: text | json", "text")
+  .option("--dir <path>", "Claude Code log directory (default: ~/.claude/projects)")
+  .option(
+    "--out <path>",
+    "Write audit log to file with atomic write (e.g., ~/.koji-lens/audit.log). Default: stdout",
+  )
+  .action(async (opts) => {
+    try {
+      await auditCommand(opts);
     } catch (err) {
       console.error(err instanceof Error ? err.message : err);
       process.exit(1);
