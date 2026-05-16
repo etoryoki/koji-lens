@@ -7,6 +7,7 @@ import {
   formatAuditEventText,
   detectAuditAnomalies,
   extractMcpServerName,
+  redactSensitiveInput,
   type AuditEvent,
   type ClaudeCodeRecord,
 } from "../src/index.js";
@@ -386,5 +387,179 @@ describe("detectAuditAnomalies", () => {
     expect(signal.execCount).toBe(0);
     expect(signal.highFreqExec).toBe(false);
     expect(signal.sensitiveWrites).toEqual([]);
+  });
+});
+
+describe("redactSensitiveInput", () => {
+  it("redacts email addresses", () => {
+    const input = { msg: "Contact user@example.com for details" };
+    const out = redactSensitiveInput(input);
+    expect(out.msg).toBe("Contact [EMAIL] for details");
+  });
+
+  it("redacts US phone numbers", () => {
+    const input = { msg: "Call 555-123-4567 today" };
+    const out = redactSensitiveInput(input);
+    expect(out.msg).toContain("[PHONE");
+  });
+
+  it("redacts credit card numbers", () => {
+    const input = { command: "echo 4111-1111-1111-1111" };
+    const out = redactSensitiveInput(input);
+    expect(out.command).toBe("echo [CARD]");
+  });
+
+  it("redacts Stripe API keys", () => {
+    // Use clearly-fake key constructed at runtime to avoid GitHub Push Protection
+    // false-positive on static string scan (real secrets must never enter test files).
+    const fakeKey = "sk_" + "live" + "_" + "F".repeat(24);
+    const input = { cmd: `curl -H 'Authorization: Bearer ${fakeKey}' ...` };
+    const out = redactSensitiveInput(input);
+    expect(out.cmd).toContain("[API_KEY]");
+    expect(out.cmd).not.toContain(fakeKey);
+  });
+
+  it("redacts Bearer tokens", () => {
+    const input = { headers: "Authorization: Bearer abc123xyz789defghijklmnop" };
+    const out = redactSensitiveInput(input);
+    expect(out.headers).toContain("Bearer [TOKEN]");
+  });
+
+  it("redacts UUIDs", () => {
+    const input = { id: "550e8400-e29b-41d4-a716-446655440000" };
+    const out = redactSensitiveInput(input);
+    expect(out.id).toBe("[UUID]");
+  });
+
+  it("recursively walks nested objects", () => {
+    const input = {
+      level1: {
+        level2: {
+          email: "nested@example.com",
+        },
+      },
+    };
+    const out = redactSensitiveInput(input);
+    expect(
+      ((out.level1 as Record<string, unknown>).level2 as Record<string, unknown>)
+        .email,
+    ).toBe("[EMAIL]");
+  });
+
+  it("redacts inside arrays", () => {
+    const input = { emails: ["a@b.com", "c@d.org"] };
+    const out = redactSensitiveInput(input);
+    expect(out.emails).toEqual(["[EMAIL]", "[EMAIL]"]);
+  });
+
+  it("preserves non-string values (numbers, booleans, null)", () => {
+    const input = { count: 42, flag: true, missing: null };
+    const out = redactSensitiveInput(input);
+    expect(out).toEqual({ count: 42, flag: true, missing: null });
+  });
+
+  it("preserves originals (no mutation)", () => {
+    const input = { email: "user@example.com" };
+    const out = redactSensitiveInput(input);
+    expect(input.email).toBe("user@example.com"); // original unchanged
+    expect(out.email).toBe("[EMAIL]");
+  });
+});
+
+describe("extractAuditEvents with PII redaction", () => {
+  it("redacts PII in input by default", () => {
+    const rec: ClaudeCodeRecord = {
+      type: "assistant",
+      timestamp: "2026-05-16T10:00:00Z",
+      message: {
+        content: [
+          {
+            type: "tool_use",
+            name: "Bash",
+            input: { command: "echo user@example.com" },
+          } as never,
+        ],
+      },
+    };
+    const events = extractAuditEvents(rec);
+    expect((events[0].input as Record<string, unknown>).command).toBe(
+      "echo [EMAIL]",
+    );
+  });
+
+  it("preserves raw input with raw=true (debug mode)", () => {
+    const rec: ClaudeCodeRecord = {
+      type: "assistant",
+      timestamp: "2026-05-16T10:00:00Z",
+      message: {
+        content: [
+          {
+            type: "tool_use",
+            name: "Bash",
+            input: { command: "echo user@example.com" },
+          } as never,
+        ],
+      },
+    };
+    const events = extractAuditEvents(rec, { raw: true });
+    expect((events[0].input as Record<string, unknown>).command).toBe(
+      "echo user@example.com",
+    );
+  });
+
+  it("does not redact target file_path (no PII patterns matched)", () => {
+    const rec: ClaudeCodeRecord = {
+      type: "assistant",
+      timestamp: "2026-05-16T10:00:00Z",
+      message: {
+        content: [
+          {
+            type: "tool_use",
+            name: "Read",
+            input: { file_path: "/home/user/.env.local" },
+          } as never,
+        ],
+      },
+    };
+    const events = extractAuditEvents(rec);
+    // target = file_path に PII patterns 無いのでそのまま
+    expect(events[0].target).toBe("/home/user/.env.local");
+  });
+
+  it("redacts target when command contains PII (e.g., email in commit message)", () => {
+    const rec: ClaudeCodeRecord = {
+      type: "assistant",
+      timestamp: "2026-05-16T10:00:00Z",
+      message: {
+        content: [
+          {
+            type: "tool_use",
+            name: "Bash",
+            input: { command: "git commit -m 'fix: notify user@example.com'" },
+          } as never,
+        ],
+      },
+    };
+    const events = extractAuditEvents(rec);
+    expect(events[0].target).toContain("[EMAIL]");
+    expect(events[0].target).not.toContain("user@example.com");
+  });
+
+  it("preserves raw target with raw=true (debug mode)", () => {
+    const rec: ClaudeCodeRecord = {
+      type: "assistant",
+      timestamp: "2026-05-16T10:00:00Z",
+      message: {
+        content: [
+          {
+            type: "tool_use",
+            name: "Bash",
+            input: { command: "echo user@example.com" },
+          } as never,
+        ],
+      },
+    };
+    const events = extractAuditEvents(rec, { raw: true });
+    expect(events[0].target).toBe("echo user@example.com");
   });
 });

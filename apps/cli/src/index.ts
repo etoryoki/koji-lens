@@ -362,6 +362,10 @@ program
     "--sync",
     "[Pro] Sync audit events to koji-lens Pro cloud (Phase B 6/01-6/14 で本実装、現状 stub)",
   )
+  .option(
+    "--raw",
+    "Disable PII redaction (debug only). Default: PII (email/phone/card/API key/UUID) auto-redacted",
+  )
   .action(async (opts) => {
     try {
       await auditCommand(opts);

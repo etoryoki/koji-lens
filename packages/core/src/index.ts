@@ -170,6 +170,7 @@ export {
   filterAuditEvents,
   collectAuditEvents,
   detectAuditAnomalies,
+  redactSensitiveInput,
   formatAuditEventText,
   formatAuditEventsJson,
   type AuditCategory,
@@ -177,6 +178,8 @@ export {
   type AuditFilterOptions,
   type AuditAnomalyOptions,
   type AuditAnomalySignal,
+  type ExtractOptions,
+  type CollectAuditOptions,
 } from "./audit.js";
 
 export {

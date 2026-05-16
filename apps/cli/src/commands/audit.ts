@@ -23,6 +23,7 @@ interface AuditOptions {
   out?: string;
   sync?: boolean;
   learnMcp?: boolean;
+  raw?: boolean;
 }
 
 const VALID_CATEGORIES: AuditCategory[] = [
@@ -53,6 +54,7 @@ export async function auditCommand(opts: AuditOptions): Promise<void> {
     sinceMs,
     category,
     tool: opts.tool,
+    raw: opts.raw,
   });
 
   // --learn-mcp: 検出された MCP server を knownMcpServers に追加 (statusline ⚠ 消去用)

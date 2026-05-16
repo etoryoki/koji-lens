@@ -93,7 +93,97 @@ export function extractTarget(
   }
 }
 
-export function extractAuditEvents(rec: ClaudeCodeRecord): AuditEvent[] {
+/**
+ * PII redaction patterns (5/16 戦略メモ v0.3 §0.6 発見 3 + 設計ドラフト v0.1 §6 B.1 整合)
+ *
+ * Anthropic 公式 (`anthropic.com/engineering/code-execution-with-mcp`) は agent 側で PII
+ * tokenization (`[EMAIL_1]` / `[PHONE_1]` 等) を自動化、model context 漏れ防止。
+ * 案 E (audit log) は tool_use 記録時の input field に PII 含む可能性 = MVP 組み込み必須。
+ *
+ * トレードオフ:
+ * - False positive: legitimate な UUID / API テストキー等が redaction される
+ * - False negative: 国際電話番号 / 特殊形式 API キー等が redaction 漏れ
+ * - 採用 = 既知パターン redaction + CLI --raw フラグでデバッグ用無効化
+ */
+
+/**
+ * 評価順序は specific → general、長い数値 pattern を短い pattern より先に。
+ * 例: Credit card (16 digits) を Phone JP (10-12 digits) より先に評価。
+ */
+const REDACTION_PATTERNS: Array<{ regex: RegExp; replacement: string }> = [
+  // Email (RFC 5322 simplified)
+  {
+    regex: /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g,
+    replacement: "[EMAIL]",
+  },
+  // UUID (specific format, evaluated early)
+  {
+    regex: /\b[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\b/gi,
+    replacement: "[UUID]",
+  },
+  // Stripe-style API keys (specific prefix)
+  {
+    regex: /\b(?:sk|pk)_(?:live|test)_[a-zA-Z0-9]{24,}\b/g,
+    replacement: "[API_KEY]",
+  },
+  // Bearer tokens (specific prefix)
+  { regex: /Bearer\s+[a-zA-Z0-9._-]{20,}/g, replacement: "Bearer [TOKEN]" },
+  // Credit card (Visa/MC/Amex, 16 digits with separators) — Phone より先に評価
+  {
+    regex: /\b\d{4}[-\s]\d{4}[-\s]\d{4}[-\s]\d{4}\b/g,
+    replacement: "[CARD]",
+  },
+  // Phone US (+1 optional + 10 digits)
+  {
+    regex: /\b(?:\+?1[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}\b/g,
+    replacement: "[PHONE_US]",
+  },
+  // Phone JP (XXX-XXXX-XXXX or XX-XXXX-XXXX hyphen-separated)
+  { regex: /\b\d{2,4}-\d{2,4}-\d{4}\b/g, replacement: "[PHONE_JP]" },
+];
+
+export function redactString(s: string): string {
+  let result = s;
+  for (const { regex, replacement } of REDACTION_PATTERNS) {
+    result = result.replace(regex, replacement);
+  }
+  return result;
+}
+
+/**
+ * input オブジェクトを再帰的に walk、文字列値に PII redaction を適用。
+ * オリジナルオブジェクトは変更せず、redaction 済の新オブジェクトを返す。
+ */
+export function redactSensitiveInput(
+  input: Record<string, unknown>,
+): Record<string, unknown> {
+  function redactRecursive(v: unknown): unknown {
+    if (typeof v === "string") return redactString(v);
+    if (Array.isArray(v)) return v.map(redactRecursive);
+    if (v && typeof v === "object") {
+      const out: Record<string, unknown> = {};
+      for (const [k, val] of Object.entries(v as Record<string, unknown>)) {
+        out[k] = redactRecursive(val);
+      }
+      return out;
+    }
+    return v;
+  }
+  return redactRecursive(input) as Record<string, unknown>;
+}
+
+export interface ExtractOptions {
+  /**
+   * false なら input field に PII redaction 適用 (default: false = redaction ON)
+   * CLI --raw フラグで true 指定可能 (デバッグ用)
+   */
+  raw?: boolean;
+}
+
+export function extractAuditEvents(
+  rec: ClaudeCodeRecord,
+  opts: ExtractOptions = {},
+): AuditEvent[] {
   if (rec.type !== "assistant") return [];
   if (!rec.timestamp) return [];
   if (!rec.message?.content) return [];
@@ -102,12 +192,19 @@ export function extractAuditEvents(rec: ClaudeCodeRecord): AuditEvent[] {
   for (const c of rec.message.content) {
     if (c.type !== "tool_use" || typeof c.name !== "string") continue;
     const toolName = c.name;
-    const input =
+    const rawInput =
       ((c as unknown as Record<string, unknown>).input as
         | Record<string, unknown>
         | undefined) ?? {};
     const category = classifyTool(toolName);
-    const target = extractTarget(category, input);
+    // target は raw input から抽出後、--raw でない限り redaction 適用
+    // (command field に email / API key 等含む可能性、5/16 v0.3 設計拡張)
+    const rawTarget = extractTarget(category, rawInput);
+    const target = opts.raw || rawTarget === null
+      ? rawTarget
+      : redactString(rawTarget);
+    // input field は redaction 適用 (--raw 指定時のみ raw 保持)
+    const input = opts.raw ? rawInput : redactSensitiveInput(rawInput);
     events.push({
       sessionId,
       timestamp: rec.timestamp,
@@ -141,9 +238,11 @@ export function filterAuditEvents(
   });
 }
 
+export interface CollectAuditOptions extends AuditFilterOptions, ExtractOptions {}
+
 export function collectAuditEvents(
   rootDir: string,
-  opts: AuditFilterOptions = {},
+  opts: CollectAuditOptions = {},
 ): AuditEvent[] {
   const files = findJsonlFiles(rootDir);
   const events: AuditEvent[] = [];
@@ -161,7 +260,7 @@ export function collectAuditEvents(
       const augmented: ClaudeCodeRecord = rec.sessionId
         ? rec
         : { ...rec, sessionId: fallbackSessionId };
-      events.push(...extractAuditEvents(augmented));
+      events.push(...extractAuditEvents(augmented, { raw: opts.raw }));
     }
   }
   return filterAuditEvents(events, opts);
