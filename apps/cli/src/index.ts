@@ -17,6 +17,7 @@ import { loginCommand } from "./commands/login.js";
 import { syncCommand } from "./commands/sync.js";
 import { statusCommand } from "./commands/status.js";
 import { auditCommand } from "./commands/audit.js";
+import { toolsCommand } from "./commands/tools.js";
 
 const pkgPath = fileURLToPath(new URL("../package.json", import.meta.url));
 const pkg = JSON.parse(readFileSync(pkgPath, "utf8")) as { version: string };
@@ -369,6 +370,29 @@ program
   .action(async (opts) => {
     try {
       await auditCommand(opts);
+    } catch (err) {
+      console.error(err instanceof Error ? err.message : err);
+      process.exit(1);
+    }
+  });
+
+program
+  .command("tools")
+  .description(
+    "Show tool invocation breakdown (Bash / Read / Edit / etc.) across sessions",
+  )
+  .option(
+    "--since <expr>",
+    'Period start: "Nh" / "Nd" / "Nw" or ISO date',
+    "7d",
+  )
+  .option("--format <format>", "Output format: text | json", "text")
+  .option("--dir <path>", "Claude Code log directory")
+  .option("--limit <n>", "Show top N tools (default: 20)")
+  .option("--no-cache", "Disable SQLite cache")
+  .action(async (opts) => {
+    try {
+      await toolsCommand(opts);
     } catch (err) {
       console.error(err instanceof Error ? err.message : err);
       process.exit(1);

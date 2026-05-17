@@ -131,6 +131,33 @@ export function renderTotalBlock(
   );
   lines.push(`  tools:          ${topEntries(total.tools, topN)}`);
   lines.push(`  models:         ${topEntries(total.models, topN)}`);
+
+  const totalTokens =
+    total.inputTokens +
+    total.outputTokens +
+    total.cacheReadTokens +
+    total.cacheCreateTokens;
+  if (totalTokens > 0) {
+    const cacheReadPct = ((total.cacheReadTokens / totalTokens) * 100).toFixed(1);
+    const cacheCreatePct = ((total.cacheCreateTokens / totalTokens) * 100).toFixed(1);
+    const outputPct = ((total.outputTokens / totalTokens) * 100).toFixed(2);
+    const inputPct = ((total.inputTokens / totalTokens) * 100).toFixed(2);
+    lines.push(
+      `  token mix:      cache_read ${cacheReadPct}% / cache_create ${cacheCreatePct}% / output ${outputPct}% / input ${inputPct}%`,
+    );
+  }
+
+  if (total.costUsd > 0) {
+    const topCostModel = Object.entries(total.costsByModel)
+      .sort(([, a], [, b]) => b - a)
+      .slice(0, 1)[0];
+    if (topCostModel) {
+      const [topModel, topCost] = topCostModel;
+      const topPct = ((topCost / total.costUsd) * 100).toFixed(1);
+      lines.push(`  cost mix:       ${topModel} ${topPct}% (top model share)`);
+    }
+  }
+
   lines.push("");
   lines.push(
     "  note: Cost is API-rate equivalent (token × Anthropic API price).",
