@@ -121,6 +121,23 @@ const REDACTION_PATTERNS: Array<{ regex: RegExp; replacement: string }> = [
     regex: /\b[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\b/gi,
     replacement: "[UUID]",
   },
+  // JWT (header.payload.signature in base64url) — eyJ で始まる JSON header の base64
+  {
+    regex: /\beyJ[a-zA-Z0-9_-]{10,}\.eyJ[a-zA-Z0-9_-]{10,}\.[a-zA-Z0-9_-]{10,}\b/g,
+    replacement: "[JWT]",
+  },
+  // AWS Access Key ID (AKIA prefix + 16 chars uppercase alphanumeric)
+  { regex: /\bAKIA[0-9A-Z]{16}\b/g, replacement: "[AWS_KEY]" },
+  // GitHub Personal Access Token (ghp_/gho_/ghu_/ghs_/ghr_ prefix + 36+ chars)
+  {
+    regex: /\bgh[pousr]_[A-Za-z0-9_]{36,}\b/g,
+    replacement: "[GITHUB_TOKEN]",
+  },
+  // Slack incoming webhook URL
+  {
+    regex: /https:\/\/hooks\.slack\.com\/services\/T[A-Z0-9]+\/B[A-Z0-9]+\/[A-Za-z0-9]+/g,
+    replacement: "[SLACK_WEBHOOK]",
+  },
   // Stripe-style API keys (specific prefix)
   {
     regex: /\b(?:sk|pk)_(?:live|test)_[a-zA-Z0-9]{24,}\b/g,

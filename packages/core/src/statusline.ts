@@ -201,13 +201,17 @@ function renderBudgetAlertSuffix(
 
 // 2026-05-16 案 E 段階 6: audit 異常検知 signal レンダリング
 // critical (機密ファイル書き込み) = 🛡 / warning (新規 MCP / 高頻度 exec) = ⚠
-// severity=ok or null/undefined で空文字 (非表示)
+// severity=ok or null/undefined で空文字 (non-display)
+// 2026-05-17 案 B 候補 4-c: severity 別 detail 表示改善 (深町 + 桐谷諮問結果採用)
+//   critical = 🛡 sensitive=N (N 件の機密ファイル書き込み検出)
+//   warning = ⚠ +Nmcp/exec N (具体パターン名明示) or ⚠ (詳細なし fallback)
 function renderAuditSignalSuffix(
   signal: AuditAnomalySignal | null | undefined,
 ): string {
   if (!signal || signal.severity === "ok") return "";
   if (signal.severity === "critical") {
-    return `🛡 ${signal.sensitiveWrites.length}`;
+    const n = signal.sensitiveWrites.length;
+    return n > 0 ? `🛡 sensitive=${n}` : `🛡`;
   }
   // warning
   const parts: string[] = [];
@@ -215,7 +219,7 @@ function renderAuditSignalSuffix(
     parts.push(`+${signal.newMcpServers.length}mcp`);
   }
   if (signal.highFreqExec) {
-    parts.push(`exec ${signal.execCount}`);
+    parts.push(`exec=${signal.execCount}`);
   }
-  return parts.length > 0 ? `⚠ ${parts.join("/")}` : "⚠";
+  return parts.length > 0 ? `⚠ ${parts.join(" ")}` : "⚠";
 }

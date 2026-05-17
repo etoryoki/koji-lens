@@ -464,6 +464,52 @@ describe("redactSensitiveInput", () => {
     expect(input.email).toBe("user@example.com"); // original unchanged
     expect(out.email).toBe("[EMAIL]");
   });
+
+  it("redacts AWS access key IDs", () => {
+    const fakeAws = "AKIA" + "ABCDEFGHIJKLMNOP";
+    const input = { env: `AWS_ACCESS_KEY_ID=${fakeAws}` };
+    const out = redactSensitiveInput(input);
+    expect(out.env).toBe("AWS_ACCESS_KEY_ID=[AWS_KEY]");
+  });
+
+  it("redacts GitHub Personal Access Tokens", () => {
+    const fakeGhp = "ghp_" + "A".repeat(36);
+    const input = { headers: `Authorization: token ${fakeGhp}` };
+    const out = redactSensitiveInput(input);
+    expect(out.headers).toBe("Authorization: token [GITHUB_TOKEN]");
+  });
+
+  it("redacts GitHub fine-grained tokens (ghs_/gho_/ghu_/ghr_ prefix)", () => {
+    const variants = ["gho_", "ghs_", "ghu_", "ghr_"];
+    for (const prefix of variants) {
+      const fake = prefix + "B".repeat(36);
+      const out = redactSensitiveInput({ token: fake });
+      expect(out.token).toBe("[GITHUB_TOKEN]");
+    }
+  });
+
+  it("redacts Slack incoming webhook URLs", () => {
+    // Construct at runtime to avoid GitHub Push Protection false-positive
+    // on static string scan (real webhooks must never enter test files).
+    const fakeSlack =
+      "https://hooks.slack.com" +
+      "/services/T" +
+      "01234567" +
+      "/B" +
+      "01234567" +
+      "/abcdefghijklmnopqrstuvwx";
+    const input = { url: fakeSlack };
+    const out = redactSensitiveInput(input);
+    expect(out.url).toBe("[SLACK_WEBHOOK]");
+  });
+
+  it("redacts JWT tokens (header.payload.signature)", () => {
+    const fakeJwt =
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkw.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV";
+    const input = { cookie: `auth=${fakeJwt}` };
+    const out = redactSensitiveInput(input);
+    expect(out.cookie).toBe("auth=[JWT]");
+  });
 });
 
 describe("extractAuditEvents with PII redaction", () => {
