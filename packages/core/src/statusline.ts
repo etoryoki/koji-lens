@@ -71,24 +71,20 @@ export function renderStatusline(
   const cacheVisible = options.cacheRate != null; // null/undefined で非表示
   const stateVisible = options.stateIcon != null;
 
-  const parts: string[] = [];
+  // 2026-05-17 白川 Designer Critical 1 採用: cost group | audit group 二ブロック構造
+  // 修正前: state → budget → audit → spend+cache → buddy = 絵文字連続 (🔥 ⚠) で区別不能
+  // 修正後: state → budget → spend+cache → │ → audit → buddy = 文脈別グルーピング
+  const costGroup: string[] = [];
+  const auditGroup: string[] = [];
 
   if (stateVisible && options.stateIcon) {
-    parts.push(options.stateIcon);
+    costGroup.push(options.stateIcon);
   }
 
-  // 2026-05-14 (深町 W2 採用): 予算アラート表示を state icon と spend signal の間に配置
-  // 警告系の視認順 (緊急度高い側を左に集約)、Free 開放で「気付き = Free」整合
+  // 予算アラート (cost 軸 = cost group): warning 80%+ = 💸 / critical 100%+ = 🔥
   const budgetAlertText = renderBudgetAlertSuffix(options.budgetAlert);
   if (budgetAlertText) {
-    parts.push(budgetAlertText);
-  }
-
-  // 2026-05-16 案 E 段階 6: audit 異常検知 signal を予算アラートと spend の間に配置
-  // critical (機密ファイル書き込み) = 🛡 / warning (新規 MCP / 高頻度 exec) = ⚠
-  const auditText = renderAuditSignalSuffix(options.auditSignal);
-  if (auditText) {
-    parts.push(auditText);
+    costGroup.push(budgetAlertText);
   }
 
   if (spendVisible) {
@@ -96,21 +92,37 @@ export function renderStatusline(
     const cacheSuffix = cacheVisible
       ? renderCacheSuffix(options.cacheRate, mode)
       : "";
-    parts.push(cacheSuffix ? `${base}${cacheSuffix}` : base);
+    costGroup.push(cacheSuffix ? `${base}${cacheSuffix}` : base);
   } else if (cacheVisible) {
     // spend 非表示でも cache rate のみ表示は妥当
     const cacheSuffix = renderCacheSuffix(options.cacheRate, mode);
     if (cacheSuffix) {
       // " 💎 78%" の先頭スペース除去
-      parts.push(cacheSuffix.startsWith(" ") ? cacheSuffix.slice(1) : cacheSuffix);
+      costGroup.push(cacheSuffix.startsWith(" ") ? cacheSuffix.slice(1) : cacheSuffix);
     }
   }
 
-  if (buddySuffix) {
-    parts.push(buddySuffix);
+  // audit 異常検知 signal (security 軸 = audit group): critical = 🛡 / warning = ⚠
+  const auditText = renderAuditSignalSuffix(options.auditSignal);
+  if (auditText) {
+    auditGroup.push(auditText);
   }
 
-  return parts.join(" ");
+  // 2 ブロック結合 (audit 表示時のみ │ セパレータ insert)
+  const parts: string[] = [];
+  if (costGroup.length > 0) {
+    parts.push(costGroup.join(" "));
+  }
+  if (auditGroup.length > 0) {
+    parts.push(auditGroup.join(" "));
+  }
+  let result_str = parts.join(" │ ");
+
+  if (buddySuffix) {
+    result_str = result_str ? `${result_str} ${buddySuffix}` : buddySuffix;
+  }
+
+  return result_str;
 }
 
 function renderBuddySuffix(

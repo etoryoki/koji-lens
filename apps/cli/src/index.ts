@@ -32,18 +32,23 @@ program
   .version(pkg.version);
 
 // 2026-05-17 Onboarding 改善 (鷹野最大反論「Activation 直結軸」採用):
-// help 末尾に Quick Start + 主要コマンド 5 件案内追加で初見ユーザー導線最短化
+// help 上部 (description 直後) に Quick Start + 主要コマンド 5 件案内
+// 2026-05-17 白川 Critical 2 採用: 'after' → 'beforeAll' で 16 subcommand 一覧後のスクロール外押し出し回避
+// 2026-05-17 白川 最大反論採用: Quick Start 3 番目 = audit --explain → export --format markdown
+//   (Activation 直結軸: summary → tools → export markdown = Zenn/HN 投稿準備直結、audit は More セクション移動)
 program.addHelpText(
-  "after",
+  "beforeAll",
   `
 Quick Start (try these 3 commands first):
-  $ koji-lens summary --since 7d       # 7-day usage summary (cost / tokens / cache mix)
-  $ koji-lens tools --since 7d         # tool invocation breakdown (Bash / Read / Edit / ...)
-  $ koji-lens audit --explain          # security audit + 警告 → 解消 hint
+  $ koji-lens summary --since 7d            # 7-day usage summary (cost / tokens / cache mix)
+  $ koji-lens tools --since 7d              # tool invocation breakdown (Bash / Read / Edit / ...)
+  $ koji-lens export --since 7d --format markdown   # share-ready Markdown for Zenn / HN / blog
 
 More:
   $ koji-lens dashboard                # start local web UI (browser-based dashboard)
-  $ koji-lens trend --weeks 8          # 8-week regression detection (cache / latency / model)
+  $ koji-lens statusline --buddy       # 1-line spend / cache / state + koji mascot
+  $ koji-lens audit --explain          # security audit + 警告 → 解消 hint
+  $ koji-lens trend --weeks 8          # 8-week regression detection
   $ koji-lens --help                   # show all commands
 
 Docs:    https://lens.kojihq.com/docs
