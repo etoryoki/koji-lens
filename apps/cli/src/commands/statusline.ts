@@ -12,12 +12,19 @@ import {
   renderStatusline,
   resolveBudgetForProject,
   analyzeDirectory,
+  detectAuditAnomalies,
+  readAuditState,
+  type AuditAnomalySignal,
   type BuddyLocale,
   type BuddyType,
   type SessionAggregate,
   type StatuslineMode,
 } from "@kojihq/core";
-import { analyzeDirectoryCached, openCacheDb } from "@kojihq/core-sqlite";
+import {
+  analyzeDirectoryCached,
+  collectAuditEventsCached,
+  openCacheDb,
+} from "@kojihq/core-sqlite";
 import { spawn } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
 import { homedir } from "node:os";
@@ -178,6 +185,10 @@ export interface StatuslineOptions {
   // 2026-05-14 (深町 W2 採用): 予算アラート表示 (Free 開放、デフォルト ON)
   // --no-budget で opt-out、budgetUsd 未設定時は自動非表示
   budget?: boolean;
+  // 2026-05-17 オーナー dogfooding 報告: audit signal が statusline に表示されない問題
+  // = 5/16 案 E 段階 6 実装時に CLI 側引き渡し欠落、デフォルト ON + --no-audit で opt-out
+  // performance: cache 経由 24h scope = キャッシュ hit 時 < 1 秒
+  audit?: boolean;
 }
 
 const VALID_MODES: ReadonlyArray<StatuslineMode> = [
@@ -219,12 +230,30 @@ export async function statuslineCommand(
   const ranges = computeMonthRanges();
 
   let all: SessionAggregate[];
+  // 2026-05-17 audit signal 統合修正 (オーナー dogfooding 報告): 5/16 案 E 段階 6 実装時に CLI 側引き渡し欠落
+  // sessions cache と同一 DB 接続で audit events も取得 (1 回 open で完結、performance 最適化)
+  // --no-cache 時は audit signal も無効化 (cache off ユーザーの意図整合)
+  // --no-audit 時は audit signal 計算自体スキップ
+  let auditSignal: AuditAnomalySignal | null = null;
   if (opts.cache === false) {
     all = await analyzeDirectory(dir);
+    // --no-cache 時: audit signal 非計算 (performance 配慮)
   } else {
     const cache = openCacheDb();
     try {
       all = await analyzeDirectoryCached(dir, cache.db);
+      if (opts.audit !== false) {
+        // 24h scope = 直近の異常検知 (new MCP / 高頻度 exec / sensitive write) 把握
+        // statusline は high-frequency 呼び出し = cache hit 必須、collectAuditEventsCached 経由
+        const auditSinceMs = Date.now() - 24 * 60 * 60 * 1000;
+        const auditEvents = await collectAuditEventsCached(dir, cache.db, {
+          sinceMs: auditSinceMs,
+        });
+        const auditState = readAuditState();
+        auditSignal = detectAuditAnomalies(auditEvents, {
+          knownMcpServers: auditState.knownMcpServers,
+        });
+      }
     } finally {
       cache.close();
     }
@@ -310,6 +339,8 @@ export async function statuslineCommand(
             cacheRate: showCache ? cacheRate : null,
             spendVisible: showSpend,
             budgetAlert: buddyOnly ? null : budgetAlert,
+            // 2026-05-17 audit signal 統合修正: buddyOnly 時のみ非表示、それ以外は default ON
+            auditSignal: buddyOnly ? null : auditSignal,
             buddy: buddyEnabled
               ? {
                   enabled: true,
@@ -320,6 +351,7 @@ export async function statuslineCommand(
                 }
               : undefined,
           }),
+          auditSignal,
           ccusagePrefix: combinedEnabled ? ccusagePrefix : undefined,
         },
         null,
@@ -334,6 +366,8 @@ export async function statuslineCommand(
     cacheRate: showCache ? cacheRate : null,
     spendVisible: showSpend,
     budgetAlert: buddyOnly ? null : budgetAlert,
+    // 2026-05-17 audit signal 統合修正: buddyOnly 時のみ非表示、それ以外は default ON
+    auditSignal: buddyOnly ? null : auditSignal,
     buddy: buddyEnabled
       ? {
           enabled: true,

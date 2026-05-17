@@ -246,6 +246,10 @@ program
     "Suppress budget alert signal (💸 X% for warning / 🔥 X% for critical). Auto-hidden if budgetUsd is not set.",
   )
   .option(
+    "--no-audit",
+    "Suppress audit anomaly signal (🛡 sensitive writes / ⚠ new MCP / high-freq exec). Auto-hidden if --no-cache is set.",
+  )
+  .option(
     "--buddy",
     "Enable koji-buddy decoration suffix (🍙·/+/✦/★/★★ for Lv1-5, appended to statusline tail). Persistent: set KOJI_LENS_BUDDY=1 in env",
   )
