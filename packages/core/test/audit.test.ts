@@ -271,6 +271,81 @@ describe("extractMcpServerName", () => {
   });
 });
 
+describe("detectAuditAnomalies SENSITIVE_WRITE_WHITELIST (修正案 1、2026-05-17)", () => {
+  it("excludes .env.example template file (false positive 改善)", () => {
+    const events: AuditEvent[] = [
+      {
+        sessionId: "s1",
+        timestamp: "2026-05-17T10:00:00Z",
+        toolName: "Write",
+        category: "fs-write",
+        target: "/path/to/.env.example",
+        input: null,
+      },
+    ];
+    const result = detectAuditAnomalies(events);
+    expect(result.sensitiveWrites).toEqual([]); // whitelist で除外
+    expect(result.severity).toBe("ok");
+  });
+
+  it("excludes various template variants", () => {
+    const templates = [
+      "/path/.env.example",
+      "/path/.env.local.example",
+      "/path/.env.production.sample",
+      "/path/credentials.example",
+      "/path/secrets.template",
+      "/path/private_key.example",
+      "/path/cert.pem.example",
+    ];
+    for (const target of templates) {
+      const events: AuditEvent[] = [
+        {
+          sessionId: "s1",
+          timestamp: "2026-05-17T10:00:00Z",
+          toolName: "Write",
+          category: "fs-write",
+          target,
+          input: null,
+        },
+      ];
+      const result = detectAuditAnomalies(events);
+      expect(result.sensitiveWrites).toEqual([]);
+    }
+  });
+
+  it("still detects real .env (not template)", () => {
+    const events: AuditEvent[] = [
+      {
+        sessionId: "s1",
+        timestamp: "2026-05-17T10:00:00Z",
+        toolName: "Write",
+        category: "fs-write",
+        target: "/path/.env",
+        input: null,
+      },
+    ];
+    const result = detectAuditAnomalies(events);
+    expect(result.sensitiveWrites).toEqual(["/path/.env"]);
+    expect(result.severity).toBe("critical");
+  });
+
+  it("still detects credentials.json (not template)", () => {
+    const events: AuditEvent[] = [
+      {
+        sessionId: "s1",
+        timestamp: "2026-05-17T10:00:00Z",
+        toolName: "Write",
+        category: "fs-write",
+        target: "/path/credentials.json",
+        input: null,
+      },
+    ];
+    const result = detectAuditAnomalies(events);
+    expect(result.sensitiveWrites).toEqual(["/path/credentials.json"]);
+  });
+});
+
 describe("detectAuditAnomalies", () => {
   function mkEvent(
     overrides: Partial<AuditEvent>,

@@ -313,6 +313,27 @@ const SENSITIVE_WRITE_PATTERNS = [
   /\.ppk$/i,
 ];
 
+// 2026-05-17 修正案 1: false positive 改善 (オーナー指摘 + 5/17 実 dogfooding で 10+/16 件誤検出確認)
+// テンプレートファイル (.env.example / .env.sample / .env.local.example / credentials.template 等) を除外
+// SENSITIVE_WRITE_PATTERNS match + SENSITIVE_WRITE_WHITELIST 非 match = 真の機密ファイル判定
+const SENSITIVE_WRITE_WHITELIST = [
+  /\.env(\.\w+)?\.(example|sample|template|tmpl)$/i, // .env.example / .env.local.example / .env.production.sample 等
+  /credentials?[._-]?(example|sample|template|tmpl)/i, // credentials.example / credentials_template 等
+  /secrets?[._-]?(example|sample|template|tmpl)/i, // secrets.example / secret_template 等
+  /private[_-]?key[._-]?(example|sample|template|tmpl)/i, // private_key.example 等
+  /\.pem\.(example|sample|template|tmpl)$/i, // cert.pem.example 等
+];
+
+/**
+ * sensitive write 判定 = SENSITIVE_WRITE_PATTERNS match かつ SENSITIVE_WRITE_WHITELIST 非 match
+ * 2026-05-17 修正案 1 (false positive 改善)
+ */
+function isSensitiveWrite(target: string): boolean {
+  if (!SENSITIVE_WRITE_PATTERNS.some((p) => p.test(target))) return false;
+  if (SENSITIVE_WRITE_WHITELIST.some((p) => p.test(target))) return false;
+  return true;
+}
+
 export function detectAuditAnomalies(
   events: AuditEvent[],
   opts: AuditAnomalyOptions = {},
@@ -333,7 +354,8 @@ export function detectAuditAnomalies(
     } else if (e.category === "exec") {
       execCount += 1;
     } else if (e.category === "fs-write" && e.target) {
-      if (SENSITIVE_WRITE_PATTERNS.some((p) => p.test(e.target ?? ""))) {
+      // 2026-05-17 修正案 1: false positive 改善 (whitelist 経由)
+      if (isSensitiveWrite(e.target)) {
         sensitiveWrites.push(e.target);
       }
     }
