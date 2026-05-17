@@ -11,6 +11,8 @@
 
 Your local Claude Code usage analyzer. No servers, no signup — reads your local JSONL logs and shows your token usage with API-equivalent cost.
 
+> **Prerequisite**: koji-lens reads JSONL files that Claude Code writes to `~/.claude/projects/` (Windows: `%USERPROFILE%\.claude\projects\`). If you haven't run Claude Code yet, this directory may be empty and `koji-lens summary` will show no data. Run Claude Code for a few minutes first to generate JSONL logs.
+
 > **Note**: Cost figures are calculated as `tokens × Anthropic API price`. If you use Claude Code via API key, this matches your actual spend. If you use Claude Code via Claude Pro / Max subscription, this is a reference figure — your actual billing is the flat subscription fee. See [FAQ](#faq).
 
 > **Status**: β (public beta). Install with `@beta` tag. See [Known limitations](#known-limitations).
@@ -286,11 +288,17 @@ Emoji legend: 💚 cost dropped > 10% / 💛 within ±10% / 🚨 cost rose > 10%
 
 Tool-use audit log with PII redaction (11 patterns: email, UUID, JWT, AWS access key, GitHub PAT, Slack webhook, Stripe key, Bearer, card, phone US/JP). Detects anomalies (new MCP server, high-freq exec, sensitive writes).
 
+`audit` uses a SQLite cache (`~/.koji-lens/cache.db`) keyed by file mtime + size:
+
+- First run on a project: parses all JSONL files (typically a few seconds for ~100-200 sessions)
+- Subsequent runs: cache hit on unchanged files, only re-parses modified files (typically under a second)
+- Speedup varies with your session count, file sizes, and disk I/O.
+
 ```bash
 koji-lens audit --since 7d                  # list audit events (text)
 koji-lens audit --since 7d --explain        # show warnings + 次に何すべきか hint
 koji-lens audit --learn-mcp                 # whitelist current MCP servers (clear ⚠)
-koji-lens audit --no-cache                  # disable SQLite cache (default: enabled, 2nd run -79%)
+koji-lens audit --no-cache                  # disable SQLite cache (default: enabled)
 ```
 
 ### `tools`
