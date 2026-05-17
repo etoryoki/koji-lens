@@ -18,6 +18,15 @@ export interface ToolsOptions {
 }
 
 const DEFAULT_TOP_N = 20;
+const NAME_DISPLAY_WIDTH = 22;
+
+// 2026-05-17 修正 (オーナー dogfooding フィードバック): mcp__github__create_pull_request
+// 等の長い tool 名で count/% 列が右にズレてバーグラフが崩れる問題を修正。
+// 22 文字 default で truncate + "..." 付与、全行幅を整合させる。
+function formatToolName(name: string): string {
+  if (name.length <= NAME_DISPLAY_WIDTH) return name.padEnd(NAME_DISPLAY_WIDTH);
+  return name.slice(0, NAME_DISPLAY_WIDTH - 3) + "...";
+}
 
 export async function toolsCommand(opts: ToolsOptions): Promise<void> {
   const cfg = loadConfig();
@@ -93,7 +102,7 @@ export async function toolsCommand(opts: ToolsOptions): Promise<void> {
     const barLength = Math.round((count / maxCount) * 30);
     const bar = "█".repeat(Math.max(1, barLength));
     process.stdout.write(
-      `  ${name.padEnd(18)} ${count.toString().padStart(6)} (${pct.padStart(5)}%) ${bar}\n`,
+      `  ${formatToolName(name)} ${count.toString().padStart(6)} (${pct.padStart(5)}%) ${bar}\n`,
     );
   }
 
