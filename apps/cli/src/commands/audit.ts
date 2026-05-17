@@ -23,6 +23,10 @@ import {
   type AuditCategory,
   type AuditEvent,
 } from "@kojihq/core";
+import {
+  collectAuditEventsCached,
+  openCacheDb,
+} from "@kojihq/core-sqlite";
 
 interface AuditOptions {
   dir?: string;
@@ -35,6 +39,7 @@ interface AuditOptions {
   learnMcp?: boolean;
   explain?: boolean;
   raw?: boolean;
+  cache?: boolean;
 }
 
 const AUTH_DIR = path.join(homedir(), ".koji-lens");
@@ -175,12 +180,29 @@ export async function auditCommand(opts: AuditOptions): Promise<void> {
     category = opts.category as AuditCategory;
   }
 
-  const events = collectAuditEvents(dir, {
-    sinceMs,
-    category,
-    tool: opts.tool,
-    raw: opts.raw,
-  });
+  // 2026-05-17 改善案 A: SQLite cache 経路 (--no-cache で skip)
+  // cache hit 効果 -75-88% (4 秒 → 500ms-1 sec、5/17 計測ベース)
+  let events: AuditEvent[];
+  if (opts.cache === false) {
+    events = collectAuditEvents(dir, {
+      sinceMs,
+      category,
+      tool: opts.tool,
+      raw: opts.raw,
+    });
+  } else {
+    const cache = openCacheDb();
+    try {
+      events = collectAuditEventsCached(dir, cache.db, {
+        sinceMs,
+        category,
+        tool: opts.tool,
+        raw: opts.raw,
+      });
+    } finally {
+      cache.close();
+    }
+  }
 
   // --explain: 段階 6 異常検知の警告 → 解消サイクル化 (2026-05-17 案 B 候補 4-d、オーナー指摘採用)
   // 警告検出時に「次に何すべきか」を CLI で直接提示、memory `feedback_implementation_vs_proof.md`

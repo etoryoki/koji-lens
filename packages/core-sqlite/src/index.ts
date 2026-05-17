@@ -1,4 +1,9 @@
-export { sessions, CREATE_TABLES_SQL, CURRENT_SCHEMA_VERSION } from "./schema.js";
+export {
+  sessions,
+  auditEventsCache,
+  CREATE_TABLES_SQL,
+  CURRENT_SCHEMA_VERSION,
+} from "./schema.js";
 export {
   defaultCacheDbPath,
   openCacheDb,
@@ -10,9 +15,14 @@ export {
   listSessionCaches,
   isCacheFresh,
   clearSessionCache,
+  getAuditEventsCacheIfFresh,
+  upsertAuditEventsCache,
+  clearAuditEventsCache,
   type CachedSessionAggregate,
+  type AuditEventsCacheEntry,
 } from "./cache.js";
 export {
   analyzeDirectoryCached,
   type CachedAnalyzeOptions,
 } from "./analyze-cached.js";
+export { collectAuditEventsCached } from "./audit-collect.js";

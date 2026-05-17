@@ -373,6 +373,10 @@ program
     "--explain",
     "Show audit anomaly warnings + 次に何すべきか hint (機密ファイル / 高頻度 exec / 新規 MCP)",
   )
+  .option(
+    "--no-cache",
+    "Disable SQLite cache (debug only). Default: cache enabled = -75-88% speedup on 2nd+ run",
+  )
   .action(async (opts) => {
     try {
       await auditCommand(opts);

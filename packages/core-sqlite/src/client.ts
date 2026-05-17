@@ -60,23 +60,20 @@ function migrateIfNeeded(sqlite: Database.Database): void {
     sqlite.pragma(`user_version = 3`);
   }
 
-  // ----- v3 → v4+ incremental migrations (DROP TABLE 禁止) -----
-  // 新テーブル追加 / カラム追加は CREATE TABLE IF NOT EXISTS / ALTER TABLE ADD
-  // COLUMN で行う。既存 sessions テーブルのデータは絶対に喪失させない。
-  //
-  // 追加例 (将来の history テーブル新設、節約ダッシュ Phase B 5/22-26):
-  // if (currentVersion < 4) {
-  //   sqlite.exec(`
-  //     CREATE TABLE IF NOT EXISTS history (
-  //       id INTEGER PRIMARY KEY AUTOINCREMENT,
-  //       period_start TEXT NOT NULL,
-  //       period_end TEXT NOT NULL,
-  //       ...
-  //     );
-  //     CREATE INDEX IF NOT EXISTS idx_history_period_start ON history(period_start);
-  //   `);
-  //   sqlite.pragma(`user_version = 4`);
-  // }
+  // ----- v3 → v4 incremental migration: audit_events_cache テーブル新設 (5/17 改善案 A) -----
+  // 既存 sessions テーブルのデータは絶対に喪失させない、DROP TABLE 禁止
+  if (currentVersion < 4) {
+    sqlite.exec(`
+      CREATE TABLE IF NOT EXISTS audit_events_cache (
+        file_path TEXT PRIMARY KEY,
+        file_mtime_ms INTEGER NOT NULL,
+        file_size INTEGER NOT NULL,
+        events_json TEXT NOT NULL,
+        cached_at INTEGER NOT NULL
+      );
+      CREATE INDEX IF NOT EXISTS idx_audit_cache_mtime ON audit_events_cache(file_mtime_ms);
+    `);
+  }
 
   // 全 migration 完了後、最終 version をマーク
   sqlite.pragma(`user_version = ${CURRENT_SCHEMA_VERSION}`);

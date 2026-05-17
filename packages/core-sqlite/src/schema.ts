@@ -1,6 +1,6 @@
 import { sqliteTable, text, integer, real } from "drizzle-orm/sqlite-core";
 
-export const CURRENT_SCHEMA_VERSION = 3;
+export const CURRENT_SCHEMA_VERSION = 4;
 
 export const sessions = sqliteTable("sessions", {
   sessionId: text("session_id").primaryKey(),
@@ -25,6 +25,17 @@ export const sessions = sqliteTable("sessions", {
   latencyP50Ms: integer("latency_p50_ms").notNull().default(0),
   latencyP95Ms: integer("latency_p95_ms").notNull().default(0),
 });
+
+// 2026-05-17 v4 追加: audit_events_cache (改善案 A、PII redaction 済 events を file 単位 cache、cache hit -75-88%)
+export const auditEventsCache = sqliteTable("audit_events_cache", {
+  filePath: text("file_path").primaryKey(),
+  fileMtimeMs: integer("file_mtime_ms").notNull(),
+  fileSize: integer("file_size").notNull(),
+  eventsJson: text("events_json").notNull(), // AuditEvent[] JSON serialized
+  cachedAt: integer("cached_at").notNull(),
+});
+
+export type AuditEventsCacheRow = typeof auditEventsCache.$inferSelect;
 
 export const CREATE_TABLES_SQL = `
 CREATE TABLE IF NOT EXISTS sessions (
@@ -51,6 +62,14 @@ CREATE TABLE IF NOT EXISTS sessions (
   latency_p95_ms INTEGER NOT NULL DEFAULT 0
 );
 CREATE INDEX IF NOT EXISTS idx_sessions_ended_at ON sessions(ended_at);
+CREATE TABLE IF NOT EXISTS audit_events_cache (
+  file_path TEXT PRIMARY KEY,
+  file_mtime_ms INTEGER NOT NULL,
+  file_size INTEGER NOT NULL,
+  events_json TEXT NOT NULL,
+  cached_at INTEGER NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_audit_cache_mtime ON audit_events_cache(file_mtime_ms);
 `;
 
 export type SessionRow = typeof sessions.$inferSelect;

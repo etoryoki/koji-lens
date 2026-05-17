@@ -1,7 +1,63 @@
 import { eq } from "drizzle-orm";
 import type { BetterSQLite3Database } from "drizzle-orm/better-sqlite3";
 import type { SessionAggregate } from "@kojihq/core";
-import { sessions, type SessionRow } from "./schema.js";
+import { sessions, auditEventsCache, type SessionRow } from "./schema.js";
+
+// 2026-05-17 改善案 A: audit events cache (file 単位、mtime + size invalidation)
+export interface AuditEventsCacheEntry {
+  filePath: string;
+  fileMtimeMs: number;
+  fileSize: number;
+  events: unknown[]; // AuditEvent[] (core からの import 循環回避のため unknown)
+}
+
+export function getAuditEventsCacheIfFresh(
+  db: BetterSQLite3Database,
+  filePath: string,
+  currentMtimeMs: number,
+  currentSize: number,
+): AuditEventsCacheEntry | null {
+  const row = db
+    .select()
+    .from(auditEventsCache)
+    .where(eq(auditEventsCache.filePath, filePath))
+    .get();
+  if (!row) return null;
+  // mtime or size 変化 = cache miss
+  if (row.fileMtimeMs !== currentMtimeMs || row.fileSize !== currentSize) {
+    return null;
+  }
+  return {
+    filePath: row.filePath,
+    fileMtimeMs: row.fileMtimeMs,
+    fileSize: row.fileSize,
+    events: JSON.parse(row.eventsJson) as unknown[],
+  };
+}
+
+export function upsertAuditEventsCache(
+  db: BetterSQLite3Database,
+  filePath: string,
+  mtimeMs: number,
+  size: number,
+  events: unknown[],
+): void {
+  const row = {
+    filePath,
+    fileMtimeMs: mtimeMs,
+    fileSize: size,
+    eventsJson: JSON.stringify(events),
+    cachedAt: Date.now(),
+  };
+  db.insert(auditEventsCache)
+    .values(row)
+    .onConflictDoUpdate({ target: auditEventsCache.filePath, set: row })
+    .run();
+}
+
+export function clearAuditEventsCache(db: BetterSQLite3Database): void {
+  db.delete(auditEventsCache).run();
+}
 
 export interface CachedSessionAggregate extends SessionAggregate {
   mtimeMs: number;
