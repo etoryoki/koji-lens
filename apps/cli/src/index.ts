@@ -31,6 +31,26 @@ program
   )
   .version(pkg.version);
 
+// 2026-05-17 Onboarding 改善 (鷹野最大反論「Activation 直結軸」採用):
+// help 末尾に Quick Start + 主要コマンド 5 件案内追加で初見ユーザー導線最短化
+program.addHelpText(
+  "after",
+  `
+Quick Start (try these 3 commands first):
+  $ koji-lens summary --since 7d       # 7-day usage summary (cost / tokens / cache mix)
+  $ koji-lens tools --since 7d         # tool invocation breakdown (Bash / Read / Edit / ...)
+  $ koji-lens audit --explain          # security audit + 警告 → 解消 hint
+
+More:
+  $ koji-lens dashboard                # start local web UI (browser-based dashboard)
+  $ koji-lens trend --weeks 8          # 8-week regression detection (cache / latency / model)
+  $ koji-lens --help                   # show all commands
+
+Docs:    https://lens.kojihq.com/docs
+Issues:  https://github.com/etoryoki/koji-lens/issues
+`,
+);
+
 program
   .command("summary")
   .description("[cost] Show usage summary for the given period")
@@ -173,19 +193,19 @@ program
 program
   .command("export")
   .description(
-    "[system] Export session aggregates as CSV or JSON for external analysis (data ownership)",
+    "[system] Export session aggregates as CSV / JSON / Markdown (Zenn/dev.to/GitHub blog 貼付向け) for external analysis",
   )
   .option(
     "--since <expr>",
     'Period start: "Nh" / "Nd" / "Nw" or ISO date (default: 30 days)',
     "30d",
   )
-  .option("--format <format>", "Output format: csv | json", "csv")
+  .option("--format <format>", "Output format: csv | json | markdown", "csv")
   .option("--dir <path>", "Claude Code log directory")
   .option("--no-cache", "Disable SQLite cache (~/.koji-lens/cache.db)")
   .option(
     "--output <file>",
-    "Write to file instead of stdout (e.g., --output sessions.csv)",
+    "Write to file instead of stdout (e.g., --output sessions.csv / report.md)",
   )
   .action(async (opts) => {
     try {
@@ -380,6 +400,21 @@ program
   .action(async (opts) => {
     try {
       await auditCommand(opts);
+    } catch (err) {
+      console.error(err instanceof Error ? err.message : err);
+      process.exit(1);
+    }
+  });
+
+// 2026-05-17 修正案 6: dashboard = serve alias (discovery 向上、鷹野/CEO brainstorm)
+program
+  .command("dashboard")
+  .description("[system] Alias for `serve` (start local web UI dashboard)")
+  .option("--port <num>", "Port", "3210")
+  .action(async (opts) => {
+    try {
+      const { serveCommand } = await import("./commands/serve.js");
+      await serveCommand({ port: opts.port ?? "3210" });
     } catch (err) {
       console.error(err instanceof Error ? err.message : err);
       process.exit(1);

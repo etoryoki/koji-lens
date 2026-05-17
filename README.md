@@ -52,18 +52,6 @@ TOTAL
 
 Now you have evidence: 92% of your spend is Opus. Switch the easy turns to Sonnet, run `koji-lens summary --since 7d` again next week, and see the difference. (A built-in `compare` command lands in a future release; for now you can pipe to `--format json` and diff yourself.)
 
-### Already using ccusage? Use both.
-
-koji-lens reads the same JSONL files that [ccusage](https://ccusage.com) reads — no import, no migration. Run them side by side in your statusline:
-
-```bash
-koji-lens statusline --mode minimal --combined
-# 🤖 Sonnet | 💰 $0.23 | 🔥 $0.12/hr  💚 💎
-# └─ ccusage (current spend) ──────┘  └─ koji-lens (one signal to act on) ─┘
-```
-
-ccusage shows *what you've spent right now*. koji-lens shows *whether to act on it* (spend trend vs last month + cache health). Same logs, two complementary signals. See [Co-display with ccusage](#co-display-with-ccusage--combined) for setup.
-
 ---
 
 ## Install
@@ -212,20 +200,12 @@ koji-lens statusline --no-state            # suppress state icon (⚡/💤/🛑)
 koji-lens statusline --no-spend            # suppress spend trend (💚/💛/🚨/⚪)
 koji-lens statusline --no-cache-rate       # suppress cache signal (💎)
 koji-lens statusline --format json         # full CompareResult + cache rate for scripting
-koji-lens statusline --combined            # prepend ccusage statusline (cross-platform)
+koji-lens statusline --combined            # prepend external statusline output (cross-platform)
 ```
 
 The cache signal shows this month's prompt-cache hit rate (cache read / (cache read + new input tokens)). Higher = more cache reuse = lower cost per turn. Icon shifts with the rate so you can read the state at a glance without checking the number: 💎 ≥ 70% (excellent) / 🧊 30–70% (cool) / 💧 < 30% (low). koji-lens's independent axis from spend trend.
 
-**Mode selection guide**: `minimal` when you run alongside another statusline (e.g. ccusage) and want the smallest possible footprint / `normal` for standalone use / `detailed` when statusline is your only spend dashboard.
-
-**Co-display with ccusage** (`--combined`): Pass `--combined` to spawn `ccusage statusline` internally and prepend its output. Cross-platform (no PowerShell wrapper needed), graceful fallback to koji-lens-only if `ccusage` is not installed.
-
-```bash
-koji-lens statusline --mode minimal --combined --buddy --buddy-speech
-# 🤖 Sonnet | 💰 $0.23 | 🔥 $0.12/hr  💚 💎 🍙· < ぽつぽつ…?
-# (ccusage output)                       (koji-lens output)
-```
+**Mode selection guide**: `minimal` when you run alongside another statusline and want the smallest possible footprint / `normal` for standalone use / `detailed` when statusline is your only spend dashboard.
 
 #### Optional: koji-buddy (🍙)
 
@@ -302,7 +282,41 @@ The `set-state.ps1` script was Windows-only and never bundled with the CLI; user
 
 Emoji legend: 💚 cost dropped > 10% / 💛 within ±10% / 🚨 cost rose > 10% / ⚪ no last-month data.
 
-Designed to coexist with [ccusage](https://ccusage.com)'s statusline — ccusage shows *current spend in detail*, koji-lens shows *the one signal you need to act on*. Use both, or pick one.
+### `audit`
+
+Tool-use audit log with PII redaction (11 patterns: email, UUID, JWT, AWS access key, GitHub PAT, Slack webhook, Stripe key, Bearer, card, phone US/JP). Detects anomalies (new MCP server, high-freq exec, sensitive writes).
+
+```bash
+koji-lens audit --since 7d                  # list audit events (text)
+koji-lens audit --since 7d --explain        # show warnings + 次に何すべきか hint
+koji-lens audit --learn-mcp                 # whitelist current MCP servers (clear ⚠)
+koji-lens audit --no-cache                  # disable SQLite cache (default: enabled, 2nd run -79%)
+```
+
+### `tools`
+
+Per-tool invocation breakdown (Bash / Read / Edit / Write / etc.) with frequency + bar chart.
+
+```bash
+koji-lens tools --since 7d                  # top 20 tools, bar chart
+koji-lens tools --since 7d --format json    # JSON for scripting
+```
+
+### `dashboard`
+
+Alias for `serve` (browser-based local web UI).
+
+```bash
+koji-lens dashboard                         # equivalent to `koji-lens serve`
+```
+
+### `status`
+
+Show sync status (last synced time, errors, recovery hints).
+
+### `sync` / `login`
+
+Cloud sync to koji-lens Pro (requires login). See `koji-lens --help` for details.
 
 ### `config`
 

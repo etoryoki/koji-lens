@@ -148,13 +148,16 @@ export function renderTotalBlock(
   }
 
   if (total.costUsd > 0) {
-    const topCostModel = Object.entries(total.costsByModel)
+    // 2026-05-17 修正案 4 (桐谷 + 鷹野推奨): top 1 → top 3 model 拡張
+    const topCostModels = Object.entries(total.costsByModel)
       .sort(([, a], [, b]) => b - a)
-      .slice(0, 1)[0];
-    if (topCostModel) {
-      const [topModel, topCost] = topCostModel;
-      const topPct = ((topCost / total.costUsd) * 100).toFixed(1);
-      lines.push(`  cost mix:       ${topModel} ${topPct}% (top model share)`);
+      .slice(0, 3);
+    if (topCostModels.length > 0) {
+      const parts = topCostModels.map(([model, cost]) => {
+        const pct = ((cost / total.costUsd) * 100).toFixed(1);
+        return `${model} ${pct}%`;
+      });
+      lines.push(`  cost mix:       ${parts.join(" / ")}`);
     }
   }
 
