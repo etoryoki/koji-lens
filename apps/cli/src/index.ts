@@ -365,7 +365,11 @@ program
   )
   .option(
     "--raw",
-    "Disable PII redaction (debug only). Default: PII (email/phone/card/API key/UUID) auto-redacted",
+    "Disable PII redaction (debug only). Default: PII (email/phone/card/API key/UUID/AWS/GitHub/Slack/JWT) auto-redacted",
+  )
+  .option(
+    "--explain",
+    "Show audit anomaly warnings + 次に何すべきか hint (機密ファイル / 高頻度 exec / 新規 MCP)",
   )
   .action(async (opts) => {
     try {

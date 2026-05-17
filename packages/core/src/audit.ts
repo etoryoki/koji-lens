@@ -358,6 +358,108 @@ export function detectAuditAnomalies(
   };
 }
 
+/**
+ * 段階 6 異常検知の警告 → 解消サイクル化 (2026-05-17 案 B 候補 4-d、オーナー指摘採用)
+ *
+ * 警告検出時に「次に何すべきか」を直接提示。memory `feedback_implementation_vs_proof.md`
+ * 整合の「警告出すだけ」状態を解消、ユーザー対処経路明示。
+ *
+ * 戻り値 = severity 別の人間可読 hint テキスト (CLI 表示用、複数行)
+ */
+export function formatAuditExplain(
+  signal: AuditAnomalySignal,
+  events: AuditEvent[],
+): string {
+  if (signal.severity === "ok") {
+    return "audit anomaly signal: ok (no warnings).\n";
+  }
+
+  const lines: string[] = [];
+
+  if (signal.sensitiveWrites.length > 0) {
+    lines.push(
+      `🛡 機密ファイル書き込み検出 (sensitive=${signal.sensitiveWrites.length})`,
+    );
+    lines.push("   検出ファイル:");
+    for (const path of signal.sensitiveWrites.slice(0, 10)) {
+      lines.push(`     - ${path}`);
+    }
+    if (signal.sensitiveWrites.length > 10) {
+      lines.push(`     ... ${signal.sensitiveWrites.length - 10} 件省略`);
+    }
+    lines.push("   推奨対処:");
+    lines.push(
+      "     1. 意図的なファイルなら → .gitignore 追加で commit 漏れ防止",
+    );
+    lines.push(
+      "     2. シークレット値が hardcode なら → 環境変数化 (export ENV_VAR=...)",
+    );
+    lines.push(
+      "     3. 誤検出なら → false positive 報告: github.com/etoryoki/koji-lens/issues",
+    );
+    lines.push("");
+  }
+
+  if (signal.highFreqExec) {
+    lines.push(
+      `⚠ 高頻度 exec 検出 (exec=${signal.execCount} > 200 threshold)`,
+    );
+    const topBash = collectTopExecCommands(events, 5);
+    if (topBash.length > 0) {
+      lines.push("   上位 Bash command (頻度順):");
+      for (const { cmd, count } of topBash) {
+        lines.push(`     - ${cmd} (${count} 回)`);
+      }
+    }
+    lines.push("   推奨対処:");
+    lines.push("     1. 同一 command 連発 → script 化検討 (`bin/check.sh` 等)");
+    lines.push(
+      "     2. 集計目的 → koji-lens tools / summary で代替可能か検討",
+    );
+    lines.push(
+      "     3. 閾値が低すぎる → koji-lens config に audit.execThreshold 設定追加",
+    );
+    lines.push("");
+  }
+
+  if (signal.newMcpServers.length > 0) {
+    lines.push(
+      `⚠ 新規 MCP server 検出 (+${signal.newMcpServers.length}mcp = ${signal.newMcpServers.join(", ")})`,
+    );
+    lines.push("   推奨対処:");
+    lines.push(
+      "     1. 意図的に導入 → koji-lens audit --learn-mcp で学習 (警告消去)",
+    );
+    lines.push("     2. 意図的でない → MCP server 削除確認");
+    lines.push("");
+  }
+
+  return lines.join("\n");
+}
+
+/**
+ * exec カテゴリ events から Bash command 上位 N 件を頻度順で抽出。
+ * formatAuditExplain の高頻度 exec hint 用 helper。
+ */
+function collectTopExecCommands(
+  events: AuditEvent[],
+  topN: number,
+): Array<{ cmd: string; count: number }> {
+  const counts = new Map<string, number>();
+  for (const e of events) {
+    if (e.category === "exec" && e.target) {
+      // truncate 80 chars for readability
+      const cmd =
+        e.target.length > 80 ? e.target.slice(0, 77) + "..." : e.target;
+      counts.set(cmd, (counts.get(cmd) ?? 0) + 1);
+    }
+  }
+  return Array.from(counts.entries())
+    .sort(([, a], [, b]) => b - a)
+    .slice(0, topN)
+    .map(([cmd, count]) => ({ cmd, count }));
+}
+
 export function formatAuditEventText(e: AuditEvent): string {
   const ts = new Date(e.timestamp).toISOString();
   const cat = e.category.padEnd(8);

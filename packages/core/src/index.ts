@@ -170,6 +170,7 @@ export {
   filterAuditEvents,
   collectAuditEvents,
   detectAuditAnomalies,
+  formatAuditExplain,
   redactSensitiveInput,
   formatAuditEventText,
   formatAuditEventsJson,

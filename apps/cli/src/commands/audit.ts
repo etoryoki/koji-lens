@@ -14,6 +14,7 @@ import {
   normalizeDirArg,
   collectAuditEvents,
   detectAuditAnomalies,
+  formatAuditExplain,
   parseSince,
   formatAuditEventText,
   formatAuditEventsJson,
@@ -32,6 +33,7 @@ interface AuditOptions {
   out?: string;
   sync?: boolean;
   learnMcp?: boolean;
+  explain?: boolean;
   raw?: boolean;
 }
 
@@ -179,6 +181,18 @@ export async function auditCommand(opts: AuditOptions): Promise<void> {
     tool: opts.tool,
     raw: opts.raw,
   });
+
+  // --explain: 段階 6 異常検知の警告 → 解消サイクル化 (2026-05-17 案 B 候補 4-d、オーナー指摘採用)
+  // 警告検出時に「次に何すべきか」を CLI で直接提示、memory `feedback_implementation_vs_proof.md`
+  // 整合の「警告出すだけ」状態を解消
+  if (opts.explain) {
+    const state = readAuditState();
+    const signal = detectAuditAnomalies(events, {
+      knownMcpServers: state.knownMcpServers,
+    });
+    process.stdout.write(formatAuditExplain(signal, events));
+    return;
+  }
 
   // --learn-mcp: 検出された MCP server を knownMcpServers に追加 (statusline ⚠ 消去用)
   if (opts.learnMcp) {

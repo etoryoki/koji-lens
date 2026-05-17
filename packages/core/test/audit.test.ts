@@ -1,4 +1,5 @@
 import { describe, it, expect } from "vitest";
+import { formatAuditExplain, type AuditEvent } from "../src/audit.js";
 import {
   classifyTool,
   extractTarget,
@@ -509,6 +510,116 @@ describe("redactSensitiveInput", () => {
     const input = { cookie: `auth=${fakeJwt}` };
     const out = redactSensitiveInput(input);
     expect(out.cookie).toBe("auth=[JWT]");
+  });
+});
+
+// 2026-05-17 案 B 候補 4-d: formatAuditExplain tests (オーナー指摘採用 = 警告 → 解消サイクル化)
+describe("formatAuditExplain", () => {
+  it("returns ok message when no anomalies (severity=ok)", () => {
+    const result = formatAuditExplain(
+      {
+        newMcpServers: [],
+        execCount: 0,
+        highFreqExec: false,
+        sensitiveWrites: [],
+        severity: "ok",
+      },
+      [],
+    );
+    expect(result).toContain("ok (no warnings)");
+  });
+
+  it("renders sensitive write hint when severity=critical", () => {
+    const result = formatAuditExplain(
+      {
+        newMcpServers: [],
+        execCount: 0,
+        highFreqExec: false,
+        sensitiveWrites: ["/path/.env", "/path/credentials.json"],
+        severity: "critical",
+      },
+      [],
+    );
+    expect(result).toContain("🛡 機密ファイル書き込み検出 (sensitive=2)");
+    expect(result).toContain("/path/.env");
+    expect(result).toContain(".gitignore 追加");
+    expect(result).toContain("環境変数化");
+  });
+
+  it("renders high freq exec hint with top Bash commands", () => {
+    const events: AuditEvent[] = [
+      ...Array(201).fill({
+        category: "exec",
+        target: "ls -la",
+      } as AuditEvent),
+    ];
+    const result = formatAuditExplain(
+      {
+        newMcpServers: [],
+        execCount: 201,
+        highFreqExec: true,
+        sensitiveWrites: [],
+        severity: "warning",
+      },
+      events,
+    );
+    expect(result).toContain("⚠ 高頻度 exec 検出 (exec=201");
+    expect(result).toContain("ls -la (201 回)");
+    expect(result).toContain("script 化検討");
+  });
+
+  it("renders new MCP server hint", () => {
+    const result = formatAuditExplain(
+      {
+        newMcpServers: ["playwright", "fetch"],
+        execCount: 0,
+        highFreqExec: false,
+        sensitiveWrites: [],
+        severity: "warning",
+      },
+      [],
+    );
+    expect(result).toContain(
+      "⚠ 新規 MCP server 検出 (+2mcp = playwright, fetch)",
+    );
+    expect(result).toContain("--learn-mcp で学習");
+  });
+
+  it("renders all three warnings combined when present", () => {
+    const result = formatAuditExplain(
+      {
+        newMcpServers: ["fetch"],
+        execCount: 250,
+        highFreqExec: true,
+        sensitiveWrites: ["/secret.pem"],
+        severity: "critical",
+      },
+      [],
+    );
+    expect(result).toContain("🛡 機密ファイル");
+    expect(result).toContain("⚠ 高頻度 exec");
+    expect(result).toContain("⚠ 新規 MCP server");
+  });
+
+  it("truncates long file path list (>10 items)", () => {
+    const manyPaths = Array.from(
+      { length: 15 },
+      (_, i) => `/secret${i}.env`,
+    );
+    const result = formatAuditExplain(
+      {
+        newMcpServers: [],
+        execCount: 0,
+        highFreqExec: false,
+        sensitiveWrites: manyPaths,
+        severity: "critical",
+      },
+      [],
+    );
+    expect(result).toContain("(sensitive=15)");
+    expect(result).toContain("5 件省略");
+    expect(result).toContain("/secret0.env");
+    expect(result).not.toContain("/secret14.env");
   });
 });
 
