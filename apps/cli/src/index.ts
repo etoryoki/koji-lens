@@ -26,12 +26,14 @@ const program = new Command();
 
 program
   .name("koji-lens")
-  .description("Claude Code local usage analyzer")
+  .description(
+    "Claude Code local usage analyzer. Commands grouped: [cost] cost & analytics / [audit] audit & observability / [system] system & integration",
+  )
   .version(pkg.version);
 
 program
   .command("summary")
-  .description("Show usage summary for the given period")
+  .description("[cost] Show usage summary for the given period")
   .option(
     "--since <expr>",
     'Period start: "Nh" / "Nd" / "Nw" or ISO date (months/years not supported — use ISO date for longer ranges)',
@@ -53,7 +55,7 @@ program
 
 program
   .command("sessions")
-  .description("List recent sessions")
+  .description("[cost] List recent sessions")
   .option(
     "--since <expr>",
     'Period start: "Nh" / "Nd" / "Nw" or ISO date (months/years not supported — use ISO date for longer ranges)',
@@ -73,7 +75,7 @@ program
 
 program
   .command("session <id>")
-  .description("Show detail of a session")
+  .description("[cost] Show detail of a session")
   .option("--format <format>", "Output format: text | json", "text")
   .option("--dir <path>", "Claude Code log directory (default: config.logDir or ~/.claude/projects)")
   .option("--usd-jpy <rate>", "USD -> JPY conversion rate (default: config.usdJpy or 155)")
@@ -90,7 +92,7 @@ program
 program
   .command("compare")
   .description(
-    "Compare usage between two periods (e.g. before/after Sonnet migration)",
+    "[cost] Compare usage between two periods (e.g. before/after Sonnet migration)",
   )
   .requiredOption(
     "--before <range>",
@@ -116,7 +118,7 @@ program
 program
   .command("trend")
   .description(
-    "Show weekly trend of cost / cache hit rate / latency / model changes (regression detection across N weeks)",
+    "[cost] Show weekly trend of cost / cache hit rate / latency / model changes (regression detection across N weeks)",
   )
   .option("--weeks <num>", "Number of weeks to display (1-52)", "4")
   .option("--format <format>", "Output format: text | json", "text")
@@ -138,7 +140,7 @@ program
 program
   .command("budget")
   .description(
-    "Show month-to-date cost vs monthly budget + linear forecast to month-end",
+    "[cost] Show month-to-date cost vs monthly budget + linear forecast to month-end",
   )
   .option(
     "--budget <usd>",
@@ -171,7 +173,7 @@ program
 program
   .command("export")
   .description(
-    "Export session aggregates as CSV or JSON for external analysis (data ownership)",
+    "[system] Export session aggregates as CSV or JSON for external analysis (data ownership)",
   )
   .option(
     "--since <expr>",
@@ -197,7 +199,7 @@ program
 program
   .command("statusline")
   .description(
-    "Print a one-line savings status for Claude Code statusLine integration (this month vs last month)",
+    "[audit] Print a one-line savings status for Claude Code statusLine integration (this month vs last month)",
   )
   .option(
     "--mode <mode>",
@@ -255,7 +257,7 @@ program
 program
   .command("hook <state>")
   .description(
-    "Update agent state for statusline icon (use in Claude Code hooks). Cross-platform replacement for set-state.ps1 / set-state.sh.",
+    "[system] Update agent state for statusline icon (use in Claude Code hooks). Cross-platform replacement for set-state.ps1 / set-state.sh.",
   )
   .action(async (state: string) => {
     try {
@@ -268,7 +270,7 @@ program
 
 program
   .command("serve")
-  .description("Start local web UI")
+  .description("[system] Start local web UI")
   .option("--port <port>", "Port to listen", "3210")
   .action(async (opts) => {
     await serveCommand(opts);
@@ -276,7 +278,7 @@ program
 
 program
   .command("config")
-  .description("Manage configuration at ~/.koji-lens/config.json")
+  .description("[system] Manage configuration at ~/.koji-lens/config.json")
   .argument("<action>", "get | set | unset | list | path")
   .argument("[key]", "config key (logDir | usdJpy)")
   .argument("[value]", "config value (for set)")
@@ -286,7 +288,7 @@ program
 
 program
   .command("login")
-  .description("Log in to koji-lens Pro (cloud sync)")
+  .description("[system] Log in to koji-lens Pro (cloud sync)")
   .option("--base-url <url>", "Base URL for the Pro Web app", "https://lens.kojihq.com/app")
   .option("--token <token>", "Token (skip browser flow, for testing)")
   .action(async (opts) => {
@@ -300,7 +302,7 @@ program
 
 program
   .command("sync")
-  .description("Sync local cache to koji-lens Pro (cloud sync, requires login)")
+  .description("[system] Sync local cache to koji-lens Pro (cloud sync, requires login)")
   .option("--batch-size <n>", "Sessions per batch (default: 50)", (v) => parseInt(v, 10))
   .option("--dry-run", "Show what would be sent without actually sending")
   .option(
@@ -323,7 +325,7 @@ program
 program
   .command("status")
   .description(
-    "Show sync status (last synced time, errors, recovery hints)",
+    "[audit] Show sync status (last synced time, errors, recovery hints)",
   )
   .action(async () => {
     try {
@@ -337,7 +339,7 @@ program
 program
   .command("audit")
   .description(
-    "List Claude Code tool_use audit events (fs-read / fs-write / exec / fetch / task / mcp / other)",
+    "[audit] List Claude Code tool_use audit events (fs-read / fs-write / exec / fetch / task / mcp / other) + --explain で警告 → 解消 hint",
   )
   .option(
     "--since <expr>",
@@ -383,7 +385,7 @@ program
 program
   .command("tools")
   .description(
-    "Show tool invocation breakdown (Bash / Read / Edit / etc.) across sessions",
+    "[cost] Show tool invocation breakdown (Bash / Read / Edit / etc.) across sessions",
   )
   .option(
     "--since <expr>",
