@@ -373,6 +373,16 @@ We're working on subscription-aware features (rate-limit forecasting, usage-bala
 **Is there a Pro/cloud plan?**
 Not yet. The roadmap includes optional cloud sync for cross-device aggregation in a later phase. The local-first experience will always be free.
 
+## Feedback
+
+Using koji-lens? Tell us what numbers surprised you, what's missing, or just say hi.
+
+- **Share usage / ask questions**: [GitHub Discussions](https://github.com/etoryoki/koji-lens/discussions)
+- **Report a bug / request a feature**: [Issues](https://github.com/etoryoki/koji-lens/issues)
+- **Bluesky**: [@kojihq.com](https://bsky.app/profile/kojihq.com)
+
+We read every reply during β.
+
 ## Development
 
 This is a pnpm monorepo. Contributions welcome — file an issue first for non-trivial changes.

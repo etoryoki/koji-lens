@@ -51,8 +51,9 @@ More:
   $ koji-lens trend --weeks 8          # 8-week regression detection
   $ koji-lens --help                   # show all commands
 
-Docs:    https://lens.kojihq.com/docs
-Issues:  https://github.com/etoryoki/koji-lens/issues
+Docs:        https://lens.kojihq.com/docs
+Issues:      https://github.com/etoryoki/koji-lens/issues
+Discussions: https://github.com/etoryoki/koji-lens/discussions  (share your usage / ask questions)
 `,
 );
 
