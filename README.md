@@ -377,7 +377,7 @@ Not yet. The roadmap includes optional cloud sync for cross-device aggregation i
 
 Using koji-lens? Tell us what numbers surprised you, what's missing, or just say hi.
 
-- **Share usage / ask questions**: [GitHub Discussions](https://github.com/etoryoki/koji-lens/discussions)
+- **Share usage / ask questions**: [GitHub Discussions #10](https://github.com/etoryoki/koji-lens/discussions/10)
 - **Report a bug / request a feature**: [Issues](https://github.com/etoryoki/koji-lens/issues)
 - **Bluesky**: [@kojihq.com](https://bsky.app/profile/kojihq.com)
 

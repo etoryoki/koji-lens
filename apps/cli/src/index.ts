@@ -53,7 +53,7 @@ More:
 
 Docs:        https://lens.kojihq.com/docs
 Issues:      https://github.com/etoryoki/koji-lens/issues
-Discussions: https://github.com/etoryoki/koji-lens/discussions  (share your usage / ask questions)
+Discussions: https://github.com/etoryoki/koji-lens/discussions/10  (share your usage / ask questions)
 `,
 );
 
