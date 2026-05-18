@@ -16,12 +16,22 @@
   },
   "keywords": [
     "claude-code",
+    "claude",
+    "anthropic",
     "ai",
     "observability",
     "cli",
     "analyzer",
+    "analytics",
+    "dashboard",
+    "audit",
+    "usage",
+    "cost",
     "cost-tracking",
-    "token-usage"
+    "cost-management",
+    "token-usage",
+    "monitoring",
+    "mcp"
   ],
   "publishConfig": {
     "access": "public"
