@@ -66,13 +66,24 @@ export async function summaryCommand(opts: SummaryOptions): Promise<void> {
   }
 
   if (active.length === 0) {
-    console.log(`No active sessions under ${dir} since ${since.toISOString()}.`);
-    console.log(``);
-    console.log(`Next steps:`);
-    console.log(`  - Make sure Claude Code has been used in this directory recently.`);
-    console.log(`  - If your logs are elsewhere, run \`koji-lens summary --dir <path>\`.`);
-    console.log(`  - Have feedback or questions? Share at https://github.com/etoryoki/koji-lens/discussions/10`);
-    console.log(`  - Docs: https://lens.kojihq.com/docs  |  Community: https://hiroba.kojihq.com`);
+    // 2026-05-18 案 6-A: 12 行構造化 + テンプレートリテラル統合 + --dir 安全例示
+    // 深町 CTO 諮問結果採用 (Critical 最大反論「案 6 単独限界」前提 + 観点 1-4 全採用 + Warning --dir ~ 問題対応)
+    console.log(`No active sessions under ${dir} since ${since.toISOString()}.
+
+  -> Claude Code has not been used here yet, or JSONL logs are elsewhere.
+
+To get started with Claude Code:
+  macOS / Linux / WSL:  curl -fsSL https://claude.ai/install.sh | bash
+  Windows PowerShell:   irm https://claude.ai/install.ps1 | iex
+  Then run: claude   (in your project directory)
+
+If Claude Code is installed, try:
+  koji-lens summary                       (default: checks ~/.claude/projects/)
+  koji-lens summary --dir <full-path>     (full path, do not use ~)
+
+Docs:      https://lens.kojihq.com/docs
+Questions: https://github.com/etoryoki/koji-lens/discussions/10
+Community: https://hiroba.kojihq.com`);
     return;
   }
 
