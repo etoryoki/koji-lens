@@ -4,6 +4,21 @@ All notable changes to this project are documented in this file.
 
 For detailed release notes, see [GitHub Releases](https://github.com/etoryoki/koji-lens/releases).
 
+## [Unreleased — beta.12 candidate]
+
+### Added
+
+- **`lens` short alias** — `apps/cli/package.json` `bin` field now registers both `koji-lens` and `lens` to the same entry. After `pnpm add -g @kojihq/lens@beta`, both `lens summary --since 7d` and `koji-lens summary --since 7d` work identically. Fully backward-compatible (existing `koji-lens` users unaffected). Note: `lens` is a koji-lens shorthand and is unrelated to the [Kubernetes Lens IDE](https://k8slens.dev/) (which ships as a GUI app and does not register a `lens` CLI binary).
+- **Audit alert rules customization** (`packages/core/src/audit-state.ts`) — `~/.koji-lens/audit-rules.json` for user-defined alert thresholds and sensitive-write patterns. CLI `audit --explain` auto-loads this file. Schema: `{ "highFreqExecThreshold": number, "customSensitiveWritePatterns": string[], "customSensitiveWriteWhitelist": string[], "version": 1 }`. Custom patterns/whitelist combine with defaults via union (not replacement).
+- **Audit CSV export** (`packages/core/src/audit.ts`) — `koji-lens audit --format csv` outputs RFC 4180 CSV (quote/comma/newline escape, header `timestamp,category,tool,target,input_json`). Useful for spreadsheet import or pipeline integration.
+- **PII redaction patterns** (`packages/core/src/audit.ts`) — 11 → 15 patterns. Added: `GCP_KEY` (`AIza` prefix + 35 chars), `PRIVATE_KEY` (PEM BEGIN markers for RSA/DSA/EC/OPENSSH/PGP), `DISCORD_WEBHOOK` (discord.com/api/webhooks with canary/ptb variants), `IP_PRIVATE` (RFC 1918 ranges only — public IPv4 addresses are not redacted).
+
+### Verification
+
+- 247 unit tests pass (audit.test.ts 88 / 88, +26 new cases for v0.2 expansion).
+- `lens --version` and `koji-lens --version` produce identical output after global install.
+- `lens audit --format csv` produces RFC 4180-compliant output verified with real Bash command history containing quote characters.
+
 ## [0.1.0-beta.8] — 2026-05-08
 
 ### Fixed

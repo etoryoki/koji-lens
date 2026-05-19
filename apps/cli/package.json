@@ -40,7 +40,8 @@
     "node": ">=22.0.0"
   },
   "bin": {
-    "koji-lens": "./dist/index.js"
+    "koji-lens": "./dist/index.js",
+    "lens": "./dist/index.js"
   },
   "files": [
     "dist",

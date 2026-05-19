@@ -65,11 +65,14 @@ pnpm add -g @kojihq/lens@beta
 
 Node.js 22+ required. **Verified on Linux, macOS, and Windows** (CI matrix runs typecheck + tests + smoke check on all three on every push).
 
+After install, both `koji-lens` and the short alias `lens` are available — same commands work both ways. (`lens` is a koji-lens shorthand and is unrelated to the Kubernetes Lens IDE.)
+
 ## 30-second tour
 
 ```bash
 # Total cost / tokens / tool usage for the last 24 hours
 koji-lens summary --since 24h
+# or with the short alias: lens summary --since 24h
 
 # Recent sessions (default: last 7 days, top 20)
 koji-lens sessions
