@@ -126,8 +126,19 @@ const REDACTION_PATTERNS: Array<{ regex: RegExp; replacement: string }> = [
     regex: /\beyJ[a-zA-Z0-9_-]{10,}\.eyJ[a-zA-Z0-9_-]{10,}\.[a-zA-Z0-9_-]{10,}\b/g,
     replacement: "[JWT]",
   },
+  // PEM private key markers (RSA/DSA/EC/OPENSSH/PGP) — 2026-05-19 v0.2 拡張 (深町諮問 7 件採用)
+  // 行内に BEGIN PRIVATE KEY marker のみ検出、key body は別行のため key body redaction は別途
+  {
+    regex: /-----BEGIN [A-Z0-9 ]+PRIVATE KEY-----/g,
+    replacement: "[PRIVATE_KEY]",
+  },
   // AWS Access Key ID (AKIA prefix + 16 chars uppercase alphanumeric)
   { regex: /\bAKIA[0-9A-Z]{16}\b/g, replacement: "[AWS_KEY]" },
+  // GCP API key (AIza prefix + 35 base64url-like chars) — 2026-05-19 v0.2 拡張
+  {
+    regex: /\bAIza[0-9A-Za-z\-_]{35}\b/g,
+    replacement: "[GCP_KEY]",
+  },
   // GitHub Personal Access Token (ghp_/gho_/ghu_/ghs_/ghr_ prefix + 36+ chars)
   {
     regex: /\bgh[pousr]_[A-Za-z0-9_]{36,}\b/g,
@@ -137,6 +148,11 @@ const REDACTION_PATTERNS: Array<{ regex: RegExp; replacement: string }> = [
   {
     regex: /https:\/\/hooks\.slack\.com\/services\/T[A-Z0-9]+\/B[A-Z0-9]+\/[A-Za-z0-9]+/g,
     replacement: "[SLACK_WEBHOOK]",
+  },
+  // Discord webhook URL — 2026-05-19 v0.2 拡張
+  {
+    regex: /https:\/\/(?:ptb\.|canary\.)?discord(?:app)?\.com\/api\/webhooks\/\d+\/[A-Za-z0-9_-]+/g,
+    replacement: "[DISCORD_WEBHOOK]",
   },
   // Stripe-style API keys (specific prefix)
   {
@@ -157,6 +173,12 @@ const REDACTION_PATTERNS: Array<{ regex: RegExp; replacement: string }> = [
   },
   // Phone JP (XXX-XXXX-XXXX or XX-XXXX-XXXX hyphen-separated)
   { regex: /\b\d{2,4}-\d{2,4}-\d{4}\b/g, replacement: "[PHONE_JP]" },
+  // IPv4 private (RFC 1918) — 2026-05-19 v0.2 拡張
+  // 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16
+  {
+    regex: /\b(?:10\.\d{1,3}\.\d{1,3}\.\d{1,3}|172\.(?:1[6-9]|2\d|3[01])\.\d{1,3}\.\d{1,3}|192\.168\.\d{1,3}\.\d{1,3})\b/g,
+    replacement: "[IP_PRIVATE]",
+  },
 ];
 
 export function redactString(s: string): string {
@@ -294,6 +316,18 @@ export function collectAuditEvents(
 export interface AuditAnomalyOptions {
   knownMcpServers?: string[];
   highFreqExecThreshold?: number;
+  /**
+   * 機密ファイル書き込み追加検出 patterns (ユーザーカスタム)
+   * 既定 SENSITIVE_WRITE_PATTERNS に **追加** される (置換ではない、union)
+   * 2026-05-19 v0.2 拡張 (案 1 Alert rule カスタマイズ、深町諮問 7 件採用)
+   */
+  customSensitiveWritePatterns?: RegExp[];
+  /**
+   * 機密ファイル書き込み除外 patterns (ユーザーカスタム)
+   * 既定 SENSITIVE_WRITE_WHITELIST に **追加** される (置換ではない、union)
+   * 2026-05-19 v0.2 拡張 (案 1 Alert rule カスタマイズ、深町諮問 7 件採用)
+   */
+  customSensitiveWriteWhitelist?: RegExp[];
 }
 
 export interface AuditAnomalySignal {
@@ -325,12 +359,20 @@ const SENSITIVE_WRITE_WHITELIST = [
 ];
 
 /**
- * sensitive write 判定 = SENSITIVE_WRITE_PATTERNS match かつ SENSITIVE_WRITE_WHITELIST 非 match
- * 2026-05-17 修正案 1 (false positive 改善)
+ * sensitive write 判定 = (SENSITIVE_WRITE_PATTERNS ∪ customPatterns) match かつ
+ * (SENSITIVE_WRITE_WHITELIST ∪ customWhitelist) 非 match
+ *
+ * 2026-05-17 修正案 1 (false positive 改善) + 2026-05-19 v0.2 拡張 (案 1 Alert rule カスタマイズ)
  */
-function isSensitiveWrite(target: string): boolean {
-  if (!SENSITIVE_WRITE_PATTERNS.some((p) => p.test(target))) return false;
-  if (SENSITIVE_WRITE_WHITELIST.some((p) => p.test(target))) return false;
+function isSensitiveWrite(
+  target: string,
+  customPatterns: RegExp[] = [],
+  customWhitelist: RegExp[] = [],
+): boolean {
+  const patterns = [...SENSITIVE_WRITE_PATTERNS, ...customPatterns];
+  const whitelist = [...SENSITIVE_WRITE_WHITELIST, ...customWhitelist];
+  if (!patterns.some((p) => p.test(target))) return false;
+  if (whitelist.some((p) => p.test(target))) return false;
   return true;
 }
 
@@ -340,6 +382,8 @@ export function detectAuditAnomalies(
 ): AuditAnomalySignal {
   const known = new Set(opts.knownMcpServers ?? []);
   const threshold = opts.highFreqExecThreshold ?? 200;
+  const customPatterns = opts.customSensitiveWritePatterns ?? [];
+  const customWhitelist = opts.customSensitiveWriteWhitelist ?? [];
 
   const newMcpServersSet = new Set<string>();
   let execCount = 0;
@@ -355,7 +399,8 @@ export function detectAuditAnomalies(
       execCount += 1;
     } else if (e.category === "fs-write" && e.target) {
       // 2026-05-17 修正案 1: false positive 改善 (whitelist 経由)
-      if (isSensitiveWrite(e.target)) {
+      // 2026-05-19 v0.2 拡張: ユーザーカスタム patterns/whitelist 追加
+      if (isSensitiveWrite(e.target, customPatterns, customWhitelist)) {
         sensitiveWrites.push(e.target);
       }
     }
@@ -492,4 +537,32 @@ export function formatAuditEventText(e: AuditEvent): string {
 
 export function formatAuditEventsJson(events: AuditEvent[]): string {
   return JSON.stringify(events, null, 2);
+}
+
+/**
+ * CSV format (RFC 4180 整合)
+ * 2026-05-19 v0.2 新規追加 (案 1 Export 機能、深町諮問 7 件採用 #2)
+ *
+ * Header: timestamp,category,tool,target,input_json
+ * Values containing quote / comma / newline are quoted and inner quotes doubled.
+ */
+export function formatAuditEventsCsv(events: AuditEvent[]): string {
+  const header = "timestamp,category,tool,target,input_json";
+  const escape = (v: string): string => {
+    if (/[",\r\n]/.test(v)) {
+      return `"${v.replace(/"/g, '""')}"`;
+    }
+    return v;
+  };
+  const rows = events.map((e) => {
+    const inputJson = JSON.stringify(e.input);
+    return [
+      escape(e.timestamp),
+      escape(e.category),
+      escape(e.toolName),
+      escape(e.target ?? ""),
+      escape(inputJson),
+    ].join(",");
+  });
+  return [header, ...rows].join("\n");
 }

@@ -174,6 +174,7 @@ export {
   redactSensitiveInput,
   formatAuditEventText,
   formatAuditEventsJson,
+  formatAuditEventsCsv,
   type AuditCategory,
   type AuditEvent,
   type AuditFilterOptions,
@@ -188,5 +189,10 @@ export {
   readAuditState,
   writeAuditState,
   extractMcpServerName,
+  defaultAuditRulesPath,
+  readAuditRules,
+  writeAuditRules,
+  compileAuditRules,
   type AuditState,
+  type AuditRulesFile,
 } from "./audit-state.js";

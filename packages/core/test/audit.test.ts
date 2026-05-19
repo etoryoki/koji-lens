@@ -795,3 +795,311 @@ describe("extractAuditEvents with PII redaction", () => {
     expect(events[0].target).toBe("echo user@example.com");
   });
 });
+
+// ============================================================================
+// 2026-05-19 v0.2 拡張 (案 1 = 案 E 拡張、Phase B 期間内前倒し実装)
+// 深町諮問 7 件採用 #1 (Alert rule) + #2 (Export) + #7 (PII redaction 11→15 種)
+// ============================================================================
+
+import {
+  formatAuditEventsCsv,
+  formatAuditEventsJson,
+} from "../src/audit.js";
+import {
+  readAuditRules,
+  writeAuditRules,
+  defaultAuditRulesPath,
+  compileAuditRules,
+  type AuditRulesFile,
+} from "../src/audit-state.js";
+import { writeFileSync, unlinkSync, existsSync, mkdtempSync } from "node:fs";
+import { join } from "node:path";
+import { tmpdir } from "node:os";
+
+describe("PII redaction v0.2 拡張 (11 → 15 種)", () => {
+  it("redacts GCP API key (AIza prefix + 35 chars)", () => {
+    const input = { msg: "key: AIzaSyDdI0hCZtE6vySjMm-WEfRq3CPzqKqqsHI" };
+    const out = redactSensitiveInput(input);
+    expect(out.msg).toBe("key: [GCP_KEY]");
+  });
+
+  it("redacts PEM private key BEGIN markers", () => {
+    const input = { content: "-----BEGIN RSA PRIVATE KEY-----\nMIIE..." };
+    const out = redactSensitiveInput(input);
+    expect(out.content).toContain("[PRIVATE_KEY]");
+    expect(out.content).not.toContain("BEGIN RSA PRIVATE KEY");
+  });
+
+  it("redacts PEM OpenSSH private key marker", () => {
+    const input = { content: "-----BEGIN OPENSSH PRIVATE KEY-----" };
+    const out = redactSensitiveInput(input);
+    expect(out.content).toBe("[PRIVATE_KEY]");
+  });
+
+  it("redacts Discord webhook URL", () => {
+    const input = {
+      url: "https://discord.com/api/webhooks/123456789012345678/abcDEF-_ghi",
+    };
+    const out = redactSensitiveInput(input);
+    expect(out.url).toBe("[DISCORD_WEBHOOK]");
+  });
+
+  it("redacts Discord canary webhook URL", () => {
+    const input = {
+      url: "https://canary.discordapp.com/api/webhooks/123456789012345678/xyz_abc-DEF",
+    };
+    const out = redactSensitiveInput(input);
+    expect(out.url).toBe("[DISCORD_WEBHOOK]");
+  });
+
+  it("redacts IPv4 private addresses (10.x / 172.16-31.x / 192.168.x)", () => {
+    expect((redactSensitiveInput({ a: "10.0.0.1" }) as any).a).toBe("[IP_PRIVATE]");
+    expect((redactSensitiveInput({ a: "10.255.255.255" }) as any).a).toBe(
+      "[IP_PRIVATE]",
+    );
+    expect((redactSensitiveInput({ a: "172.16.0.1" }) as any).a).toBe(
+      "[IP_PRIVATE]",
+    );
+    expect((redactSensitiveInput({ a: "172.31.255.255" }) as any).a).toBe(
+      "[IP_PRIVATE]",
+    );
+    expect((redactSensitiveInput({ a: "192.168.1.100" }) as any).a).toBe(
+      "[IP_PRIVATE]",
+    );
+  });
+
+  it("does NOT redact public IPv4 (8.8.8.8, 172.32.x, 172.15.x)", () => {
+    // public IP は redact 対象外
+    expect((redactSensitiveInput({ a: "8.8.8.8" }) as any).a).toBe("8.8.8.8");
+    // 172.32.x.x は 172.16-31 範囲外 (public)
+    expect((redactSensitiveInput({ a: "172.32.0.1" }) as any).a).toBe(
+      "172.32.0.1",
+    );
+    expect((redactSensitiveInput({ a: "172.15.255.255" }) as any).a).toBe(
+      "172.15.255.255",
+    );
+  });
+
+  it("redacts multiple patterns in single string", () => {
+    const input = {
+      msg: "user@example.com from 192.168.1.1 with AIzaSyDdI0hCZtE6vySjMm-WEfRq3CPzqKqqsHI",
+    };
+    const out = redactSensitiveInput(input);
+    expect(out.msg).toContain("[EMAIL]");
+    expect(out.msg).toContain("[IP_PRIVATE]");
+    expect(out.msg).toContain("[GCP_KEY]");
+  });
+});
+
+describe("formatAuditEventsCsv (v0.2 新規 = 案 1 Export)", () => {
+  const sample: AuditEvent[] = [
+    {
+      sessionId: "sess-1",
+      timestamp: "2026-05-19T10:00:00.000Z",
+      toolName: "Bash",
+      category: "exec",
+      target: "echo hello",
+      input: { command: "echo hello" },
+    },
+    {
+      sessionId: "sess-1",
+      timestamp: "2026-05-19T10:00:05.000Z",
+      toolName: "Write",
+      category: "fs-write",
+      target: "/path/to/file.txt",
+      input: { file_path: "/path/to/file.txt", content: "line1\nline2" },
+    },
+  ];
+
+  it("includes CSV header line", () => {
+    const csv = formatAuditEventsCsv(sample);
+    expect(csv.split("\n")[0]).toBe(
+      "timestamp,category,tool,target,input_json",
+    );
+  });
+
+  it("emits one row per event", () => {
+    const csv = formatAuditEventsCsv(sample);
+    const lines = csv.split("\n");
+    expect(lines.length).toBe(3); // header + 2 events
+  });
+
+  it("escapes commas with quotes", () => {
+    const events: AuditEvent[] = [
+      {
+        sessionId: "s",
+        timestamp: "2026-05-19T10:00:00.000Z",
+        toolName: "Bash",
+        category: "exec",
+        target: "echo a,b,c",
+        input: { command: "echo a,b,c" },
+      },
+    ];
+    const csv = formatAuditEventsCsv(events);
+    const dataLine = csv.split("\n")[1];
+    expect(dataLine).toContain('"echo a,b,c"');
+  });
+
+  it("escapes quotes by doubling (RFC 4180)", () => {
+    const events: AuditEvent[] = [
+      {
+        sessionId: "s",
+        timestamp: "2026-05-19T10:00:00.000Z",
+        toolName: "Bash",
+        category: "exec",
+        target: 'echo "hello"',
+        input: { command: 'echo "hello"' },
+      },
+    ];
+    const csv = formatAuditEventsCsv(events);
+    const dataLine = csv.split("\n")[1];
+    expect(dataLine).toContain('"echo ""hello"""');
+  });
+
+  it("escapes newlines with quotes", () => {
+    const events: AuditEvent[] = [
+      {
+        sessionId: "s",
+        timestamp: "2026-05-19T10:00:00.000Z",
+        toolName: "Write",
+        category: "fs-write",
+        target: "line1\nline2",
+        input: { content: "line1\nline2" },
+      },
+    ];
+    const csv = formatAuditEventsCsv(events);
+    expect(csv).toContain('"line1\nline2"');
+  });
+
+  it("handles null target as empty string", () => {
+    const events: AuditEvent[] = [
+      {
+        sessionId: "s",
+        timestamp: "2026-05-19T10:00:00.000Z",
+        toolName: "mcp__github__create_pr",
+        category: "mcp",
+        target: null,
+        input: {},
+      },
+    ];
+    const csv = formatAuditEventsCsv(events);
+    const fields = csv.split("\n")[1].split(",");
+    expect(fields[3]).toBe(""); // target empty
+  });
+
+  it("emits empty body for empty events array", () => {
+    const csv = formatAuditEventsCsv([]);
+    expect(csv).toBe("timestamp,category,tool,target,input_json");
+  });
+});
+
+describe("AuditRulesFile read/write/compile (v0.2 新規 = 案 1 Alert rule)", () => {
+  it("readAuditRules returns empty rules for nonexistent file", () => {
+    const path = join(mkdtempSync(join(tmpdir(), "koji-lens-")), "audit-rules.json");
+    const rules = readAuditRules(path);
+    expect(rules.version).toBe(1);
+    expect(rules.highFreqExecThreshold).toBeUndefined();
+  });
+
+  it("writeAuditRules + readAuditRules roundtrip", () => {
+    const path = join(mkdtempSync(join(tmpdir(), "koji-lens-")), "audit-rules.json");
+    const rules: AuditRulesFile = {
+      version: 1,
+      highFreqExecThreshold: 500,
+      customSensitiveWritePatterns: ["\\.terraform/"],
+      customSensitiveWriteWhitelist: ["\\.terraform/example"],
+    };
+    writeAuditRules(rules, path);
+    const read = readAuditRules(path);
+    expect(read.highFreqExecThreshold).toBe(500);
+    expect(read.customSensitiveWritePatterns).toEqual(["\\.terraform/"]);
+    expect(read.customSensitiveWriteWhitelist).toEqual(["\\.terraform/example"]);
+    unlinkSync(path);
+  });
+
+  it("compileAuditRules converts strings to RegExp", () => {
+    const rules: AuditRulesFile = {
+      version: 1,
+      customSensitiveWritePatterns: ["\\.terraform/", "\\.aws/credentials"],
+      customSensitiveWriteWhitelist: ["\\.aws/credentials\\.example"],
+    };
+    const compiled = compileAuditRules(rules);
+    expect(compiled.customSensitiveWritePatterns).toHaveLength(2);
+    expect(compiled.customSensitiveWritePatterns![0]).toBeInstanceOf(RegExp);
+    expect(compiled.customSensitiveWritePatterns![0].test("foo/.terraform/state")).toBe(
+      true,
+    );
+    expect(compiled.customSensitiveWriteWhitelist![0].test("path/.aws/credentials.example")).toBe(
+      true,
+    );
+  });
+
+  it("compileAuditRules skips invalid regex sources", () => {
+    const rules: AuditRulesFile = {
+      version: 1,
+      customSensitiveWritePatterns: ["\\valid", "[invalid", "another\\.valid"],
+    };
+    const compiled = compileAuditRules(rules);
+    // 2 valid + 1 invalid = 2 should remain
+    expect(compiled.customSensitiveWritePatterns).toHaveLength(2);
+  });
+
+  it("defaultAuditRulesPath returns ~/.koji-lens/audit-rules.json", () => {
+    const path = defaultAuditRulesPath();
+    expect(path).toContain(".koji-lens");
+    expect(path).toContain("audit-rules.json");
+  });
+});
+
+describe("detectAuditAnomalies with custom rules (v0.2 拡張)", () => {
+  const writeEvent = (target: string): AuditEvent => ({
+    sessionId: "s",
+    timestamp: "2026-05-19T10:00:00.000Z",
+    toolName: "Write",
+    category: "fs-write",
+    target,
+    input: { file_path: target },
+  });
+
+  it("custom pattern triggers sensitive write detection", () => {
+    const events = [writeEvent("infra/.terraform/state.tfstate")];
+    // 既定 SENSITIVE_WRITE_PATTERNS には .terraform は含まれない
+    const noRulesSignal = detectAuditAnomalies(events);
+    expect(noRulesSignal.severity).toBe("ok");
+
+    // custom pattern で .terraform/ を sensitive 化
+    const withRulesSignal = detectAuditAnomalies(events, {
+      customSensitiveWritePatterns: [/\.terraform\//i],
+    });
+    expect(withRulesSignal.severity).toBe("critical");
+    expect(withRulesSignal.sensitiveWrites).toContain(
+      "infra/.terraform/state.tfstate",
+    );
+  });
+
+  it("custom whitelist exempts matching path", () => {
+    const events = [writeEvent("project/.env.production")];
+    // 既定 = critical (.env match)
+    const noRulesSignal = detectAuditAnomalies(events);
+    expect(noRulesSignal.severity).toBe("critical");
+
+    // custom whitelist で .env.production をホワイトリスト
+    const withRulesSignal = detectAuditAnomalies(events, {
+      customSensitiveWriteWhitelist: [/\.env\.production$/i],
+    });
+    expect(withRulesSignal.severity).toBe("ok");
+    expect(withRulesSignal.sensitiveWrites).toHaveLength(0);
+  });
+
+  it("custom rules combine with defaults (union)", () => {
+    const events = [
+      writeEvent(".env"), // 既定 patterns で critical
+      writeEvent("infra/.terraform/secrets.tfvars"), // custom pattern で critical
+    ];
+    const signal = detectAuditAnomalies(events, {
+      customSensitiveWritePatterns: [/\.terraform\//i],
+    });
+    expect(signal.severity).toBe("critical");
+    expect(signal.sensitiveWrites).toHaveLength(2);
+  });
+});

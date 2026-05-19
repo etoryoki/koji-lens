@@ -18,8 +18,11 @@ import {
   parseSince,
   formatAuditEventText,
   formatAuditEventsJson,
+  formatAuditEventsCsv,
   readAuditState,
   writeAuditState,
+  readAuditRules,
+  compileAuditRules,
   type AuditCategory,
   type AuditEvent,
 } from "@kojihq/core";
@@ -207,10 +210,15 @@ export async function auditCommand(opts: AuditOptions): Promise<void> {
   // --explain: 段階 6 異常検知の警告 → 解消サイクル化 (2026-05-17 案 B 候補 4-d、オーナー指摘採用)
   // 警告検出時に「次に何すべきか」を CLI で直接提示、memory `feedback_implementation_vs_proof.md`
   // 整合の「警告出すだけ」状態を解消
+  // 2026-05-19 v0.2 拡張: audit-rules.json (ユーザーカスタム alert rules) 自動読み込み
   if (opts.explain) {
     const state = readAuditState();
+    const rules = compileAuditRules(readAuditRules());
     const signal = detectAuditAnomalies(events, {
       knownMcpServers: state.knownMcpServers,
+      highFreqExecThreshold: rules.highFreqExecThreshold,
+      customSensitiveWritePatterns: rules.customSensitiveWritePatterns,
+      customSensitiveWriteWhitelist: rules.customSensitiveWriteWhitelist,
     });
     process.stdout.write(formatAuditExplain(signal, events));
     return;
@@ -292,13 +300,16 @@ export async function auditCommand(opts: AuditOptions): Promise<void> {
   }
 
   const format = opts.format ?? "text";
-  if (format !== "text" && format !== "json") {
-    throw new Error(`Invalid --format: ${format}. Valid: text, json`);
+  if (format !== "text" && format !== "json" && format !== "csv") {
+    throw new Error(`Invalid --format: ${format}. Valid: text, json, csv`);
   }
 
   let output: string;
   if (format === "json") {
     output = formatAuditEventsJson(events);
+  } else if (format === "csv") {
+    // 2026-05-19 v0.2 新規: CSV format (案 1 Export 機能、深町諮問 7 件採用 #2)
+    output = formatAuditEventsCsv(events);
   } else {
     if (events.length === 0) {
       output = "No audit events found for the given filters.";

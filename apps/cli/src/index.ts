@@ -381,7 +381,7 @@ program
     "Filter by category: fs-read | fs-write | exec | fetch | task | mcp | other",
   )
   .option("--tool <name>", "Filter by exact tool name (e.g., Bash, Edit)")
-  .option("--format <format>", "Output format: text | json", "text")
+  .option("--format <format>", "Output format: text | json | csv", "text")
   .option("--dir <path>", "Claude Code log directory (default: ~/.claude/projects)")
   .option(
     "--out <path>",
