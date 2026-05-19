@@ -4,7 +4,7 @@ All notable changes to this project are documented in this file.
 
 For detailed release notes, see [GitHub Releases](https://github.com/etoryoki/koji-lens/releases).
 
-## [Unreleased — beta.12 candidate]
+## [0.1.0-beta.12] — 2026-05-19
 
 ### Added
 
