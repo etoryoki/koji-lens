@@ -4,6 +4,22 @@ All notable changes to this project are documented in this file.
 
 For detailed release notes, see [GitHub Releases](https://github.com/etoryoki/koji-lens/releases).
 
+## [Unreleased]
+
+### Changed
+
+- **Statusline savings display v0.2** (`packages/core/src/statusline.ts`) — 5/05 諮問完遂 v0.2 spec の即実装 5 項目反映:
+  - **Arrow direction format** (Warning 8): `+82%` / `-82%` → `↑82%` / `↓82%`. Down arrow makes the savings direction unambiguous, ccusage differentiator.
+  - **🚨 absolute floor** (Critical 5): The `🚨` cost-up icon only fires when `costUsdPct > 10%` **and** `afterTotalCostUsd >= $10`. Below the $10/month floor, fall back to `💛`. Prevents nuisance `🚨` on early-month spending where a $1 baseline trivially produces +30% deltas.
+  - **`cost up` wording** (Critical 5): Detailed mode now appends `│ cost up` after `🚨 ...`. Replaces older `over budget` wording, which was unnecessarily alarming for screenshot sharing (X / HN).
+  - **`│` separator** (BOX DRAWINGS LIGHT VERTICAL, U+2502): Detailed mode separators switched from ASCII `|` to `│` for visual cleanliness and ccusage differentiation.
+  - **`⚪ new (Nd)` day hint** (Warning 9): When previous-month data is empty AND the current month is in its first 3 days, the fallback shows `⚪ new (1d)` / `⚪ new (2d)` / `⚪ new (3d)` instead of plain `⚪ new`. Reassures early-month users that data is being collected.
+
+### Verification
+
+- 247 unit tests pass (statusline.test.ts updated to reflect v0.2 output format).
+- pnpm build pass (all packages tsc + bundle-web-standalone).
+
 ## [0.1.0-beta.12] — 2026-05-19
 
 ### Added
