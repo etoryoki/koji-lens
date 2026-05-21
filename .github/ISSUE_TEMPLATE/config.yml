@@ -1,8 +1,11 @@
 blank_issues_enabled: false
 contact_links:
   - name: 💡 Share your experience (Discussions)
-    url: https://github.com/etoryoki/koji-lens/discussions/9
+    url: https://github.com/etoryoki/koji-lens/discussions/10
     about: Used koji-lens? Share what you found — even a single screenshot helps shape the roadmap.
+  - name: 🗣 Pro features feedback (Discussions)
+    url: https://github.com/etoryoki/koji-lens/discussions/9
+    about: What Pro features would you actually pay for? (or are you OK with Free forever?)
   - name: 🌐 Community (Hiroba)
     url: https://hiroba.kojihq.com
     about: Japanese Claude / Claude Code community hub. Articles, updates, and feedback welcome.
