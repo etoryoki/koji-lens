@@ -154,7 +154,8 @@ function renderCacheSuffix(
     case "minimal":
       return ` ${icon}`;
     case "detailed":
-      return ` | ${icon} ${rate}% cache`;
+      // v0.2 (2026-05-21 本実装、白川 採用): ccusage 差別化セパレータ │ 統一
+      return ` │ ${icon} ${rate}% cache`;
     case "normal":
     default:
       return ` ${icon} ${rate}%`;
@@ -172,7 +173,11 @@ function renderSpendSignal(
     return mode === "minimal" ? "⚪" : "⚪ no data";
   }
   if (before.sessionsCount === 0) {
-    return mode === "minimal" ? "⚪" : "⚪ new";
+    if (mode === "minimal") return "⚪";
+    // v0.2 (2026-05-21 本実装、白川 Warning 9 採用): 月初 1-3 日に日数ヒント付与
+    // 月初フォールバック詳細化 = 7 日 trend は段階 2、本実装は ⚪ new (Nd) 日数ヒントのみ
+    const dayHint = after.dayCount <= 3 ? ` (${after.dayCount}d)` : "";
+    return `⚪ new${dayHint}`;
   }
 
   const pct = result.delta.costUsdPct;
@@ -192,8 +197,10 @@ function renderSpendSignal(
     const direction = savings > 0 ? "saved" : "over";
     // v0.2 (2026-05-21 本実装、白川 Critical 5 採用): 🚨 時 "cost up" 文言追加
     // (旧 "over budget" → "cost up"、過剰に不安を煽らない X / HN screenshot 炎上リスク低減)
-    const statusText = isHighCostUp ? " | cost up" : "";
-    return `${emoji} ${formatPct(pct)} vs last month | $${savingsAbs} ${direction}${statusText}`;
+    // v0.2 (2026-05-21 本実装、白川 採用): ccusage 差別化セパレータ │ (U+2502) 採用
+    // 旧 `|` (ASCII VERTICAL LINE) → `│` (BOX DRAWINGS LIGHT VERTICAL)、視覚的に細く綺麗
+    const statusText = isHighCostUp ? " │ cost up" : "";
+    return `${emoji} ${formatPct(pct)} vs last month │ $${savingsAbs} ${direction}${statusText}`;
   }
 
   return `${emoji} ${formatPct(pct)}`;

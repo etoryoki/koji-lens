@@ -179,7 +179,7 @@ describe("renderStatusline modes", () => {
   it("detailed mode adds comparison label and absolute saved amount", () => {
     const result = computeCompare(before, after, lastMonthRange, thisMonthRange);
     expect(renderStatusline(result, "detailed")).toBe(
-      "💚 ↓40% vs last month | $40 saved",
+      "💚 ↓40% vs last month │ $40 saved",
     );
   });
 
@@ -200,7 +200,7 @@ describe("renderStatusline modes", () => {
     ];
     const result = computeCompare(beforeLow, afterHigh, lastMonthRange, thisMonthRange);
     expect(renderStatusline(result, "detailed")).toBe(
-      "🚨 ↑60% vs last month | $30 over | cost up",
+      "🚨 ↑60% vs last month │ $30 over │ cost up",
     );
   });
 
@@ -248,7 +248,7 @@ describe("renderStatusline state icon integration", () => {
   it("prepends state icon to detailed mode", () => {
     const result = computeCompare(before, after, lastMonthRange, thisMonthRange);
     expect(renderStatusline(result, "detailed", { stateIcon: "🛑" })).toBe(
-      "🛑 💚 ↓40% vs last month | $40 saved",
+      "🛑 💚 ↓40% vs last month │ $40 saved",
     );
   });
 
@@ -299,7 +299,7 @@ describe("renderStatusline cache rate integration", () => {
   it("appends 💎 + percent + label with pipe to detailed mode", () => {
     const result = computeCompare(before, after, lastMonthRange, thisMonthRange);
     expect(renderStatusline(result, "detailed", { cacheRate })).toBe(
-      "💚 ↓40% vs last month | $40 saved | 💎 78% cache",
+      "💚 ↓40% vs last month │ $40 saved │ 💎 78% cache",
     );
   });
 
@@ -359,7 +359,7 @@ describe("renderStatusline cache rate integration", () => {
     const result = computeCompare(before, after, lastMonthRange, thisMonthRange);
     const lowRate = { rate: 10, inputTokens: 900, cacheReadTokens: 100 };
     expect(renderStatusline(result, "detailed", { cacheRate: lowRate })).toBe(
-      "💚 ↓40% vs last month | $40 saved | 💧 10% cache",
+      "💚 ↓40% vs last month │ $40 saved │ 💧 10% cache",
     );
   });
 });
