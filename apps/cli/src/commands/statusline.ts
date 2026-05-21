@@ -10,6 +10,7 @@ import {
   normalizeDirArg,
   readAgentState,
   renderStatusline,
+  resolveBillingMode,
   resolveBudgetForProject,
   analyzeDirectory,
   detectAuditAnomalies,
@@ -341,6 +342,8 @@ export async function statuslineCommand(
             budgetAlert: buddyOnly ? null : budgetAlert,
             // 2026-05-17 audit signal 統合修正: buddyOnly 時のみ非表示、それ以外は default ON
             auditSignal: buddyOnly ? null : auditSignal,
+            // 2026-05-21 (オーナー指摘採用): billingMode = subscription default + api opt-in
+            billingMode: resolveBillingMode(cfg),
             buddy: buddyEnabled
               ? {
                   enabled: true,
@@ -368,6 +371,8 @@ export async function statuslineCommand(
     budgetAlert: buddyOnly ? null : budgetAlert,
     // 2026-05-17 audit signal 統合修正: buddyOnly 時のみ非表示、それ以外は default ON
     auditSignal: buddyOnly ? null : auditSignal,
+    // 2026-05-21 (オーナー指摘採用): billingMode = subscription default + api opt-in
+    billingMode: resolveBillingMode(cfg),
     buddy: buddyEnabled
       ? {
           enabled: true,

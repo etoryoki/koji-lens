@@ -7,6 +7,12 @@ import {
 import { homedir } from "node:os";
 import { join } from "node:path";
 
+// 2026-05-21 (オーナー指摘採用): billing mode 軸でユーザー視点を反転
+// - subscription (default、Pro/Max ユーザー、想定多数派): 使い込み = 元取れている = 💚
+// - api (opt-in、API key ユーザー、少数派): コスト増 = 痛い = 🚨 cost up (現状 v0.2 整合)
+export type BillingMode = "subscription" | "api";
+export const DEFAULT_BILLING_MODE: BillingMode = "subscription";
+
 export interface KojiLensConfig {
   logDir?: string;
   usdJpy?: number;
@@ -15,9 +21,15 @@ export interface KojiLensConfig {
   // key = project filter で使う slug (extractProjectKey の戻り値)、値 = USD 月予算
   // "_default" キーで全プロジェクト共通予算 (budgetUsd の dict 版)
   budgets?: Record<string, number>;
+  // 2026-05-21 (オーナー指摘採用): subscription default + api opt-in
+  billingMode?: BillingMode;
 }
 
-const KNOWN_KEYS: Array<keyof KojiLensConfig> = ["logDir", "usdJpy", "budgetUsd"];
+const KNOWN_KEYS: Array<keyof KojiLensConfig> = ["logDir", "usdJpy", "budgetUsd", "billingMode"];
+
+export function resolveBillingMode(cfg: KojiLensConfig = loadConfig()): BillingMode {
+  return cfg.billingMode ?? DEFAULT_BILLING_MODE;
+}
 
 export function configFilePath(): string {
   return join(homedir(), ".koji-lens", "config.json");
@@ -71,6 +83,13 @@ export function setConfigValue(key: string, value: string): KojiLensConfig {
     cfg.budgetUsd = num;
   } else if (key === "logDir") {
     cfg.logDir = value;
+  } else if (key === "billingMode") {
+    if (value !== "subscription" && value !== "api") {
+      throw new Error(
+        `billingMode must be "subscription" or "api", got: ${value}`,
+      );
+    }
+    cfg.billingMode = value;
   }
   saveConfig(cfg);
   return cfg;

@@ -1,6 +1,8 @@
 import type { BudgetAlert } from "./budget.js";
 import type { CacheRateResult } from "./cache-rate.js";
 import type { CompareResult } from "./compare.js";
+import type { BillingMode } from "./config.js";
+import { DEFAULT_BILLING_MODE } from "./config.js";
 import {
   computeBuddyLevel,
   computeBuddyState,
@@ -32,6 +34,11 @@ export interface RenderOptions {
   // warning = ⚠ (新規 MCP / 高頻度 exec) / critical = 🛡 (機密ファイル書き込み)
   // null/undefined or severity=ok で非表示
   auditSignal?: AuditAnomalySignal | null;
+  // 2026-05-21 (オーナー指摘採用): billing mode 軸でユーザー視点反転
+  // - subscription (default、Pro/Max ユーザー想定多数派): 使い込み = 元取れている = 💚
+  // - api (opt-in、API key ユーザー少数派): コスト増 = 痛い = 🚨 cost up
+  // undefined で DEFAULT_BILLING_MODE ("subscription") 採用
+  billingMode?: BillingMode;
 }
 
 export interface MonthRanges {
@@ -88,7 +95,7 @@ export function renderStatusline(
   }
 
   if (spendVisible) {
-    const base = renderSpendSignal(result, mode);
+    const base = renderSpendSignal(result, mode, options.billingMode);
     const cacheSuffix = cacheVisible
       ? renderCacheSuffix(options.cacheRate, mode)
       : "";
@@ -165,6 +172,7 @@ function renderCacheSuffix(
 function renderSpendSignal(
   result: CompareResult,
   mode: StatuslineMode,
+  billingMode: BillingMode = DEFAULT_BILLING_MODE,
 ): string {
   const before = result.before;
   const after = result.after;
@@ -175,32 +183,45 @@ function renderSpendSignal(
   if (before.sessionsCount === 0) {
     if (mode === "minimal") return "⚪";
     // v0.2 (2026-05-21 本実装、白川 Warning 9 採用): 月初 1-3 日に日数ヒント付与
-    // 月初フォールバック詳細化 = 7 日 trend は段階 2、本実装は ⚪ new (Nd) 日数ヒントのみ
     const dayHint = after.dayCount <= 3 ? ` (${after.dayCount}d)` : "";
     return `⚪ new${dayHint}`;
   }
 
   const pct = result.delta.costUsdPct;
-  // v0.2 (2026-05-21 本実装、白川 Critical 5 採用): 🚨 絶対値フロア = 月支出 $10 以上 + 節約率 > +10%
-  // 月初の月支出 $1 で +30% 増加でも 🚨 表示しない、過剰に不安を煽る誤検出を抑制
   const afterCostUsd = after.totalCostUsd ?? 0;
-  const isHighCostUp = pct > 10 && afterCostUsd >= 10;
-  const emoji = pct < -10 ? "💚" : isHighCostUp ? "🚨" : "💛";
+
+  // 2026-05-21 (オーナー指摘採用): billing mode 軸でユーザー視点反転
+  // - subscription mode (default、Pro/Max ユーザー想定多数派): 使い込み = 元取れている
+  //   pct > +10% かつ $10 以上 = 💚 (sub value up = フラット fee 元取れている = 多く使えている)
+  //   pct < -10% = 💧 (under-utilized = サブスク使い込み不足 = もったいない)
+  //   それ以外 = 💛 (watch)
+  // - api mode (opt-in、API key ユーザー少数派、v0.2 整合):
+  //   pct < -10% = 💚 (saved = コスト削減成功)
+  //   pct > +10% かつ $10 以上 = 🚨 (cost up = コスト増警戒)
+  //   それ以外 = 💛 (watch)
+  let emoji: string;
+  let detailedSuffix: string;
+  let usageDirection: string; // detailed mode の文言: "more usage" or "less usage" or "saved" or "over"
+  if (billingMode === "subscription") {
+    const isHighUsageUp = pct > 10 && afterCostUsd >= 10;
+    const isUnderUtilized = pct < -10;
+    emoji = isHighUsageUp ? "💚" : isUnderUtilized ? "💧" : "💛";
+    detailedSuffix = isHighUsageUp ? " │ sub value up" : isUnderUtilized ? " │ under-utilized" : "";
+    usageDirection = pct > 0 ? "more usage" : "less usage";
+  } else {
+    const isHighCostUp = pct > 10 && afterCostUsd >= 10;
+    emoji = pct < -10 ? "💚" : isHighCostUp ? "🚨" : "💛";
+    detailedSuffix = isHighCostUp ? " │ cost up" : "";
+    usageDirection = pct > 0 ? "over" : "saved";
+  }
 
   if (mode === "minimal") {
     return emoji;
   }
 
   if (mode === "detailed") {
-    const savings = -result.delta.costUsd;
-    const savingsAbs = Math.abs(savings).toFixed(0);
-    const direction = savings > 0 ? "saved" : "over";
-    // v0.2 (2026-05-21 本実装、白川 Critical 5 採用): 🚨 時 "cost up" 文言追加
-    // (旧 "over budget" → "cost up"、過剰に不安を煽らない X / HN screenshot 炎上リスク低減)
-    // v0.2 (2026-05-21 本実装、白川 採用): ccusage 差別化セパレータ │ (U+2502) 採用
-    // 旧 `|` (ASCII VERTICAL LINE) → `│` (BOX DRAWINGS LIGHT VERTICAL)、視覚的に細く綺麗
-    const statusText = isHighCostUp ? " │ cost up" : "";
-    return `${emoji} ${formatPct(pct)} vs last month │ $${savingsAbs} ${direction}${statusText}`;
+    const usageAbs = Math.abs(result.delta.costUsd).toFixed(0);
+    return `${emoji} ${formatPct(pct)} vs last month │ $${usageAbs} ${usageDirection}${detailedSuffix}`;
   }
 
   return `${emoji} ${formatPct(pct)}`;

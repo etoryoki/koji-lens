@@ -69,7 +69,10 @@ export {
   unsetProjectBudget,
   listProjectBudgets,
   resolveBudgetForProject,
+  resolveBillingMode,
+  DEFAULT_BILLING_MODE,
   type KojiLensConfig,
+  type BillingMode,
 } from "./config.js";
 
 export {
