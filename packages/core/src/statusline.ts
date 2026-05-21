@@ -176,7 +176,11 @@ function renderSpendSignal(
   }
 
   const pct = result.delta.costUsdPct;
-  const emoji = pct < -10 ? "💚" : pct > 10 ? "🚨" : "💛";
+  // v0.2 (2026-05-21 本実装、白川 Critical 5 採用): 🚨 絶対値フロア = 月支出 $10 以上 + 節約率 > +10%
+  // 月初の月支出 $1 で +30% 増加でも 🚨 表示しない、過剰に不安を煽る誤検出を抑制
+  const afterCostUsd = after.totalCostUsd ?? 0;
+  const isHighCostUp = pct > 10 && afterCostUsd >= 10;
+  const emoji = pct < -10 ? "💚" : isHighCostUp ? "🚨" : "💛";
 
   if (mode === "minimal") {
     return emoji;
@@ -186,7 +190,10 @@ function renderSpendSignal(
     const savings = -result.delta.costUsd;
     const savingsAbs = Math.abs(savings).toFixed(0);
     const direction = savings > 0 ? "saved" : "over";
-    return `${emoji} ${formatPct(pct)} vs last month | $${savingsAbs} ${direction}`;
+    // v0.2 (2026-05-21 本実装、白川 Critical 5 採用): 🚨 時 "cost up" 文言追加
+    // (旧 "over budget" → "cost up"、過剰に不安を煽らない X / HN screenshot 炎上リスク低減)
+    const statusText = isHighCostUp ? " | cost up" : "";
+    return `${emoji} ${formatPct(pct)} vs last month | $${savingsAbs} ${direction}${statusText}`;
   }
 
   return `${emoji} ${formatPct(pct)}`;
@@ -195,8 +202,10 @@ function renderSpendSignal(
 function formatPct(pct: number): string {
   const rounded = Math.round(pct);
   if (rounded === 0) return "0%";
-  const sign = rounded > 0 ? "+" : "";
-  return `${sign}${rounded}%`;
+  // v0.2 (2026-05-21 本実装、白川 Warning 8 採用): `+82%`/`-82%` → `↑82%`/`↓82%`
+  // (down arrow で削減方向明示、up arrow でコスト増加方向明示、ccusage 差別化 + 読み方向直感的)
+  const arrow = rounded > 0 ? "↑" : "↓";
+  return `${arrow}${Math.abs(rounded)}%`;
 }
 
 // 2026-05-14 (深町 W2 採用): 予算アラート表示 (Free 開放、最大 ROI 機能)
