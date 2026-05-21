@@ -8,6 +8,10 @@ For detailed release notes, see [GitHub Releases](https://github.com/etoryoki/ko
 
 ### Changed
 
+- **Statusline billingMode reversal** (`packages/core/src/config.ts` + `statusline.ts`) — Owner-driven design reversal: subscription mode is now the default (most users are on Claude Pro/Max), with API mode as opt-in. Earlier v0.2 spec assumed API users by default (cost-as-pain framing).
+  - **subscription mode (default)**: Treats high usage as 💚 *sub value up* (getting your money's worth on the flat fee) and low usage as 💧 *under-utilized*. Example: `💚 ↑60% vs last month │ $30 more usage │ sub value up`.
+  - **api mode (opt-in via `koji-lens config set billing-mode api`)**: Original v0.2 framing — 💚 *saved* for cost decrease and 🚨 *cost up* for cost increase. Example: `💚 ↓40% vs last month │ $40 saved`.
+  - New config key `billingMode` (`"subscription" | "api"`, default `"subscription"`). Read by `resolveBillingMode(cfg)` and threaded through `renderStatusline` via `RenderOptions.billingMode`.
 - **Statusline savings display v0.2** (`packages/core/src/statusline.ts`) — 5/05 諮問完遂 v0.2 spec の即実装 5 項目反映:
   - **Arrow direction format** (Warning 8): `+82%` / `-82%` → `↑82%` / `↓82%`. Down arrow makes the savings direction unambiguous, ccusage differentiator.
   - **🚨 absolute floor** (Critical 5): The `🚨` cost-up icon only fires when `costUsdPct > 10%` **and** `afterTotalCostUsd >= $10`. Below the $10/month floor, fall back to `💛`. Prevents nuisance `🚨` on early-month spending where a $1 baseline trivially produces +30% deltas.
