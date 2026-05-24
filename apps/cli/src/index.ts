@@ -17,6 +17,15 @@ import { loginCommand } from "./commands/login.js";
 import { syncCommand } from "./commands/sync.js";
 import { statusCommand } from "./commands/status.js";
 import { auditCommand } from "./commands/audit.js";
+import {
+  alertList,
+  alertAddPattern,
+  alertAddWhitelist,
+  alertRmPattern,
+  alertRmWhitelist,
+  alertSetThreshold,
+  alertUnsetThreshold,
+} from "./commands/alert.js";
 import { toolsCommand } from "./commands/tools.js";
 
 const pkgPath = fileURLToPath(new URL("../package.json", import.meta.url));
@@ -410,6 +419,107 @@ program
   .action(async (opts) => {
     try {
       await auditCommand(opts);
+    } catch (err) {
+      console.error(err instanceof Error ? err.message : err);
+      process.exit(1);
+    }
+  });
+
+// 2026-05-23 koji-guard 残作業 2 (Phase 1 設計 v0.3): `koji-lens alert` subcommand
+// audit-rules.json (~/.koji-lens/audit-rules.json) を CLI 経由で操作。
+// `koji-lens audit --explain` が自動的に audit-rules.json を読み込んで
+// customSensitiveWritePatterns + customSensitiveWriteWhitelist + highFreqExecThreshold
+// を反映する (5/19 v0.2 拡張で実装済)。
+const alertCmd = program
+  .command("alert")
+  .description(
+    "[audit] Manage user-defined audit rules (~/.koji-lens/audit-rules.json) for `audit --explain`",
+  );
+
+alertCmd
+  .command("ls")
+  .description("List current audit rules (threshold + sensitive-write patterns + whitelist)")
+  .action(() => {
+    try {
+      alertList();
+    } catch (err) {
+      console.error(err instanceof Error ? err.message : err);
+      process.exit(1);
+    }
+  });
+
+alertCmd
+  .command("add-pattern <regex>")
+  .description(
+    'Add a custom sensitive-write detection pattern (regex, case-insensitive). Example: \'\\.docker/config\'',
+  )
+  .action((regex: string) => {
+    try {
+      alertAddPattern(regex);
+    } catch (err) {
+      console.error(err instanceof Error ? err.message : err);
+      process.exit(1);
+    }
+  });
+
+alertCmd
+  .command("add-whitelist <regex>")
+  .description(
+    'Add a whitelist pattern that excludes matches from sensitive-write detection (regex, case-insensitive). Example: \'example|sample|template\'',
+  )
+  .action((regex: string) => {
+    try {
+      alertAddWhitelist(regex);
+    } catch (err) {
+      console.error(err instanceof Error ? err.message : err);
+      process.exit(1);
+    }
+  });
+
+alertCmd
+  .command("rm-pattern <index>")
+  .description("Remove a sensitive-write pattern by index (see `alert ls`)")
+  .action((index: string) => {
+    try {
+      alertRmPattern(index);
+    } catch (err) {
+      console.error(err instanceof Error ? err.message : err);
+      process.exit(1);
+    }
+  });
+
+alertCmd
+  .command("rm-whitelist <index>")
+  .description("Remove a whitelist pattern by index (see `alert ls`)")
+  .action((index: string) => {
+    try {
+      alertRmWhitelist(index);
+    } catch (err) {
+      console.error(err instanceof Error ? err.message : err);
+      process.exit(1);
+    }
+  });
+
+alertCmd
+  .command("set-threshold <n>")
+  .description(
+    "Set highFreqExecThreshold (default 200). `audit --explain` warns when exec count exceeds this.",
+  )
+  .action((n: string) => {
+    try {
+      alertSetThreshold(n);
+    } catch (err) {
+      console.error(err instanceof Error ? err.message : err);
+      process.exit(1);
+    }
+  });
+
+alertCmd
+  .command("unset-threshold")
+  .description("Reset highFreqExecThreshold to default (200)")
+  .action(() => {
+    try {
+      alertUnsetThreshold();
     } catch (err) {
       console.error(err instanceof Error ? err.message : err);
       process.exit(1);
