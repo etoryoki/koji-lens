@@ -327,7 +327,7 @@ Show sync status (last synced time, errors, recovery hints).
 
 ### `sync` / `login`
 
-Cloud sync to koji-lens Pro (requires login). See `koji-lens --help` for details.
+Cloud sync to koji-lens Pro (requires login). **The Pro service is currently paused**, so these commands (and the `(Pro)` options below) are not available. Everything else works locally without an account.
 
 ### `config`
 
@@ -374,7 +374,7 @@ It depends on how you use Claude Code:
 We're working on subscription-aware features (rate-limit forecasting, usage-balance insights) that are more directly useful to subscribers — see the roadmap.
 
 **Is there a Pro/cloud plan?**
-Not yet. The roadmap includes optional cloud sync for cross-device aggregation in a later phase. The local-first experience will always be free.
+Not at the moment. A cloud-sync Pro plan was in beta but is paused. The local-first experience will always be free.
 
 ## Feedback
 
@@ -382,7 +382,6 @@ Using koji-lens? Tell us what numbers surprised you, what's missing, or just say
 
 - **Share your `koji-lens summary` output**: drop a screenshot in [GitHub Discussions #10](https://github.com/etoryoki/koji-lens/discussions/10) — even a single screenshot helps shape the roadmap.
 - **Report a bug / request a feature**: [Issues](https://github.com/etoryoki/koji-lens/issues) (use the 💬 Feedback / experience template if you just want to share a reaction)
-- **Pro features feedback**: [GitHub Discussions #9](https://github.com/etoryoki/koji-lens/discussions/9) — what would you actually pay for?
 - **Bluesky**: [@kojihq.com](https://bsky.app/profile/kojihq.com)
 
 We read every reply during β.
