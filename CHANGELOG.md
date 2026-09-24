@@ -6,6 +6,12 @@ For detailed release notes, see [GitHub Releases](https://github.com/etoryoki/ko
 
 ## [Unreleased]
 
+## [0.1.0-beta.14] - 2026-09-24
+
+### Added
+
+- **rulenudge signal in the statusline** (`apps/cli/src/commands/statusline.ts`) — When [rulenudge](https://github.com/etoryoki/rulenudge) has found broken CLAUDE.md rules in the current project, the statusline appends `│ 📏 N broken`. koji-lens only reads rulenudge's result file (`~/.rulenudge/status.json`) — it starts no process. Nothing is shown when rulenudge is not used, when N is 0, or when the result is older than 24 h. Hide it with `--no-rulenudge`.
+
 ## [0.1.0-beta.13] - 2026-09-24
 
 ### Fixed

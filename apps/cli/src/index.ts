@@ -262,6 +262,10 @@ program
     "--combined",
     "Concatenate ccusage statusline output before koji-lens output (cross-platform alternative to PowerShell wrapper). Falls back to koji-lens-only if ccusage is not installed. Ignored when --buddy-only is set.",
   )
+  .option(
+    "--no-rulenudge",
+    "Hide the rulenudge signal (📏 N broken = CLAUDE.md rules broken in this project, read from ~/.rulenudge/status.json; shown only when rulenudge is used and N > 0)",
+  )
   .action(async (opts) => {
     try {
       await (await import("./commands/statusline.js")).statuslineCommand(opts);

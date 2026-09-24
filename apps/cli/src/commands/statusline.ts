@@ -64,6 +64,37 @@ function readSyncSignal(): string | null {
   }
 }
 
+const RULENUDGE_STATUS_FILE = path.join(homedir(), ".rulenudge", "status.json");
+const RULENUDGE_STALE_MS = 24 * 60 * 60 * 1000;
+
+/**
+ * rulenudge (https://github.com/etoryoki/rulenudge) の per-project 結果を読む。
+ * キーは Claude Code と同じ「英数字以外を - に置換」したプロジェクトパス。
+ * cwd がサブディレクトリでも拾えるよう祖先を順に探す。24h より古い結果は出さない
+ */
+function readRulenudgeSignal(cwd: string): string | null {
+  if (!existsSync(RULENUDGE_STATUS_FILE)) return null;
+  try {
+    const file = JSON.parse(readFileSync(RULENUDGE_STATUS_FILE, "utf8")) as {
+      projects?: Record<string, { at?: number; broken?: number }>;
+    };
+    let dir = path.resolve(cwd);
+    for (let i = 0; i < 12; i++) {
+      const entry = file.projects?.[dir.replace(/[^A-Za-z0-9]/g, "-")];
+      if (entry) {
+        const fresh = Date.now() - (entry.at ?? 0) < RULENUDGE_STALE_MS;
+        return fresh && (entry.broken ?? 0) > 0 ? `📏 ${entry.broken} broken` : null;
+      }
+      const parent = path.dirname(dir);
+      if (parent === dir) break;
+      dir = parent;
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
 const VALID_BUDDY_TYPES: ReadonlyArray<BuddyType> = ["koji", "owl", "cat"];
 const VALID_BUDDY_LOCALES: ReadonlyArray<BuddyLocale> = ["ja", "en"];
 
@@ -200,6 +231,8 @@ export interface StatuslineOptions {
   buddyLocale?: string;
   buddyOnly?: boolean;
   combined?: boolean;
+  // 2026-09-24: rulenudge の破られたルール数を表示 (デフォルト ON、--no-rulenudge で opt-out)
+  rulenudge?: boolean;
   // 2026-05-14 (深町 W2 採用): 予算アラート表示 (Free 開放、デフォルト ON)
   // --no-budget で opt-out、budgetUsd 未設定時は自動非表示
   budget?: boolean;
@@ -489,6 +522,13 @@ export async function statuslineCommand(
   const syncSignal = readSyncSignal();
   if (syncSignal) {
     finalOutput = `${finalOutput} │ ${syncSignal}`;
+  }
+
+  // 2026-09-24: rulenudge の結果 (破られた CLAUDE.md ルール数) を末尾 append。
+  // rulenudge が書いたファイルを読むだけで、プロセスは起動しない。0 件・未導入時は silent
+  if (!buddyOnly && opts.rulenudge !== false) {
+    const rn = readRulenudgeSignal(process.cwd());
+    if (rn) finalOutput = `${finalOutput} │ ${rn}`;
   }
 
   // v0.7.1 (2026-05-08) hang fix: stdin / spawn の event loop が残ると process exit せず Claude Code 側が固まる
