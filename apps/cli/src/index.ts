@@ -2,31 +2,9 @@
 import { Command } from "commander";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
-import { summaryCommand } from "./commands/summary.js";
-import { sessionsCommand } from "./commands/sessions.js";
-import { sessionCommand } from "./commands/session.js";
-import { serveCommand } from "./commands/serve.js";
-import { configCommand } from "./commands/config.js";
-import { compareCommand } from "./commands/compare.js";
-import { statuslineCommand } from "./commands/statusline.js";
-import { trendCommand } from "./commands/trend.js";
-import { budgetCommand } from "./commands/budget.js";
-import { exportCommand } from "./commands/export.js";
-import { hookCommand } from "./commands/hook.js";
-import { loginCommand } from "./commands/login.js";
-import { syncCommand } from "./commands/sync.js";
-import { statusCommand } from "./commands/status.js";
-import { auditCommand } from "./commands/audit.js";
-import {
-  alertList,
-  alertAddPattern,
-  alertAddWhitelist,
-  alertRmPattern,
-  alertRmWhitelist,
-  alertSetThreshold,
-  alertUnsetThreshold,
-} from "./commands/alert.js";
-import { toolsCommand } from "./commands/tools.js";
+
+// 2026-09-24: 各コマンドは実行時に動的 import (statusline 等の起動を軽くする。
+// 全コマンドを静的 import すると SQLite 等の読み込みだけで約 1 秒かかっていた)
 
 const pkgPath = fileURLToPath(new URL("../package.json", import.meta.url));
 const pkg = JSON.parse(readFileSync(pkgPath, "utf8")) as { version: string };
@@ -81,7 +59,7 @@ program
   .option("--summary-only", "Show TOTAL only (skip per-session details)")
   .action(async (opts) => {
     try {
-      await summaryCommand(opts);
+      await (await import("./commands/summary.js")).summaryCommand(opts);
     } catch (err) {
       console.error(err instanceof Error ? err.message : err);
       process.exit(1);
@@ -101,7 +79,7 @@ program
   .option("--no-cache", "Disable SQLite cache (~/.koji-lens/cache.db)")
   .action(async (opts) => {
     try {
-      await sessionsCommand(opts);
+      await (await import("./commands/sessions.js")).sessionsCommand(opts);
     } catch (err) {
       console.error(err instanceof Error ? err.message : err);
       process.exit(1);
@@ -117,7 +95,7 @@ program
   .option("--no-cache", "Disable SQLite cache (~/.koji-lens/cache.db)")
   .action(async (id: string, opts) => {
     try {
-      await sessionCommand(id, opts);
+      await (await import("./commands/session.js")).sessionCommand(id, opts);
     } catch (err) {
       console.error(err instanceof Error ? err.message : err);
       process.exit(1);
@@ -143,7 +121,7 @@ program
   .option("--no-cache", "Disable SQLite cache (~/.koji-lens/cache.db)")
   .action(async (opts) => {
     try {
-      await compareCommand(opts);
+      await (await import("./commands/compare.js")).compareCommand(opts);
     } catch (err) {
       console.error(err instanceof Error ? err.message : err);
       process.exit(1);
@@ -165,7 +143,7 @@ program
   )
   .action(async (opts) => {
     try {
-      await trendCommand(opts);
+      await (await import("./commands/trend.js")).trendCommand(opts);
     } catch (err) {
       console.error(err instanceof Error ? err.message : err);
       process.exit(1);
@@ -198,7 +176,7 @@ program
   )
   .action(async (opts) => {
     try {
-      await budgetCommand(opts);
+      await (await import("./commands/budget.js")).budgetCommand(opts);
     } catch (err) {
       console.error(err instanceof Error ? err.message : err);
       process.exit(1);
@@ -224,7 +202,7 @@ program
   )
   .action(async (opts) => {
     try {
-      await exportCommand(opts);
+      await (await import("./commands/export.js")).exportCommand(opts);
     } catch (err) {
       console.error(err instanceof Error ? err.message : err);
       process.exit(1);
@@ -286,7 +264,7 @@ program
   )
   .action(async (opts) => {
     try {
-      await statuslineCommand(opts);
+      await (await import("./commands/statusline.js")).statuslineCommand(opts);
     } catch (err) {
       console.error(err instanceof Error ? err.message : err);
       process.exit(1);
@@ -300,7 +278,7 @@ program
   )
   .action(async (state: string) => {
     try {
-      await hookCommand(state);
+      await (await import("./commands/hook.js")).hookCommand(state);
     } catch (err) {
       console.error(err instanceof Error ? err.message : err);
       process.exit(1);
@@ -312,7 +290,7 @@ program
   .description("[system] Start local web UI")
   .option("--port <port>", "Port to listen", "3210")
   .action(async (opts) => {
-    await serveCommand(opts);
+    await (await import("./commands/serve.js")).serveCommand(opts);
   });
 
 program
@@ -321,8 +299,8 @@ program
   .argument("<action>", "get | set | unset | list | path")
   .argument("[key]", "config key (logDir | usdJpy)")
   .argument("[value]", "config value (for set)")
-  .action((action: string, key?: string, value?: string) => {
-    configCommand(action, key, value);
+  .action(async (action: string, key?: string, value?: string) => {
+    await (await import("./commands/config.js")).configCommand(action, key, value);
   });
 
 program
@@ -332,7 +310,7 @@ program
   .option("--token <token>", "Token (skip browser flow, for testing)")
   .action(async (opts) => {
     try {
-      await loginCommand({ baseUrl: opts.baseUrl, token: opts.token });
+      await (await import("./commands/login.js")).loginCommand({ baseUrl: opts.baseUrl, token: opts.token });
     } catch (err) {
       console.error(err instanceof Error ? err.message : err);
       process.exit(1);
@@ -350,7 +328,7 @@ program
   )
   .action(async (opts) => {
     try {
-      await syncCommand({
+      await (await import("./commands/sync.js")).syncCommand({
         batchSize: opts.batchSize,
         dryRun: opts.dryRun,
         background: opts.background,
@@ -368,7 +346,7 @@ program
   )
   .action(async () => {
     try {
-      await statusCommand();
+      await (await import("./commands/status.js")).statusCommand();
     } catch (err) {
       console.error(err instanceof Error ? err.message : err);
       process.exit(1);
@@ -418,7 +396,7 @@ program
   )
   .action(async (opts) => {
     try {
-      await auditCommand(opts);
+      await (await import("./commands/audit.js")).auditCommand(opts);
     } catch (err) {
       console.error(err instanceof Error ? err.message : err);
       process.exit(1);
@@ -439,9 +417,9 @@ const alertCmd = program
 alertCmd
   .command("ls")
   .description("List current audit rules (threshold + sensitive-write patterns + whitelist)")
-  .action(() => {
+  .action(async () => {
     try {
-      alertList();
+      await (await import("./commands/alert.js")).alertList();
     } catch (err) {
       console.error(err instanceof Error ? err.message : err);
       process.exit(1);
@@ -453,9 +431,9 @@ alertCmd
   .description(
     'Add a custom sensitive-write detection pattern (regex, case-insensitive). Example: \'\\.docker/config\'',
   )
-  .action((regex: string) => {
+  .action(async (regex: string) => {
     try {
-      alertAddPattern(regex);
+      await (await import("./commands/alert.js")).alertAddPattern(regex);
     } catch (err) {
       console.error(err instanceof Error ? err.message : err);
       process.exit(1);
@@ -467,9 +445,9 @@ alertCmd
   .description(
     'Add a whitelist pattern that excludes matches from sensitive-write detection (regex, case-insensitive). Example: \'example|sample|template\'',
   )
-  .action((regex: string) => {
+  .action(async (regex: string) => {
     try {
-      alertAddWhitelist(regex);
+      await (await import("./commands/alert.js")).alertAddWhitelist(regex);
     } catch (err) {
       console.error(err instanceof Error ? err.message : err);
       process.exit(1);
@@ -479,9 +457,9 @@ alertCmd
 alertCmd
   .command("rm-pattern <index>")
   .description("Remove a sensitive-write pattern by index (see `alert ls`)")
-  .action((index: string) => {
+  .action(async (index: string) => {
     try {
-      alertRmPattern(index);
+      await (await import("./commands/alert.js")).alertRmPattern(index);
     } catch (err) {
       console.error(err instanceof Error ? err.message : err);
       process.exit(1);
@@ -491,9 +469,9 @@ alertCmd
 alertCmd
   .command("rm-whitelist <index>")
   .description("Remove a whitelist pattern by index (see `alert ls`)")
-  .action((index: string) => {
+  .action(async (index: string) => {
     try {
-      alertRmWhitelist(index);
+      await (await import("./commands/alert.js")).alertRmWhitelist(index);
     } catch (err) {
       console.error(err instanceof Error ? err.message : err);
       process.exit(1);
@@ -505,9 +483,9 @@ alertCmd
   .description(
     "Set highFreqExecThreshold (default 200). `audit --explain` warns when exec count exceeds this.",
   )
-  .action((n: string) => {
+  .action(async (n: string) => {
     try {
-      alertSetThreshold(n);
+      await (await import("./commands/alert.js")).alertSetThreshold(n);
     } catch (err) {
       console.error(err instanceof Error ? err.message : err);
       process.exit(1);
@@ -517,9 +495,9 @@ alertCmd
 alertCmd
   .command("unset-threshold")
   .description("Reset highFreqExecThreshold to default (200)")
-  .action(() => {
+  .action(async () => {
     try {
-      alertUnsetThreshold();
+      await (await import("./commands/alert.js")).alertUnsetThreshold();
     } catch (err) {
       console.error(err instanceof Error ? err.message : err);
       process.exit(1);
@@ -534,7 +512,7 @@ program
   .action(async (opts) => {
     try {
       const { serveCommand } = await import("./commands/serve.js");
-      await serveCommand({ port: opts.port ?? "3210" });
+      await (await import("./commands/serve.js")).serveCommand({ port: opts.port ?? "3210" });
     } catch (err) {
       console.error(err instanceof Error ? err.message : err);
       process.exit(1);
@@ -557,7 +535,7 @@ program
   .option("--no-cache", "Disable SQLite cache")
   .action(async (opts) => {
     try {
-      await toolsCommand(opts);
+      await (await import("./commands/tools.js")).toolsCommand(opts);
     } catch (err) {
       console.error(err instanceof Error ? err.message : err);
       process.exit(1);

@@ -6,6 +6,16 @@ For detailed release notes, see [GitHub Releases](https://github.com/etoryoki/ko
 
 ## [Unreleased]
 
+### Fixed
+
+- **Statusline no longer piles up `node` processes** (`apps/cli/src/commands/statusline.ts`, new `apps/cli/src/lib/statusline-guard.ts`) — Reported on Windows: dozens of `node.exe` processes stayed alive and consumed memory, especially after force-closing Claude Code sessions. Each statusline run took ~2 s (10–20 s with a cold cache) and ~140 MB, and Claude Code re-runs the statusline on every update; when a run was cancelled, only the parent shell was killed and the `node` process kept running.
+  - The heavy aggregation (JSONL + SQLite) now runs in **at most one process at a time** across all sessions (lock file `~/.koji-lens/statusline.lock`). Other invocations return the last result immediately (`~/.koji-lens/statusline-snapshot.json`, reused for 20 s) or `⏳ koji-lens` on the very first run.
+  - The aggregating process exits on its own after 60 s at most; a lock left by a dead process is taken over.
+  - `--combined`: on timeout, ccusage is now killed with its whole process tree (`taskkill /T` on Windows). Previously `child.kill()` only killed `cmd.exe` and left ccusage's `node` running on every timed-out refresh.
+  - All statusline modes now exit explicitly after flushing stdout (previously only `--combined`).
+  - Tunable via `KOJI_LENS_STATUSLINE_FRESH_MS` (default 20000) and `KOJI_LENS_STATUSLINE_MAX_MS` (default 60000).
+- **Faster CLI startup** (`apps/cli/src/index.ts`) — Commands are now loaded on demand instead of importing every command (and SQLite) at startup. `koji-lens --version`: ~1 s → ~0.2 s. Warm statusline: ~2.1 s → ~0.4 s.
+
 ### Changed
 
 - **Statusline billingMode reversal** (`packages/core/src/config.ts` + `statusline.ts`) — Owner-driven design reversal: subscription mode is now the default (most users are on Claude Pro/Max), with API mode as opt-in. Earlier v0.2 spec assumed API users by default (cost-as-pain framing).

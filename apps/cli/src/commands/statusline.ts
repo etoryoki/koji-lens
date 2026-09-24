@@ -21,15 +21,18 @@ import {
   type SessionAggregate,
   type StatuslineMode,
 } from "@kojihq/core";
-import {
-  analyzeDirectoryCached,
-  collectAuditEventsCached,
-  openCacheDb,
-} from "@kojihq/core-sqlite";
-import { spawn } from "node:child_process";
+import { spawn, spawnSync } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
 import { homedir } from "node:os";
 import path from "node:path";
+
+import {
+  FRESH_MS,
+  HOLDER_MAX_MS,
+  readSnapshot,
+  tryAcquireLock,
+  writeSnapshot,
+} from "../lib/statusline-guard.js";
 
 const SYNC_STATE_FILE = path.join(homedir(), ".koji-lens", "sync-state.json");
 const SYNC_STALE_MS = 24 * 60 * 60 * 1000;
@@ -89,6 +92,22 @@ function parseBuddyLocale(input: string | undefined): BuddyLocale {
 // ccusage statusline output 取得 (--combined フラグ用、cross-platform、graceful fallback)
 // ccusage 未インストール / 失敗時は null 返却 = koji-lens 出力のみ表示
 // v0.7.1 (2026-05-08) hang fix: child unref + listener 完全解除で event loop から離脱、kill 確実化
+function killTree(pid: number | undefined): void {
+  if (!pid) return;
+  try {
+    if (process.platform === "win32") {
+      spawnSync("taskkill", ["/pid", String(pid), "/T", "/F"], {
+        stdio: "ignore",
+        windowsHide: true,
+      });
+    } else {
+      process.kill(pid, "SIGKILL");
+    }
+  } catch {
+    /* ignore */
+  }
+}
+
 async function runCcusageStatusline(stdinBuf: string): Promise<string | null> {
   return new Promise<string | null>((resolve) => {
     let resolved = false;
@@ -114,12 +133,10 @@ async function runCcusageStatusline(stdinBuf: string): Promise<string | null> {
       child.on("error", () => finish(null)); // ccusage not installed
       // 1.5 秒タイムアウト (statusline は high-frequency = ハング不可、即 fallback)
       // Windows では shell 経由起動で child.kill() が cmd.exe のみ kill する可能性 → finish 後の listener 解除で event loop 離脱
+      // 2026-09-24: Windows は shell 経由のため child.kill() だと cmd.exe だけ死に ccusage (node) が残る
+      // → taskkill /T でプロセスツリーごと終了
       setTimeout(() => {
-        try {
-          child.kill();
-        } catch {
-          /* ignore */
-        }
+        if (!resolved) killTree(child.pid);
         finish(null);
       }, 1500);
       try {
@@ -223,13 +240,20 @@ function filterByRange(
   });
 }
 
-export async function statuslineCommand(
-  opts: StatuslineOptions,
-): Promise<void> {
-  const cfg = loadConfig();
-  const dir = normalizeDirArg(opts.dir ?? cfg.logDir ?? defaultClaudeLogDir());
-  const ranges = computeMonthRanges();
+interface HeavySignals {
+  result: ReturnType<typeof computeCompare>;
+  cacheRate: ReturnType<typeof computeCacheRate> | null;
+  auditSignal: AuditAnomalySignal | null;
+  budgetAlert: ReturnType<typeof checkBudgetAlert> | null;
+}
 
+// 集計 (JSONL 解析 + SQLite) = statusline の重い部分。statusline-guard で同時 1 本に制限
+async function computeHeavySignals(
+  opts: StatuslineOptions,
+  cfg: ReturnType<typeof loadConfig>,
+  dir: string,
+  ranges: ReturnType<typeof computeMonthRanges>,
+): Promise<HeavySignals> {
   let all: SessionAggregate[];
   // 2026-05-17 audit signal 統合修正 (オーナー dogfooding 報告): 5/16 案 E 段階 6 実装時に CLI 側引き渡し欠落
   // sessions cache と同一 DB 接続で audit events も取得 (1 回 open で完結、performance 最適化)
@@ -240,6 +264,9 @@ export async function statuslineCommand(
     all = await analyzeDirectory(dir);
     // --no-cache 時: audit signal 非計算 (performance 配慮)
   } else {
+    // SQLite (native module) は集計時のみ読み込む = snapshot 再利用時の起動を軽くする
+    const { analyzeDirectoryCached, collectAuditEventsCached, openCacheDb } =
+      await import("@kojihq/core-sqlite");
     const cache = openCacheDb();
     try {
       all = await analyzeDirectoryCached(dir, cache.db);
@@ -270,13 +297,6 @@ export async function statuslineCommand(
     ranges.thisMonth,
   );
 
-  const mode = parseMode(opts.mode);
-
-  const stateRead =
-    opts.state === false
-      ? { icon: null, state: null, staleMs: null }
-      : readAgentState(opts.stateFile ?? defaultStateFilePath());
-
   const cacheRate =
     opts.cacheRate === false ? null : computeCacheRate(afterAggs);
 
@@ -288,6 +308,80 @@ export async function statuslineCommand(
     opts.budget === false || !budgetUsd
       ? null
       : checkBudgetAlert(computeBudgetForecast(afterAggs, budgetUsd));
+
+  return { result, cacheRate, auditSignal, budgetAlert };
+}
+
+// 2026-09-24 多重起動ガード: snapshot が新しければ再利用、古ければロックを取れた 1 本だけが集計、
+// 取れなかったプロセスは stale snapshot を即返す (無ければ null = placeholder 表示)
+async function resolveHeavySignals(
+  opts: StatuslineOptions,
+  cfg: ReturnType<typeof loadConfig>,
+  dir: string,
+  ranges: ReturnType<typeof computeMonthRanges>,
+): Promise<HeavySignals | null> {
+  const key = JSON.stringify({
+    dir,
+    month: ranges.thisMonth.from.toISOString(),
+    cache: opts.cache !== false,
+    audit: opts.audit !== false,
+    budget: opts.budget !== false,
+    cacheRate: opts.cacheRate !== false,
+  });
+  const snap = readSnapshot<HeavySignals>(key);
+  if (snap && snap.ageMs < FRESH_MS) return snap.data;
+
+  const release = tryAcquireLock();
+  if (!release) return snap?.data ?? null;
+
+  // 集計担当が固まっても HOLDER_MAX_MS で必ず終了 (ロックは stale 判定で次の担当が奪う)
+  const watchdog = setTimeout(() => {
+    release();
+    process.exit(0);
+  }, HOLDER_MAX_MS);
+  try {
+    const heavy = await computeHeavySignals(opts, cfg, dir, ranges);
+    writeSnapshot(key, heavy);
+    return heavy;
+  } finally {
+    clearTimeout(watchdog);
+    release();
+  }
+}
+
+// stdout flush 後に明示 exit (beta.8 idempotency、深町 CTO Nit: 二重発火を排他ガード)
+function writeAndExit(text: string): void {
+  let exited = false;
+  const safeExit = (): void => {
+    if (exited) return;
+    exited = true;
+    process.exit(0);
+  };
+  process.stdout.write(text, () => safeExit());
+  // write callback が来ない異常時の保険
+  setTimeout(safeExit, 1000).unref();
+}
+
+export async function statuslineCommand(
+  opts: StatuslineOptions,
+): Promise<void> {
+  const cfg = loadConfig();
+  const dir = normalizeDirArg(opts.dir ?? cfg.logDir ?? defaultClaudeLogDir());
+  const ranges = computeMonthRanges();
+  const mode = parseMode(opts.mode);
+
+  const heavy = await resolveHeavySignals(opts, cfg, dir, ranges);
+  if (!heavy) {
+    // 初回集計中に呼ばれた別プロセス: 待たずに即終了 (多重集計を作らない)
+    writeAndExit("⏳ koji-lens\n");
+    return;
+  }
+  const { result, cacheRate, auditSignal, budgetAlert } = heavy;
+
+  const stateRead =
+    opts.state === false
+      ? { icon: null, state: null, staleMs: null }
+      : readAgentState(opts.stateFile ?? defaultStateFilePath());
 
   // 起案 v0.4 §3 楽しさ別チャネル化整合: --buddy で opt-in、env KOJI_LENS_BUDDY=1 で永続化
   // v0.7 (2026-05-08) --buddy-only: buddy + speech 強制有効 + 他 signal すべて非表示の 1 フラグ
@@ -315,7 +409,7 @@ export async function statuslineCommand(
   const showCache = !buddyOnly && opts.cacheRate !== false;
 
   if (opts.format === "json") {
-    process.stdout.write(
+    writeAndExit(
       JSON.stringify(
         {
           generatedAt: new Date().toISOString(),
@@ -395,19 +489,7 @@ export async function statuslineCommand(
     finalOutput = `${finalOutput} │ ${syncSignal}`;
   }
 
-  process.stdout.write(finalOutput + "\n");
-
-  // v0.7.1 (2026-05-08) hang fix: --combined で stdin / spawn の event loop が残ると process exit せず Claude Code 側が固まる
-  // 明示的に exit して確実に process 終了 (stdout flush 後)
-  // beta.8 idempotency (2026-05-10、深町 CTO Nit): drain と setImmediate の二重発火を排他ガード
-  if (combinedEnabled) {
-    let exited = false;
-    const safeExit = (): void => {
-      if (exited) return;
-      exited = true;
-      process.exit(0);
-    };
-    process.stdout.once("drain", safeExit);
-    setImmediate(safeExit);
-  }
+  // v0.7.1 (2026-05-08) hang fix: stdin / spawn の event loop が残ると process exit せず Claude Code 側が固まる
+  // 2026-09-24: --combined 限定だった明示 exit を全モードに拡張 (node を残さない)
+  writeAndExit(finalOutput + "\n");
 }
