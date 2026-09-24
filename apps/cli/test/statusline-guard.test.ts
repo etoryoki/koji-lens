@@ -72,3 +72,16 @@ describe("statusline guard", () => {
     expect(readSnapshot("k2")).toBeNull();
   });
 });
+
+describe("statusline guard ownership", () => {
+  it("does not delete a lock that another process took over", async () => {
+    const { readFileSync } = await import("node:fs");
+    const release = tryAcquireLock();
+    expect(release).not.toBeNull();
+    // 上限超過で別プロセスが奪った状態を再現
+    const lock = path.join(home, ".koji-lens", "statusline.lock");
+    writeFileSync(lock, JSON.stringify({ pid: process.pid + 1, at: Date.now() }));
+    release!();
+    expect(JSON.parse(readFileSync(lock, "utf8")).pid).toBe(process.pid + 1);
+  });
+});

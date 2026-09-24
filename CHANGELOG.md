@@ -6,6 +6,8 @@ For detailed release notes, see [GitHub Releases](https://github.com/etoryoki/ko
 
 ## [Unreleased]
 
+## [0.1.0-beta.13] - 2026-09-24
+
 ### Fixed
 
 - **Statusline no longer piles up `node` processes** (`apps/cli/src/commands/statusline.ts`, new `apps/cli/src/lib/statusline-guard.ts`) — Reported on Windows: dozens of `node.exe` processes stayed alive and consumed memory, especially after force-closing Claude Code sessions. Each statusline run took ~2 s (10–20 s with a cold cache) and ~140 MB, and Claude Code re-runs the statusline on every update; when a run was cancelled, only the parent shell was killed and the `node` process kept running.
@@ -13,7 +15,8 @@ For detailed release notes, see [GitHub Releases](https://github.com/etoryoki/ko
   - The aggregating process exits on its own after 60 s at most; a lock left by a dead process is taken over.
   - `--combined`: on timeout, ccusage is now killed with its whole process tree (`taskkill /T` on Windows). Previously `child.kill()` only killed `cmd.exe` and left ccusage's `node` running on every timed-out refresh.
   - All statusline modes now exit explicitly after flushing stdout (previously only `--combined`).
-  - Tunable via `KOJI_LENS_STATUSLINE_FRESH_MS` (default 20000) and `KOJI_LENS_STATUSLINE_MAX_MS` (default 60000).
+  - Tunable via `KOJI_LENS_STATUSLINE_FRESH_MS` (default 20000) and `KOJI_LENS_STATUSLINE_MAX_MS` (default 60000). Set `KOJI_LENS_STATUSLINE_FRESH_MS=0` to always recompute (the one-at-a-time lock still applies).
+  - A process only removes the lock it owns, so an aggregation that ran past the limit cannot release a lock another process has taken over.
 - **Faster CLI startup** (`apps/cli/src/index.ts`) — Commands are now loaded on demand instead of importing every command (and SQLite) at startup. `koji-lens --version`: ~1 s → ~0.2 s. Warm statusline: ~2.1 s → ~0.4 s.
 
 ### Changed

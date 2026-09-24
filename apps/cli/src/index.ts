@@ -512,7 +512,7 @@ program
   .action(async (opts) => {
     try {
       const { serveCommand } = await import("./commands/serve.js");
-      await (await import("./commands/serve.js")).serveCommand({ port: opts.port ?? "3210" });
+      await serveCommand({ port: opts.port ?? "3210" });
     } catch (err) {
       console.error(err instanceof Error ? err.message : err);
       process.exit(1);

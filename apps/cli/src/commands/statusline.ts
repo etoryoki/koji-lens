@@ -327,6 +327,8 @@ async function resolveHeavySignals(
     audit: opts.audit !== false,
     budget: opts.budget !== false,
     cacheRate: opts.cacheRate !== false,
+    // config の予算額を変えたら snapshot を使わない (深町 CTO Warning 1)
+    budgetUsd: resolveBudgetForProject(undefined, cfg) ?? null,
   });
   const snap = readSnapshot<HeavySignals>(key);
   if (snap && snap.ageMs < FRESH_MS) return snap.data;

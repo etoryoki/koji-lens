@@ -79,7 +79,16 @@ export function writeSnapshot<T>(key: string, data: T): void {
     // 他プロセスが読み途中の半端なファイルを見ないよう tmp → rename
     const tmp = `${snapshotPath()}.${process.pid}.tmp`;
     writeFileSync(tmp, JSON.stringify(body), "utf8");
-    renameSync(tmp, snapshotPath());
+    try {
+      renameSync(tmp, snapshotPath());
+    } catch {
+      // rename 失敗時に tmp を残さない (深町 CTO Warning 3)
+      try {
+        unlinkSync(tmp);
+      } catch {
+        /* ignore */
+      }
+    }
   } catch {
     // snapshot は最適化のみ。失敗しても表示は継続
   }
@@ -122,10 +131,15 @@ export function tryAcquireLock(): (() => void) | null {
       return () => {
         if (released) return;
         released = true;
+        // 深町 CTO Critical (2026-09-24): 自分のロックのときだけ消す。
+        // 集計が上限を超えて他プロセスに奪われた後で消すと、3 本目も取得でき同時集計になる
         try {
-          unlinkSync(lockPath());
+          const { pid } = JSON.parse(readFileSync(lockPath(), "utf8")) as {
+            pid: number;
+          };
+          if (pid === process.pid) unlinkSync(lockPath());
         } catch {
-          /* ignore */
+          /* 既に消えている / 読めない = 他プロセスの管理下 */
         }
       };
     } catch (err) {
