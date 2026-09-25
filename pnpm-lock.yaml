@@ -14,7 +14,7 @@ importers:
         specifier: workspace:^0.1.0-beta.13
         version: link:../../packages/core
       '@kojihq/core-sqlite':
-        specifier: workspace:^0.1.0-beta.13
+        specifier: workspace:^0.1.0-beta.15
         version: link:../../packages/core-sqlite
       commander:
         specifier: ^15.0.0

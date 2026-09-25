@@ -322,6 +322,18 @@ program
   });
 
 program
+  .command("logout")
+  .description("[system] Remove the koji-lens Pro login from this machine (auth.json + sync state)")
+  .action(async () => {
+    try {
+      (await import("./commands/logout.js")).logoutCommand();
+    } catch (err) {
+      console.error(err instanceof Error ? err.message : err);
+      process.exit(1);
+    }
+  });
+
+program
   .command("sync")
   .description("[system] Sync local cache to koji-lens Pro (cloud sync, requires login)")
   .option("--batch-size <n>", "Sessions per batch (default: 50)", (v) => parseInt(v, 10))

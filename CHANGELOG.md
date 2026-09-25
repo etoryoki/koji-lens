@@ -6,6 +6,18 @@ For detailed release notes, see [GitHub Releases](https://github.com/etoryoki/ko
 
 ## [Unreleased]
 
+## [0.1.0-beta.15] - 2026-09-25
+
+### Added
+
+- **`koji-lens logout`** (`apps/cli/src/commands/logout.ts`) — Removes the Pro login from this machine (`~/.koji-lens/auth.json` and the sync state). Local cache and config are kept. Previously the only way was deleting the file by hand; a stale login kept triggering background sync and showed `sync failed` in the statusline.
+
+### Changed
+
+- **Node.js 22.12 or later is now required** (was 22.0). commander 15 needs `require(esm)`.
+- **Extra command arguments are now an error** (commander 14+), e.g. `koji-lens sessions foo` → `too many arguments for 'sessions'`.
+- Dependencies: commander 15, drizzle-orm 0.45 (`@kojihq/core-sqlite` 0.1.0-beta.15), Next.js 16.2.6 / React 19.2.6 (bundled web UI), tailwindcss 4.3.
+
 ## [0.1.0-beta.14] - 2026-09-24
 
 ### Added
