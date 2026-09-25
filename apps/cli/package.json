@@ -37,7 +37,7 @@
     "access": "public"
   },
   "engines": {
-    "node": ">=22.0.0"
+    "node": ">=22.12.0"
   },
   "bin": {
     "koji-lens": "./dist/index.js",
@@ -61,7 +61,7 @@
   "dependencies": {
     "@kojihq/core": "workspace:^0.1.0-beta.13",
     "@kojihq/core-sqlite": "workspace:^0.1.0-beta.13",
-    "commander": "^13.0.0"
+    "commander": "^15.0.0"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",

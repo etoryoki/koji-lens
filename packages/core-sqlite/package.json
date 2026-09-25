@@ -46,12 +46,12 @@
   "dependencies": {
     "@kojihq/core": "workspace:*",
     "better-sqlite3": "^12.9.0",
-    "drizzle-orm": "^0.36.0"
+    "drizzle-orm": "^0.45.2"
   },
   "devDependencies": {
     "@types/better-sqlite3": "^7.6.0",
     "@types/node": "^22.0.0",
-    "tsx": "^4.19.0",
+    "tsx": "^4.22.4",
     "typescript": "^6.0.3",
     "vitest": "^2.1.0"
   }
