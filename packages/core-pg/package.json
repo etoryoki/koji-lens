@@ -47,10 +47,10 @@
   },
   "dependencies": {
     "@kojihq/core": "workspace:*",
-    "drizzle-orm": "^0.36.0"
+    "drizzle-orm": "^0.45.2"
   },
   "devDependencies": {
-    "@electric-sql/pglite": "^0.2.0",
+    "@electric-sql/pglite": "^0.4.6",
     "@neondatabase/serverless": "^0.10.0",
     "@types/node": "^22.0.0",
     "dotenv": "^16.4.0",
